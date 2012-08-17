@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.0/jquery-1.8.0.min.js"></script>
+        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js"></script>
+        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.0.5/require.min.js"></script>
+    </head>
+    <body>
+        
+        <pre id="preview"><a href="#" id="downloader">Click me!</a></pre>
+        
+        <script type="text/javascript">
+            require.config({
+                text: 'text.js',
+                paths: {
+                    underscore: 'http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min',
+                    JSZip: '../jszip/jszip'
+                },
+                shim: {
+                    'underscore': {
+                        exports: '_'
+                    },
+                    'JSZip': {
+                        exports: 'JSZip'
+                    }
+                }
+            });
+            require(['../excel-builder', 'text!testdata.json'], function (builder, testdata) {
+                var data = JSON.parse(testdata);
+                
+                var wb = builder.createWorkbook();
+                var stylesheet = wb.getStyleSheet();
+                var columns = [
+                    {id: 'id', type: 'number'},
+                    {id: 'name', type: 'string'},
+                    {id: 'price', type: 'number'},
+                    {id: 'location', type: 'string'},
+                    {id: 'startDate', type: 'date', style: stylesheet.createBasicCellStyle('date'), bestFit: true},
+                    {id: 'endDate', type: 'date', style: stylesheet.createBasicCellStyle('date'), bestFit: true}
+                ];
+                
+                var ws = wb.createWorksheet();
+                wb.addWorksheet(ws);
+                ws.setColumns(columns);
+                ws.setData(data);
+                $("#downloader").attr({
+                    href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+builder.createFile(wb)
+                })
+            });
+            
+        </script>
+        
+    </body>
+</html>

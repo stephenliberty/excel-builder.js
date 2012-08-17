@@ -1,0 +1,9 @@
+[submodule "jszip"]
+	path = jszip
+	url = git://github.com/Stuk/jszip.git
+[submodule "FileSaver"]
+	path = FileSaver
+	url = git://github.com/eligrey/FileSaver.js.git
+[submodule "Downloadify"]
+	path = Downloadify
+	url = https://github.com/dcneiner/Downloadify
