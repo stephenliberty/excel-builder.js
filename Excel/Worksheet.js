@@ -59,7 +59,7 @@ define(['underscore', './util'], function (_, util) {
                 
                 for(var c = 0; c < cellCount; c++) {
                     var cell = util.createElement(doc, 'c'), value, textNode;
-                    
+                    cell.setAttribute('r', Worksheet.COLUMN_HEADER_MAP[c] + (row+1))
                     columns[c] = columns[c] || {};
                     var columnType = columns[c].type || 'text';
                     var columnStyle = columns[c].style || '';
