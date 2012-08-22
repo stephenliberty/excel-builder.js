@@ -47,20 +47,20 @@ define(['underscore',
             ]));
             
             types.appendChild(util.createElement(doc, 'Override', [
-                ['PartName', "/xl/workbook.xml"],
+                ['PartName', "/workbook.xml"],
                 ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"]
             ]));
             //this.relations.addRelation("workbook.xml", 'spreadsheetml');
             
             types.appendChild(util.createElement(doc, 'Override', [
-                ['PartName', "/xl/styles.xml"],
+                ['PartName', "/styles.xml"],
                 ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"]
             ]));
             this.relations.addRelation("styles.xml", 'stylesheet');
             
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
                 types.appendChild(util.createElement(doc, 'Override', [
-                    ['PartName', "/xl/worksheets/sheet" + (i + 1) + ".xml"],
+                    ['PartName', "/worksheets/sheet" + (i + 1) + ".xml"],
                     ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"]
                 ]));
                 this.relations.addRelation("worksheets/sheet" + (i + 1) + ".xml", 'worksheet');
@@ -92,7 +92,7 @@ define(['underscore',
             relationships.appendChild(util.createElement(doc, 'Relationship', [
                 ['Id', 'rId1'],
                 ['Type', util.schemas.officeDocument],
-                ['Target', 'xl/workbook.xml']
+                ['Target', 'workbook.xml']
             ]));
             return doc;
         },
@@ -102,13 +102,13 @@ define(['underscore',
             var files = {
                 '/[Content_Types].xml': this.createContentTypes(),
                 '/_rels/.rels': this.createWorkbookRelationship(),
-                '/xl/styles.xml': this.styleSheet.toXML(),
-                '/xl/workbook.xml': this.toXML(),
-                '/xl/_rels/workbook.xml.rels': this.relations.toXML()
+                '/styles.xml': this.styleSheet.toXML(),
+                '/workbook.xml': this.toXML(),
+                '/_rels/workbook.xml.rels': this.relations.toXML()
             }
             
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
-                files['/xl/worksheets/sheet' + (i + 1) + '.xml'] = this.worksheets[i].toXML();
+                files['/worksheets/sheet' + (i + 1) + '.xml'] = this.worksheets[i].toXML();
             }
             
             _.each(files, function (value, key) {
@@ -116,7 +116,7 @@ define(['underscore',
                 files[key] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' + "\n" + files[key].replace(/xmlns=""/g, '')
             });
             
-            console.log(files['/xl/_rels/workbook.xml.rels'])
+            console.log(files['/styles.xml'])
             
             return files;
         }

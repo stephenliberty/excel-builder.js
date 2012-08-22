@@ -32,8 +32,9 @@ define(['underscore', './util'], function (_, util) {
             
             for(var i = 0, l = this.columns.length; i < l; i++) {
                 var col = util.createElement(doc, 'col', [
-                    ['min', i + 2],
-                    ['max', i + 2]
+                    ['min', i + 1],
+                    ['max', i + 1],
+					['width', 9.140625]
                 ]);
                 if(this.columns[i].bestFit) {
                     col.setAttribute('bestFit', 1);
