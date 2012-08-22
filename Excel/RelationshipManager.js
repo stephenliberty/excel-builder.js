@@ -21,7 +21,7 @@ define(['underscore', './util'], function (_, util) {
         },
         
         toXML: function () {
-            var doc = util.createXmlDoc(util.schemas.relationships, 'Relationships');
+            var doc = util.createXmlDoc(util.schemas.relationshipPackage, 'Relationships');
             var relationships = doc.documentElement;
             
             _.each(this.relations, function (data, path) {

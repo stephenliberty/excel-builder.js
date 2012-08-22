@@ -35,12 +35,12 @@ define(['underscore',
         createContentTypes: function () {
             var doc = util.createXmlDoc(util.schemas.contentTypes, 'Types');
             var types = doc.documentElement;
-            types.setAttribute('xmlns:r', util.schemas.contentTypes);
             //doc.appendChild(types)
             types.appendChild(util.createElement(doc, 'Default', [
                 ['Extension', "rels"],
                 ['ContentType', "application/vnd.openxmlformats-package.relationships+xml"]
             ]));
+			
             types.appendChild(util.createElement(doc, 'Default', [
                 ['Extension', "xml"],
                 ['ContentType', "application/xml"]
@@ -52,12 +52,13 @@ define(['underscore',
             ]));
             //this.relations.addRelation("workbook.xml", 'spreadsheetml');
             
+			
             types.appendChild(util.createElement(doc, 'Override', [
                 ['PartName', "/styles.xml"],
                 ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"]
             ]));
             this.relations.addRelation("styles.xml", 'stylesheet');
-            
+			
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
                 types.appendChild(util.createElement(doc, 'Override', [
                     ['PartName', "/worksheets/sheet" + (i + 1) + ".xml"],
@@ -87,7 +88,7 @@ define(['underscore',
         },
         
         createWorkbookRelationship: function () {
-            var doc = util.createXmlDoc(util.schemas['package'], 'Relationships');
+            var doc = util.createXmlDoc(util.schemas.relationshipPackage, 'Relationships');
             var relationships = doc.documentElement;
             relationships.appendChild(util.createElement(doc, 'Relationship', [
                 ['Id', 'rId1'],

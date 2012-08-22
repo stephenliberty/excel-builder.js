@@ -25,8 +25,6 @@ define(['underscore', './util'], function (_, util) {
             var worksheet = doc.documentElement;
             worksheet.setAttribute('xmlns:r', util.schemas.relationships);
             worksheet.setAttribute('xmlns:mc', util.schemas.markupCompat);
-            worksheet.setAttribute('xmlns:x14ac', util.schemas.x14ac);
-            worksheet.setAttribute('mc:Ignorable', util.schemas.x14ac);
             
             var cols = util.createElement(doc, 'cols');
             
@@ -47,7 +45,8 @@ define(['underscore', './util'], function (_, util) {
             
             var maxX = 0;
             var sheetData = util.createElement(doc, 'sheetData');
-            
+            var startDate = new Date(1900, 1, 1, 0, 0, 0, 0).getTime();
+			
             for(var row = 0, l = data.length; row < l; row++) {
                 var dataRow = data[row];
                 var cellCount = dataRow.length;
@@ -65,6 +64,10 @@ define(['underscore', './util'], function (_, util) {
                     var columnType = columns[c].type || 'text';
                     var columnStyle = columns[c].style || '';
                     
+					if(columnStyle) {
+						cell.setAttribute('s', columnStyle);
+					}
+					
                     switch(columnType) {
                         case "number":
                             value = util.createElement(doc, 'v');
@@ -72,7 +75,8 @@ define(['underscore', './util'], function (_, util) {
                             break;
                         case "date":
                             value = util.createElement(doc, 'v');
-                            textNode = doc.createTextNode(dataRow[c] / (60 * 60 * 24) / 1000);
+							
+                            textNode = doc.createTextNode((dataRow[c] - startDate)  / (60 * 60 * 24) / 1000);
                             
                             break;
                         case "text":
