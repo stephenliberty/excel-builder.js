@@ -117,8 +117,6 @@ define(['underscore',
                 files[key] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' + "\n" + files[key].replace(/xmlns=""/g, '')
             });
             
-            console.log(files['/styles.xml'])
-            
             return files;
         }
     });

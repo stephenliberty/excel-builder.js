@@ -70,7 +70,6 @@ define(['underscore', './util'], function (_, util) {
 			}
 			
 			if (styleInstructions.format && _.isString(styleInstructions.format)) {
-				console.log('creating format')
 				style.numFmtId = this.createFormatter(styleInstructions.format).id;
 			} else if(styleInstructions.format) {
 				if(_.isNaN(parseInt(styleInstructions.format))) {
@@ -287,7 +286,6 @@ define(['underscore', './util'], function (_, util) {
             styleSheet.appendChild(this.exportBorders(doc));
 			styleSheet.appendChild(this.exportFormattingRecords(doc));
             styleSheet.appendChild(this.exportCellFormats(doc));
-			console.log(styleSheet);
 			return doc;
         }
     });
