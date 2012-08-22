@@ -26,7 +26,22 @@
             });
             require(['../excel-builder', 'text!testdata.json'], function (builder, testdata) {
                 var data = JSON.parse(testdata);
-                
+                /* for converting data sets from key-> value to array of values
+				var stuff = [];
+				for(var i = 0, l = data.length; i < l; i++) {
+					var d = data[i];
+					stuff[i] = [
+						d.id,
+						d.name,
+						d.price,
+						d.location,
+						d.startDate,
+						d.endDate
+					];
+				}
+				console.log(JSON.stringify(stuff))
+				*/
+				
                 var wb = builder.createWorkbook();
                 var stylesheet = wb.getStyleSheet();
 				
