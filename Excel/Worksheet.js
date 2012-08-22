@@ -10,14 +10,63 @@ define(['underscore', './util'], function (_, util) {
         
         columns: [],
         
+		_header: [],
+		
         initialize: function (config) {
             config = config || {}
             this.name = config.name;
+			this._excelStartDate = new Date(1900, 1, 1, 0, 0, 0, 0).getTime();
             if(config.columns) {
                 this.setColumns(config.columns);
             }
         },
-        
+		
+		addHeader: function (rows) {
+			this._header = rows;
+		},
+		
+		exportHeader: function (doc, sheetData) {
+			for(var i = 0, l = this._header.length; i < l; i++) {
+				var rowNode = util.createElement(doc, 'row');
+                
+                for(var c = 0; c < cellCount; c++) {
+                    var cell = createCell(doc, metadata, data)
+                    rowNode.appendChild(cell);
+                }
+                sheetData.appendChild(rowNode);
+			}
+		},
+		
+		createCell: function (doc, metadata, data) {
+			var cell = util.createElement(doc, 'c'), value, textNode;
+			
+			if(metadata.style) {
+				cell.setAttribute('s', metadata.style);
+			}
+			
+			switch(metadata.type) {
+				case "number":
+					value = util.createElement(doc, 'v');
+					textNode = doc.createTextNode(data);
+					break;
+				case "date":
+					value = util.createElement(doc, 'v');
+					textNode = doc.createTextNode((data - this._excelStartDate)  / (60 * 60 * 24) / 1000);
+					break;
+				case "text":
+				default: 
+					value = util.createElement(doc, 'is');
+					cell.setAttribute('t', 'inlineStr');
+					textNode = util.createElement(doc, 't');
+					var stringNode = doc.createTextNode(data);
+					textNode.appendChild(stringNode)
+					break;
+			};
+			value.appendChild(textNode);
+			cell.appendChild(value);
+			return cell;
+		},
+		
         toXML: function () {
             var data = this.data;
             var columns = this.columns || [];
@@ -28,7 +77,7 @@ define(['underscore', './util'], function (_, util) {
             
             var cols = util.createElement(doc, 'cols');
             
-            for(var i = 0, l = this.columns.length; i < l; i++) {
+			for(var i = 0, l = this.columns.length; i < l; i++) {
                 var col = util.createElement(doc, 'col', [
                     ['min', i + 1],
                     ['max', i + 1],
@@ -45,55 +94,25 @@ define(['underscore', './util'], function (_, util) {
             
             var maxX = 0;
             var sheetData = util.createElement(doc, 'sheetData');
-            var startDate = new Date(1900, 1, 1, 0, 0, 0, 0).getTime();
+			this.exportHeader(doc, sheetData);
 			
             for(var row = 0, l = data.length; row < l; row++) {
                 var dataRow = data[row];
                 var cellCount = dataRow.length;
                 maxX = cellCount > maxX ? cellCount : maxX;
-                var rowNode = util.createElement(doc, 'row', [
-                    ['r', row+1],
-                    ['spans', '1:' + cellCount]
-                ]);
+                var rowNode = util.createElement(doc, 'row');
                 
-                
-                for(var c = 0; c < cellCount; c++) {
-                    var cell = util.createElement(doc, 'c'), value, textNode;
-                    cell.setAttribute('r', Worksheet.COLUMN_HEADER_MAP[c] + (row+1))
-                    columns[c] = columns[c] || {};
-                    var columnType = columns[c].type || 'text';
-                    var columnStyle = columns[c].style || '';
-                    
-					if(columnStyle) {
-						cell.setAttribute('s', columnStyle);
-					}
-					
-                    switch(columnType) {
-                        case "number":
-                            value = util.createElement(doc, 'v');
-                            textNode = doc.createTextNode(dataRow[c]);
-                            break;
-                        case "date":
-                            value = util.createElement(doc, 'v');
-							
-                            textNode = doc.createTextNode((dataRow[c] - startDate)  / (60 * 60 * 24) / 1000);
-                            
-                            break;
-                        case "text":
-                        default: 
-                            value = util.createElement(doc, 'is');
-                            cell.setAttribute('t', 'inlineStr');
-                            textNode = util.createElement(doc, 't');
-                            var stringNode = doc.createTextNode(dataRow[c]);
-                            textNode.appendChild(stringNode)
-                            break;
-                    };
-                    value.appendChild(textNode);
-                    cell.appendChild(value);
+				for(var c = 0; c < cellCount; c++) {
+					columns[c] = columns[c] || {};
+					var cellMetadata = {
+						type: columns[c].type || 'text',
+						style: columns[c].style || ''
+					};
+                    var cell = this.createCell(doc, cellMetadata, dataRow[c])
                     rowNode.appendChild(cell);
                 }
                 sheetData.appendChild(rowNode);
-            }
+            } 
             
             var dimension = util.createElement(doc, 'dimension', [
                 ['ref', 'A1:'+Worksheet.COLUMN_HEADER_MAP[maxX]+data.length]

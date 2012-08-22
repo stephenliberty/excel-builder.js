@@ -19,7 +19,7 @@ define(['underscore', './util'], function (_, util) {
 			{}
 		],
 		
-		numberFormats: [
+		formatters: [
 		
 		],
 		
@@ -34,7 +34,7 @@ define(['underscore', './util'], function (_, util) {
 		createSimpleFormatter: function (type) {
             var sid = this.cellFormats.length;
             var style = {
-                sid: sid
+                id: sid
             };
             switch(type) {
                 case 'date':
@@ -45,20 +45,38 @@ define(['underscore', './util'], function (_, util) {
             return style;
         },
 		
+		createFormatter: function (format) {
+			var id = this.formatters.length + 100;
+			var format = {
+				id: id,
+				formatCode: format
+			}
+			this.formatters.push(format);
+			return format;
+		},
+		
 		createStyle: function (styleInstructions) {
 			var sid = this.cellFormats.length;
 			var style = {
-				sid: sid
+				id: sid
 			};
-			console.log(style)
 			if(styleInstructions.font && _.isObject(styleInstructions.font)) {
-				console.log('blah')
-				style.fontId = this.createFontStyle(styleInstructions.font).fontId;
+				style.fontId = this.createFontStyle(styleInstructions.font).id;
 			} else if(styleInstructions.font) {
 				if(_.isNaN(parseInt(styleInstructions.font, 10))) {
 					throw "Passing a non-numeric font id is not supported";
 				}
 				style.fontId = styleInstructions.font;
+			}
+			
+			if (styleInstructions.format && _.isString(styleInstructions.format)) {
+				console.log('creating format')
+				style.numFmtId = this.createFormatter(styleInstructions.format).id;
+			} else if(styleInstructions.format) {
+				if(_.isNaN(parseInt(styleInstructions.format))) {
+					throw "Invalid number formatter id";
+				}
+				style.numFmtId = styleInstructions.format;
 			}
 			
 			this.cellFormats.push(style);
@@ -84,7 +102,7 @@ define(['underscore', './util'], function (_, util) {
 		createFontStyle: function (instructions) {
 			var fontId = this.fonts.length;
 			var fontStyle = {
-				fontId: fontId
+				id: fontId
 			};
 			if(instructions.bold) {
 				fontStyle.bold = true;
@@ -241,11 +259,29 @@ define(['underscore', './util'], function (_, util) {
 			return fills;
 		},
 		
+		exportFormatters: function (doc) {
+			var formatters = util.createElement(doc, 'numFmts', [
+				['count', this.formatters.length]
+			]);
+			
+			for(var i = 0, l = this.formatters.length; i < l; i++) {
+				var fd = this.formatters[i];
+				var formatter = util.createElement(doc, 'numFmt', [
+					['numFmtId', fd.id],
+					['formatCode', fd.formatCode]
+				]);
+				formatters.appendChild(formatter);
+			}
+			
+			return formatters;
+		},
+		
         toXML: function () {
             var styles = this.cellStyles;
             
             var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'styleSheet');
             var styleSheet = doc.documentElement;
+			styleSheet.appendChild(this.exportFormatters(doc));
 			styleSheet.appendChild(this.exportFonts(doc));
             styleSheet.appendChild(this.exportFills(doc));
             styleSheet.appendChild(this.exportBorders(doc));

@@ -32,6 +32,8 @@
 				
 				var dateFormatter = stylesheet.createSimpleFormatter('date');
 				
+				var currencyFormatter = stylesheet.createStyle({format: "$ #,##0.00;$ #,##0.00;-"});
+				
 				var boldStyle = stylesheet.createStyle({
 					font: {
 						bold: true,
@@ -45,12 +47,12 @@
 				});
 				
                 var columns = [
-                    {id: 'id', type: 'number', style: boldStyle.sid},
-                    {id: 'name', type: 'string'},
-                    {id: 'price', type: 'number'},
+                    {id: 'id', type: 'number', style: boldStyle.id, width: 20},
+                    {id: 'name', type: 'string', width: 50},
+                    {id: 'price', type: 'number', style: currencyFormatter.id},
                     {id: 'location', type: 'string'},
-                    {id: 'startDate', type: 'date', style: dateFormatter.sid},
-                    {id: 'endDate', type: 'date', style: dateFormatter.sid}
+                    {id: 'startDate', type: 'date', style: dateFormatter.id, width: 15},
+                    {id: 'endDate', type: 'date', style: dateFormatter.id, width: 15}
                 ];
                 
                 var ws = wb.createWorksheet();
@@ -59,7 +61,7 @@
                 ws.setData(data);
                 $("#downloader").attr({
                     href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+builder.createFile(wb)
-                })
+                });
             });
             
         </script>
