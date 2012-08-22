@@ -44,8 +44,94 @@ define(['underscore', './util'], function (_, util) {
             this.cellFormats.push(style);
             return style;
         },
+		
+		createStyle: function (styleInstructions) {
+			var sid = this.cellFormats.length;
+			var style = {
+				sid: sid
+			};
+			console.log(style)
+			if(styleInstructions.font && _.isObject(styleInstructions.font)) {
+				console.log('blah')
+				style.fontId = this.createFontStyle(styleInstructions.font).fontId;
+			} else if(styleInstructions.font) {
+				if(_.isNaN(parseInt(styleInstructions.font, 10))) {
+					throw "Passing a non-numeric font id is not supported";
+				}
+				style.fontId = styleInstructions.font;
+			}
+			
+			this.cellFormats.push(style);
+			return style;
+		},
+		
+		/**
+		 * Supported font styles:
+		 * bold
+		 * italic
+		 * underline (single, double, singleAccounting, doubleAccounting)
+		 * size
+		 * color
+		 * fontName
+		 * strike (strikethrough)
+		 * outline (does this actually do anything?)
+		 * shadow (does this actually do anything?)
+		 * superscript
+		 * subscript
+		 *
+		 * Color is a future goal - at the moment it's looking a bit complicated
+		 */
+		createFontStyle: function (instructions) {
+			var fontId = this.fonts.length;
+			var fontStyle = {
+				fontId: fontId
+			};
+			if(instructions.bold) {
+				fontStyle.bold = true;
+			}
+			if(instructions.italic) {
+				fontStyle.italic = true;
+			}
+			if(instructions.superscript) {
+				fontStyle.vertAlign = 'superscript';
+			}
+			if(instructions.subscript) {
+				fontStyle.vertAlign = 'subscript';
+			}
+			if(instructions.underline) {
+				if(_.indexOf([
+					'double',
+					'singleAccounting',
+					'doubleAccounting'
+				], instructions.underline) != -1) {
+					fontStyle.underline = instructions.underline;
+				} else {
+					fontStyle.underline = true;
+				}
+			}
+			if(instructions.strike) {
+				fontStyle.strike = true;
+			}
+			if(instructions.outline) {
+				fontStyle.outline = true;
+			}
+			if(instructions.shadow) {
+				fontStyle.shadow = true;
+			}
+			if(instructions.size) {
+				fontStyle.size = instructions.size;
+			}
+			if(instructions.color) {
+				//going to be complicated
+			}
+			if(instructions.fontName) {
+				fontStyle.fontName = instructions.fontName;
+			}
+			this.fonts.push(fontStyle);
+			return fontStyle;
+		},
         
-		createBorders: function (doc) {
+		exportBorders: function (doc) {
 			var borders = util.createElement(doc, 'borders', [
                 ['count', this.borders.length]
             ]);
@@ -68,13 +154,16 @@ define(['underscore', './util'], function (_, util) {
 			return borders;
 		},
 		
-		createCellFormats: function (doc) {
+		exportCellFormats: function (doc) {
 			var cellFormats = util.createElement(doc, 'cellXfs', [
                 ['count', this.cellFormats.length]
             ]);
             for(var i = 0, l = this.cellFormats.length; i < l; i++) {
                 var style = this.cellFormats[i];
                 var format = util.createElement(doc, 'xf');
+				if(style.fontId) {
+					format.setAttribute('fontId', style.fontId);
+				}
 				if(style.numFmtId) {
 					format.setAttribute('numFmtId', style.numFmtId);
 				}
@@ -83,7 +172,7 @@ define(['underscore', './util'], function (_, util) {
 			return cellFormats;
 		},
 		
-		createFormattingRecords: function (doc) {
+		exportFormattingRecords: function (doc) {
 			var records = util.createElement(doc, 'cellStyleXfs', [
 				['count', this.formatRecords.length]
 			]);
@@ -94,7 +183,7 @@ define(['underscore', './util'], function (_, util) {
 			return records;
 		},
 		
-		createFonts: function (doc) {
+		exportFonts: function (doc) {
 			var fonts = util.createElement(doc, 'fonts', [
 				['count', this.fonts.length]
 			]);
@@ -107,17 +196,35 @@ define(['underscore', './util'], function (_, util) {
 					]));
 				}
 				
-				if(fd.name) {
+				if(fd.fontName) {
 					font.appendChild(util.createElement(doc, 'name', [
 						['val', fd.name]
 					]));
 				}
+				
+				if(fd.bold) { font.appendChild(doc.createElement('b')); }
+				if(fd.italic) { font.appendChild(doc.createElement('i')); }
+				if(fd.vertAlign) {
+					font.appendChild(util.createElement(doc, 'vertAlign', [
+						['val', fd.vertAlign]
+					]));
+				}
+				if(fd.underline) { 
+					var u = doc.createElement('u');
+					if(fd.underline !== true) {
+						u.setAttribute('val', fd.underline);
+					}
+					font.appendChild(u); 
+				}
+				if(fd.strike) { font.appendChild(doc.createElement('strike')); }
+				if(fd.shadow) { font.appendChild(doc.createElement('shadow')); }
+				if(fd.outline) { font.appendChild(doc.createElement('outline')); }
 				fonts.appendChild(font);
 			}
 			return fonts;
 		},
 		
-		createFills: function (doc) {
+		exportFills: function (doc) {
 			var fills = util.createElement(doc, 'fills', [
 				['count', this.formatRecords.length]
 			]);
@@ -139,11 +246,11 @@ define(['underscore', './util'], function (_, util) {
             
             var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'styleSheet');
             var styleSheet = doc.documentElement;
-			styleSheet.appendChild(this.createFonts(doc));
-            styleSheet.appendChild(this.createFills(doc));
-            styleSheet.appendChild(this.createBorders(doc));
-			styleSheet.appendChild(this.createFormattingRecords(doc));
-            styleSheet.appendChild(this.createCellFormats(doc));
+			styleSheet.appendChild(this.exportFonts(doc));
+            styleSheet.appendChild(this.exportFills(doc));
+            styleSheet.appendChild(this.exportBorders(doc));
+			styleSheet.appendChild(this.exportFormattingRecords(doc));
+            styleSheet.appendChild(this.exportCellFormats(doc));
 			console.log(styleSheet);
 			return doc;
         }

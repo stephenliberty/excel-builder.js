@@ -32,8 +32,20 @@
 				
 				var dateFormatter = stylesheet.createSimpleFormatter('date');
 				
+				var boldStyle = stylesheet.createStyle({
+					font: {
+						bold: true,
+						italic: true,
+						underline: true,
+						strike: true,
+						outline: true,
+						shadow: true,
+						size: 20
+					}
+				});
+				
                 var columns = [
-                    {id: 'id', type: 'number'},
+                    {id: 'id', type: 'number', style: boldStyle.sid},
                     {id: 'name', type: 'string'},
                     {id: 'price', type: 'number'},
                     {id: 'location', type: 'string'},
