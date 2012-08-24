@@ -3,36 +3,24 @@ define(['underscore', './util'], function (_, util) {
         
     };
     _.extend(StyleSheet.prototype, {
-        cellStyles: [
-            {}
-        ],
+        cellStyles: [{name:"Normal", xfId:"0", builtinId:"0"}],
         
-		cellFormats: [
-			{}
-		],
+		differentialStyles: [],
 		
-		formatRecords: [
-			{}
-		],
+		masterCellFormats: [{numFmtId: 0, fontId: 0, fillId: 0, borderId: 0, xfid: 0}],
 		
-		fonts: [
-			{}
-		],
+		masterCellStyles: [{numFmtId: 0, fontId: 0, fillId: 0, borderId: 0}],
 		
-		formatters: [
+		fonts: [{}],
 		
-		],
+		numberFormatters: [],
 		
-		fills: [
-			{}
-		],
+		fills: [{}],
 		
-        borders: [
-            {}
-        ],
+        borders: [{}],
         
 		createSimpleFormatter: function (type) {
-            var sid = this.cellFormats.length;
+            var sid = this.masterCellFormats.length;
             var style = {
                 id: sid
             };
@@ -41,22 +29,22 @@ define(['underscore', './util'], function (_, util) {
                     style.numFmtId = 14;
                     break;
             }
-            this.cellFormats.push(style);
+            this.masterCellFormats.push(style);
             return style;
         },
 		
-		createFormatter: function (format) {
-			var id = this.formatters.length + 100;
+		createNumberFormatter: function (formatInstructions) {
+			var id = this.numberFormatters.length + 100;
 			var format = {
 				id: id,
-				formatCode: format
+				formatCode: formatInstructions
 			}
-			this.formatters.push(format);
+			this.numberFormatters.push(format);
 			return format;
 		},
 		
-		createStyle: function (styleInstructions) {
-			var sid = this.cellFormats.length;
+		createFormat: function (styleInstructions) {
+			var sid = this.masterCellFormats.length;
 			var style = {
 				id: sid
 			};
@@ -70,7 +58,7 @@ define(['underscore', './util'], function (_, util) {
 			}
 			
 			if (styleInstructions.format && _.isString(styleInstructions.format)) {
-				style.numFmtId = this.createFormatter(styleInstructions.format).id;
+				style.numFmtId = this.createNumberFormatter(styleInstructions.format).id;
 			} else if(styleInstructions.format) {
 				if(_.isNaN(parseInt(styleInstructions.format))) {
 					throw "Invalid number formatter id";
@@ -78,7 +66,7 @@ define(['underscore', './util'], function (_, util) {
 				style.numFmtId = styleInstructions.format;
 			}
 			
-			this.cellFormats.push(style);
+			this.masterCellFormats.push(style);
 			return style;
 		},
 		
@@ -155,47 +143,60 @@ define(['underscore', './util'], function (_, util) {
             
             for(var i = 0, l = this.borders.length; i < l; i++) {
                 var border = doc.createElement('border');
+				var data = this.borders[i];
+			
 				var left = doc.createElement('left');
-				var right = doc.createElement('right');
-				var bottom = doc.createElement('bottom');
-				var top = doc.createElement('top');
-				var diag = doc.createElement('diagonal');
+				border.appendChild(left);
 				
-                border.appendChild(left);
+				var right = doc.createElement('right');
 				border.appendChild(right);
+				
+				var top = doc.createElement('top');
 				border.appendChild(top);
+				
+				var bottom = doc.createElement('bottom');
 				border.appendChild(bottom);
+				
+				var diag = doc.createElement('diagonal');
 				border.appendChild(diag);
+				
                 borders.appendChild(border);
             }
 			return borders;
 		},
 		
-		exportCellFormats: function (doc) {
+		exportMasterCellFormats: function (doc) {
 			var cellFormats = util.createElement(doc, 'cellXfs', [
-                ['count', this.cellFormats.length]
+                ['count', this.masterCellFormats.length]
             ]);
-            for(var i = 0, l = this.cellFormats.length; i < l; i++) {
-                var style = this.cellFormats[i];
-                var format = util.createElement(doc, 'xf');
-				if(style.fontId) {
-					format.setAttribute('fontId', style.fontId);
+            for(var i = 0, l = this.masterCellFormats.length; i < l; i++) {
+                var mformat = this.masterCellFormats[i];
+				delete mformat.id; //Remove internal id
+				var record = util.createElement(doc, 'xf');
+				cellFormats.appendChild(record);
+				var attributes = _.keys(mformat);
+				var a = attributes.length;
+				while(a--) {
+					record.setAttribute(attributes[a], mformat[attributes[a]]);
 				}
-				if(style.numFmtId) {
-					format.setAttribute('numFmtId', style.numFmtId);
-				}
-                cellFormats.appendChild(format);
             }
 			return cellFormats;
 		},
 		
-		exportFormattingRecords: function (doc) {
+		exportMasterCellStyles: function (doc) {
 			var records = util.createElement(doc, 'cellStyleXfs', [
-				['count', this.formatRecords.length]
+				['count', this.masterCellStyles.length]
 			]);
-			for(var i = 0, l = this.formatRecords.length; i < l; i++) {
+			for(var i = 0, l = this.masterCellStyles.length; i < l; i++) {
+				var mstyle = this.masterCellStyles[i];
+				delete mstyle.id; //Remove internal id
 				var record = util.createElement(doc, 'xf');
 				records.appendChild(record);
+				var attributes = _.keys(mstyle);
+				var a = attributes.length;
+				while(a--) {
+					record.setAttribute(attributes[a], mstyle[attributes[a]]);
+				}
 			}
 			return records;
 		},
@@ -243,7 +244,7 @@ define(['underscore', './util'], function (_, util) {
 		
 		exportFills: function (doc) {
 			var fills = util.createElement(doc, 'fills', [
-				['count', this.formatRecords.length]
+				['count', this.fills.length]
 			]);
 			for(var i = 0, l = this.fills.length; i < l; i++) {
 				var fd = this.fills[i];
@@ -258,13 +259,13 @@ define(['underscore', './util'], function (_, util) {
 			return fills;
 		},
 		
-		exportFormatters: function (doc) {
+		exportNumberFormatters: function (doc) {
 			var formatters = util.createElement(doc, 'numFmts', [
-				['count', this.formatters.length]
+				['count', this.numberFormatters.length]
 			]);
 			
-			for(var i = 0, l = this.formatters.length; i < l; i++) {
-				var fd = this.formatters[i];
+			for(var i = 0, l = this.numberFormatters.length; i < l; i++) {
+				var fd = this.numberFormatters[i];
 				var formatter = util.createElement(doc, 'numFmt', [
 					['numFmtId', fd.id],
 					['formatCode', fd.formatCode]
@@ -275,17 +276,55 @@ define(['underscore', './util'], function (_, util) {
 			return formatters;
 		},
 		
+		exportCellStyles: function (doc) {
+			var cellStyles = doc.createElement('cellStyles');
+			cellStyles.setAttribute('count', this.cellStyles.length);
+			
+			for(var i = 0, l = this.cellStyles.length; i < l; i++) {
+				var style = this.cellStyles[i];
+				delete style.id; //Remove internal id
+				var record = util.createElement(doc, 'cellStyle');
+				cellStyles.appendChild(record);
+				var attributes = _.keys(style);
+				var a = attributes.length;
+				while(a--) {
+					record.setAttribute(attributes[a], style[attributes[a]]);
+				}
+			}
+			
+			return cellStyles;
+		},
+		
+		exportDifferentialStyles: function (doc) {
+			var dfxs = doc.createElement('dfxs');
+			dfxs.setAttribute('count', this.differentialStyles.length);
+			
+			for(var i = 0, l = this.differentialStyles.length; i < l; i++) {
+				var style = this.differentialStyles[i];
+				delete style.id; //Remove internal id
+				var record = util.createElement(doc, 'dfx');
+				dfxs.appendChild(record);
+				var attributes = _.keys(style);
+				var a = attributes.length;
+				while(a--) {
+					record.setAttribute(attributes[a], style[attributes[a]]);
+				}
+			}
+			
+			return dfxs;
+		},
+		
         toXML: function () {
-            var styles = this.cellStyles;
-            
             var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'styleSheet');
             var styleSheet = doc.documentElement;
-			styleSheet.appendChild(this.exportFormatters(doc));
+			styleSheet.appendChild(this.exportNumberFormatters(doc));
 			styleSheet.appendChild(this.exportFonts(doc));
             styleSheet.appendChild(this.exportFills(doc));
             styleSheet.appendChild(this.exportBorders(doc));
-			styleSheet.appendChild(this.exportFormattingRecords(doc));
-            styleSheet.appendChild(this.exportCellFormats(doc));
+			styleSheet.appendChild(this.exportMasterCellStyles(doc));
+            styleSheet.appendChild(this.exportMasterCellFormats(doc));
+			styleSheet.appendChild(this.exportCellStyles(doc));
+			styleSheet.appendChild(this.exportDifferentialStyles(doc));
 			return doc;
         }
     });

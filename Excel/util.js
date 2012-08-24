@@ -28,6 +28,45 @@ define([], function () {
             return el;
         },
         
+		compilePageDetailPackage: function (data) {
+			data = data || "";
+			return [
+				"&L", this.compilePageDetailPiece(data[0] || ""),
+				"&C", this.compilePageDetailPiece(data[1] || ""),
+				"&R", this.compilePageDetailPiece(data[2] || "")
+			].join('');
+		},
+		
+		compilePageDetailPiece: function (data) {
+			if(_.isString(data)) { return '&"-,Regular"'.concat(data); }
+			if(_.isObject(data) && !_.isArray(data)) { 
+				var string = "";
+				if(data.font || data.bold) {
+					var weighting = data.bold ? "Bold" : "Regular";
+					string += '&"' + (data.font || '-');
+					string += ',' + weighting + '"';
+				} else {
+					string += '&"-,Regular"';
+				}
+				if(data.underline) {
+					string += "&U";
+				}
+				if(data.fontSize) {
+					string += "&"+data.fontSize;
+				}
+				string += data.text;
+				
+				return string;
+			}
+			
+			if(_.isArray(data)) {
+				var self = this;
+				return _.reduce(data, function (m, v) {
+					return m.concat(self.compilePageDetailPiece(v));
+				}, "");
+			}
+		},
+		
         schemas: {
             'worksheet': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet',
             'sharedStrings': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",

@@ -29,6 +29,8 @@ define(['underscore',
         },
         
         addWorksheet: function (worksheet) {
+			this.relations.addRelation("worksheets/sheet" + (this.worksheets.length + 1) + ".xml", 'worksheet');
+			worksheet.id = this.relations.getRelationshipId("worksheets/sheet" + (this.worksheets.length + 1) + ".xml");
             this.worksheets.push(worksheet);
         },
         
@@ -64,7 +66,6 @@ define(['underscore',
                     ['PartName', "/worksheets/sheet" + (i + 1) + ".xml"],
                     ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"]
                 ]));
-                this.relations.addRelation("worksheets/sheet" + (i + 1) + ".xml", 'worksheet');
             }
             return doc;
         },

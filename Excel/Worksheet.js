@@ -1,3 +1,4 @@
+"use strict";
 define(['underscore', './util'], function (_, util) {
     var Worksheet = function (config) {
         this.initialize(config);
@@ -10,10 +11,12 @@ define(['underscore', './util'], function (_, util) {
         
         columns: [],
         
-		_header: [],
+		_headers: [],
+		
+		_footers: [],
 		
         initialize: function (config) {
-            config = config || {}
+            config = config || {};
             this.name = config.name;
 			this._excelStartDate = new Date(1900, 1, 1, 0, 0, 0, 0).getTime();
             if(config.columns) {
@@ -21,20 +24,34 @@ define(['underscore', './util'], function (_, util) {
             }
         },
 		
-		addHeader: function (rows) {
-			this._header = rows;
+		/**
+		* Expects an array length of three.
+		* [left, center, right]
+		*/
+		setHeader: function (headers) {
+			if(!_.isArray(headers)) {throw "Invalid argument type - setHeader expects an array of three instructions";}
+			this._headers = headers;
 		},
 		
-		exportHeader: function (doc, sheetData) {
-			for(var i = 0, l = this._header.length; i < l; i++) {
-				var rowNode = util.createElement(doc, 'row');
-                
-                for(var c = 0; c < cellCount; c++) {
-                    var cell = createCell(doc, metadata, data)
-                    rowNode.appendChild(cell);
-                }
-                sheetData.appendChild(rowNode);
-			}
+		/**
+		* Expects an array length of three.
+		* [left, center, right]
+		*/
+		setFooter: function (footers) {
+			if(!_.isArray(footers)) {throw "Invalid argument type - setFooter expects an array of three instructions";}
+			this._footers = footers;
+		},
+		
+		exportHeader: function (doc) {
+			var oddHeader = doc.createElement('oddHeader');
+			oddHeader.appendChild(doc.createTextNode(util.compilePageDetailPackage(this._headers)));
+			return oddHeader;
+		},
+		
+		exportFooter: function (doc) {
+			var oddFooter = doc.createElement('oddFooter');
+			oddFooter.appendChild(doc.createTextNode(util.compilePageDetailPackage(this._footers)));
+			return oddFooter;
 		},
 		
 		createCell: function (doc, metadata, data) {
@@ -94,7 +111,6 @@ define(['underscore', './util'], function (_, util) {
             
             var maxX = 0;
             var sheetData = util.createElement(doc, 'sheetData');
-			this.exportHeader(doc, sheetData);
 			
             for(var row = 0, l = data.length; row < l; row++) {
                 var dataRow = data[row];
@@ -104,11 +120,16 @@ define(['underscore', './util'], function (_, util) {
                 
 				for(var c = 0; c < cellCount; c++) {
 					columns[c] = columns[c] || {};
+					var cellValue = dataRow[c];
 					var cellMetadata = {
 						type: columns[c].type || 'text',
 						style: columns[c].style || ''
 					};
-                    var cell = this.createCell(doc, cellMetadata, dataRow[c])
+					if (_.isObject(dataRow[c])) {
+						cellValue = dataRow[c].value;
+						_.extend(cellMetadata, dataRow[c].metadata);
+					}
+                    var cell = this.createCell(doc, cellMetadata, cellValue)
                     rowNode.appendChild(cell);
                 }
                 sheetData.appendChild(rowNode);
@@ -117,12 +138,40 @@ define(['underscore', './util'], function (_, util) {
             var dimension = util.createElement(doc, 'dimension', [
                 ['ref', 'A1:'+Worksheet.COLUMN_HEADER_MAP[maxX]+data.length]
             ]);
+			
             worksheet.appendChild(dimension);
             worksheet.appendChild(cols);
             worksheet.appendChild(sheetData);
-            return doc;
+			
+			this.exportPageSettings(doc, worksheet);
+			
+			if(this._headers.length > 0 || this._footers.length > 0) {
+				var headerFooter = doc.createElement('headerFooter');
+				if(this._headers.length > 0) {
+					headerFooter.appendChild(this.exportHeader(doc));
+				}
+				if(this._footers.length > 0) {
+					headerFooter.appendChild(this.exportFooter(doc));
+				}
+				worksheet.appendChild(headerFooter);
+			}
+			
+			return doc;
         },
         
+		exportPageSettings: function (doc, worksheet) {
+			
+			if(this._orientation) {
+				worksheet.appendChild(util.createElement(doc, 'pageSetup', [
+					['orientation', this._orientation]
+				]));
+			}
+		},
+		
+		setPageOrientation: function (orientation) {
+			this._orientation = orientation;
+		},
+		
         /**
          * Expects an array containing the data type to default to for each column's cell
          */
