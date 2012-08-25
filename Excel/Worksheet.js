@@ -1,10 +1,12 @@
 "use strict";
-define(['underscore', './util'], function (_, util) {
+define(['underscore', './util', './RelationshipManager', './Table'], function (_, util, RelationshipManager, Table) {
     var Worksheet = function (config) {
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
         
+		relations: null,
+		
         columnFormats: [],
         
         data: [],
@@ -15,14 +17,24 @@ define(['underscore', './util'], function (_, util) {
 		
 		_footers: [],
 		
+		_tables: [],
+		
         initialize: function (config) {
             config = config || {};
             this.name = config.name;
+			this.id = _.uniqueId('Worksheet');
 			this._excelStartDate = new Date(1900, 1, 1, 0, 0, 0, 0).getTime();
             if(config.columns) {
                 this.setColumns(config.columns);
             }
+			
+            this.relations = new RelationshipManager();
         },
+		
+		addTable: function (table) {
+			this._tables.push(table);
+			this.relations.addRelation(table, 'table');
+		},
 		
 		/**
 		* Expects an array length of three.
@@ -154,6 +166,12 @@ define(['underscore', './util'], function (_, util) {
 					headerFooter.appendChild(this.exportFooter(doc));
 				}
 				worksheet.appendChild(headerFooter);
+			}
+			
+			if(this._tables.length > 0) {
+				var table = doc.createElement('tableParts');
+				table.setAttribute('count', this._tables.length);
+				
 			}
 			
 			return doc;

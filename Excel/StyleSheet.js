@@ -1,6 +1,6 @@
 define(['underscore', './util'], function (_, util) {
     var StyleSheet = function (config) {
-        
+        this.id = _.uniqueId('StyleSheet');
     };
     _.extend(StyleSheet.prototype, {
         cellStyles: [{name:"Normal", xfId:"0", builtinId:"0"}],
@@ -171,14 +171,7 @@ define(['underscore', './util'], function (_, util) {
             ]);
             for(var i = 0, l = this.masterCellFormats.length; i < l; i++) {
                 var mformat = this.masterCellFormats[i];
-				delete mformat.id; //Remove internal id
-				var record = util.createElement(doc, 'xf');
-				cellFormats.appendChild(record);
-				var attributes = _.keys(mformat);
-				var a = attributes.length;
-				while(a--) {
-					record.setAttribute(attributes[a], mformat[attributes[a]]);
-				}
+				cellFormats.appendChild(this.exportCellFormatElement(doc, mformat));
             }
 			return cellFormats;
 		},
@@ -189,16 +182,23 @@ define(['underscore', './util'], function (_, util) {
 			]);
 			for(var i = 0, l = this.masterCellStyles.length; i < l; i++) {
 				var mstyle = this.masterCellStyles[i];
-				delete mstyle.id; //Remove internal id
-				var record = util.createElement(doc, 'xf');
-				records.appendChild(record);
-				var attributes = _.keys(mstyle);
-				var a = attributes.length;
-				while(a--) {
-					record.setAttribute(attributes[a], mstyle[attributes[a]]);
-				}
+				records.appendChild(this.exportCellFormatElement(doc, mstyle));
 			}
 			return records;
+		},
+		
+		exportCellFormatElement: function (doc, styleInstructions) {
+			var xf = doc.createElement('xf');
+			var allowed = ['applyAlignment', 'applyBorder', 'applyFill', 'applyFont', 'applyNumberFormat', 
+				'applyProtection', 'borderId', 'fillId', 'fontId', 'numFmtId', 'pivotButton', 'quotePrefix', 'xfId']
+			var attributes = _.filter(_.keys(styleInstructions), function (key) {
+				if(_.indexOf(allowed, key) != -1) {return true;}
+			});
+			var a = attributes.length;
+			while(a--) {
+				xf.setAttribute(attributes[a], styleInstructions[attributes[a]]);
+			}
+			return xf;
 		},
 		
 		exportFonts: function (doc) {
