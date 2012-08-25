@@ -1,5 +1,5 @@
 define([], function () {
-    return {
+	var util = {
         createXmlDoc: function (ns, base) {
             if(document.implementation && document.implementation.createDocument) {
                 return document.implementation.createDocument(ns || null, base, null);
@@ -67,6 +67,22 @@ define([], function () {
 			}
 		},
 		
+		LETTER_REFS: [],
+		
+		positionToLetterRef: function (x, y) {
+			var digit = 1, num = x, string = "", alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";;
+			while (num > 0) {
+				num -= Math.pow(26, digit -1)
+				index = num % Math.pow(26, digit)
+				num -= index
+				index = index / Math.pow(26, digit - 1)
+				string = alphabet[index] + string
+				digit += 1
+			}
+			
+			return string.concat(y);
+		},
+		
         schemas: {
             'worksheet': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet',
             'sharedStrings': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
@@ -78,7 +94,10 @@ define([], function () {
             'markupCompat': "http://schemas.openxmlformats.org/markup-compatibility/2006",
             'x14ac': "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac",
             'officeDocument': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
-            'package': "http://schemas.openxmlformats.org/package/2006/relationships"
+            'package': "http://schemas.openxmlformats.org/package/2006/relationships",
+			'table': "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
         }
-    }
+    };
+	
+	return util;
 })

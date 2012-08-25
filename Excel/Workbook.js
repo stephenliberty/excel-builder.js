@@ -115,12 +115,12 @@ define(['underscore',
 			Paths[this.id] = '/workbook.xml';
 			var files = {};
 			for(var i = 0, l = this.tables.length; i < l; i++) {
+				files['/tables/table' + (i + 1) + '.xml'] = this.tables[i].toXML();
 				Paths[this.tables[i].id] = '/tables/table' + (i + 1) + '.xml';
 			}
 			for(var i = 0, l = this.worksheets.length; i < l; i++) {
                 files['/worksheets/sheet' + (i + 1) + '.xml'] = this.worksheets[i].toXML();
 				Paths[this.worksheets[i].id] = '/worksheets/sheet' + (i + 1) + '.xml';
-				
 				files['/worksheets/_rels/sheet' + (i + 1) + '.xml.rels'] = this.worksheets[i].relations.toXML();
 				
             }

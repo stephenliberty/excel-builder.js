@@ -148,7 +148,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             } 
             
             var dimension = util.createElement(doc, 'dimension', [
-                ['ref', 'A1:'+Worksheet.COLUMN_HEADER_MAP[maxX]+data.length]
+                ['ref',  util.positionToLetterRef(1, 1) + [maxX, data.length]]
             ]);
 			
             worksheet.appendChild(dimension);
@@ -169,9 +169,13 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
 			}
 			
 			if(this._tables.length > 0) {
-				var table = doc.createElement('tableParts');
-				table.setAttribute('count', this._tables.length);
-				
+				var tables = doc.createElement('tableParts');
+				tables.setAttribute('count', this._tables.length);
+				for(var i = 0, l = this._tables.length; i < l; i++) {
+					var table = doc.createElement('tablePart');
+					table.setAttribute('r:Id', this.relations.getRelationshipId(this._tables[i]));
+				}
+				worksheet.appendChild(tables);
 			}
 			
 			return doc;
@@ -221,16 +225,5 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             this.columnFormats = columnFormats;
         }
     });
-    
-    Worksheet.COLUMN_HEADER_MAP = [];
-    for(var i = 0; i < 26; i++) {
-        var letterKey = "", icopy = i;
-        if(icopy > 25) {
-            //Figure out what to do here.. it has to start going AA, AB..... AMJ
-        } else {
-            letterKey = String.fromCharCode(icopy + 65);
-        }
-        Worksheet.COLUMN_HEADER_MAP[i] = letterKey;
-    }
     return Worksheet;
 });

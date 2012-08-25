@@ -70,8 +70,18 @@ define(['underscore', './util'], function (_, util) {
 		*/
 		setSortState: function (state) {
 			this.sortState = state;
-		}
+		},
 		
+		toXML: function () {
+			var doc = util.createXmlDoc(util.schemas.table, 'worksheet');
+            var table = doc.documentElement;
+			if(!this.ref) {throw "Needs at least a reference range";}
+			if(!this.autoFilter) {
+				
+			}
+			
+			return table;
+		}
 	});
 	return Table;
 });

@@ -24,7 +24,7 @@
                     }
                 }
             });
-            require(['../excel-builder', 'text!testdata.json'], function (builder, testdata) {
+            require(['../excel-builder', 'text!testdata.json', '../Excel/Table'], function (builder, testdata, Table) {
                 var data = JSON.parse(testdata);
                 /* for converting data sets from key-> value to array of values
 				var stuff = [];
@@ -104,6 +104,10 @@
 				])
                 ws.setData(worksheetData);
 				ws.setPageOrientation('landscape');
+				
+				var table = new Table();
+				table.setReferenceRange([1, 1], [6, worksheetData.length]
+				ws.addTable(table);
                 $("#downloader").attr({
                     href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+builder.createFile(wb)
                 });
