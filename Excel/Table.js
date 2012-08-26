@@ -2,7 +2,7 @@ define(['underscore', './util'], function (_, util) {
 	var Table = function (config) {
         this.initialize(config);
     };
-    _.extend(Table.prototype, {
+    $.extend(true, Table.prototype, {
 		
 		name: "",
 		displayName: "",
@@ -24,17 +24,21 @@ define(['underscore', './util'], function (_, util) {
 		tableColumns: [],
 		autoFilter: null,
 		sortState: null,
-		tableStyleInfo: {},
+		styleInfo: {},
 		
 		initialize: function (config) {
 			this.displayName = _.uniqueId("Table");
 			this.name = this.displayName;
-			this.id = _.uniqueId("Table");
+			this.id = this.name;
 			this.tableId = this.id.replace('Table', '');
 			_.extend(this, config);
 		},
 		
-		addTableColumns: function (columns) {
+		setReferenceRange: function (start, end) {
+			this.ref = [start, end];
+		},
+		
+		setTableColumns: function (columns) {
 			_.each(columns, function (column) { this.addTableColumn(column); }, this);
 		},
 		
@@ -73,14 +77,70 @@ define(['underscore', './util'], function (_, util) {
 		},
 		
 		toXML: function () {
-			var doc = util.createXmlDoc(util.schemas.table, 'worksheet');
+			var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'table');
             var table = doc.documentElement;
-			if(!this.ref) {throw "Needs at least a reference range";}
-			if(!this.autoFilter) {
-				
+			table.setAttribute('id', this.tableId);
+			table.setAttribute('name', this.name);
+			table.setAttribute('displayName', this.displayName);
+			var s = this.ref[0];
+			var e = this.ref[1];
+			table.setAttribute('ref', util.positionToLetterRef(s[0], s[1]) + ":" + util.positionToLetterRef(e[0], e[1]));
+			table.setAttribute('totalsRowShown', this.totalsRowShown ? "1" : "0");
+			if(this.headerRowDxfId) {
+				table.setAttribute('headerRowDxfId', this.headerRowDxfId);
+			}
+			if(this.headerRowBorderDxfId) {
+				table.setAttribute('headerRowBorderDxfId', this.headerRowBorderDxfId);
 			}
 			
+			if(!this.ref) {throw "Needs at least a reference range";}
+			if(!this.autoFilter) {
+				this.addAutoFilter(this.ref[0], this.ref[1]);
+			}
+			
+			table.appendChild(this.exportAutoFilter(doc));
+			
+			table.appendChild(this.exportTableColumns(doc));
+			table.appendChild(this.exportTableStyleInfo(doc));
 			return table;
+		},
+		
+		exportTableColumns: function (doc) {
+			var tableColumns = doc.createElement('tableColumns');
+			tableColumns.setAttribute('count', this.tableColumns.length);
+			var tcs = this.tableColumns;
+			for(var i = 0, l = tcs.length; i < l; i++) {
+				var tc = tcs[i];
+				var tableColumn = doc.createElement('tableColumn');
+				tableColumn.setAttribute('id', i + 1);
+				tableColumn.setAttribute('name', tc.name);
+				tableColumns.appendChild(tableColumn);
+			}
+			return tableColumns;
+		},
+		
+		exportAutoFilter: function (doc) {
+			var autoFilter = doc.createElement('autoFilter');
+			var s = this.autoFilter[0];
+			var e = this.autoFilter[1]
+			autoFilter.setAttribute('ref', util.positionToLetterRef(s[0], s[1]) + ":" + util.positionToLetterRef(e[0], e[1]));
+			return autoFilter;
+		},
+		
+		exportTableStyleInfo: function (doc) {
+			var attrs = [];
+			var ts = this.styleInfo;
+			attrs.push(['name', ts.themeStyle]);
+			attrs.push(['showFirstColumn', ts.showFirstColumn ? "1" : "0"]);
+			attrs.push(['showLastColumn', ts.showLastColumn ? "1" : "0"]);
+			attrs.push(['showColumnStripes', ts.showColumnStripes ? "1" : "0"]);
+			attrs.push(['showRowStripes', ts.showRowStripes ? "1" : "0"]);
+			var ts = util.createElement(doc, 'tableStyleInfo', attrs);
+			return ts;
+		},
+		
+		addAutoFilter: function (startRef, endRef) {
+			this.autoFilter = [startRef, endRef];
 		}
 	});
 	return Table;

@@ -8,7 +8,7 @@ define(['underscore',
     var Workbook = function (config) {
         this.initialize(config);
     };
-    _.extend(Workbook.prototype, {
+    $.extend(true, Workbook.prototype, {
         
         worksheets: [],
         
@@ -35,6 +35,10 @@ define(['underscore',
             return this.styleSheet;
         },
         
+		addTable: function (table) {
+			this.tables.push(table);
+		},
+		
         addWorksheet: function (worksheet) {
 			this.relations.addRelation(worksheet, 'worksheet');
             this.worksheets.push(worksheet);
@@ -70,6 +74,13 @@ define(['underscore',
                     ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"]
                 ]));
             }
+			for(var i = 0, l = this.tables.length; i < l; i++) {
+                types.appendChild(util.createElement(doc, 'Override', [
+                    ['PartName', "/tables/table" + (i + 1) + ".xml"],
+                    ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"]
+                ]));
+            }
+			
             return doc;
         },
         
@@ -104,10 +115,6 @@ define(['underscore',
         
 		createWorksheetRelationships: function () {
 			
-		},
-		
-		addTable: function (table) {
-			this._tables.push(table);
 		},
 		
         generateFiles: function () {

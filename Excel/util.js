@@ -95,7 +95,7 @@ define([], function () {
             'x14ac': "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac",
             'officeDocument': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
             'package': "http://schemas.openxmlformats.org/package/2006/relationships",
-			'table': "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+			'table': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table"
         }
     };
 	

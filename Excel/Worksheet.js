@@ -3,7 +3,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
     var Worksheet = function (config) {
         this.initialize(config);
     };
-    _.extend(Worksheet.prototype, {
+    $.extend(true, Worksheet.prototype, {
         
 		relations: null,
 		
@@ -148,7 +148,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             } 
             
             var dimension = util.createElement(doc, 'dimension', [
-                ['ref',  util.positionToLetterRef(1, 1) + [maxX, data.length]]
+                ['ref',  util.positionToLetterRef(1, 1) + ':' + util.positionToLetterRef(maxX, data.length)]
             ]);
 			
             worksheet.appendChild(dimension);
@@ -173,7 +173,8 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
 				tables.setAttribute('count', this._tables.length);
 				for(var i = 0, l = this._tables.length; i < l; i++) {
 					var table = doc.createElement('tablePart');
-					table.setAttribute('r:Id', this.relations.getRelationshipId(this._tables[i]));
+					table.setAttribute('r:id', this.relations.getRelationshipId(this._tables[i]));
+					tables.appendChild(table);
 				}
 				worksheet.appendChild(tables);
 			}

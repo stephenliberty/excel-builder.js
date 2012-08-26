@@ -1,17 +1,16 @@
 define(['underscore', './util', './Paths'], function (_, util, Paths) {
     var RelationshipManager = function () {
-        
+        this.relations = {};
+		this.lastId = 1;
     };
     
     _.uniqueId('rId'); //priming
     
-    _.extend(RelationshipManager.prototype, {
-        
-        relations: {},
+    $.extend(true, RelationshipManager.prototype, {
         
         addRelation: function (object, type) {
             this.relations[object.id] = {
-                id: _.uniqueId('rId'),
+                id: 'rId' + this.lastId++,
                 schema: util.schemas[type]
             }
         },

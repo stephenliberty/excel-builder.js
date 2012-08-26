@@ -106,8 +106,18 @@
 				ws.setPageOrientation('landscape');
 				
 				var table = new Table();
-				table.setReferenceRange([1, 1], [6, worksheetData.length]
+				table.setTableColumns([
+					{name: "ID"}, 
+					{name: "Name"}, 
+					{name: "Price"}, 
+					{name: "Location"}, 
+					{name: "Start Date"},
+					{name: "End Date"}
+				]);
+				table.setReferenceRange([1, 1], [6, worksheetData.length]);
+				table.styleInfo.themeStyle = "TableStyleLight1";
 				ws.addTable(table);
+				wb.addTable(table);
                 $("#downloader").attr({
                     href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+builder.createFile(wb)
                 });

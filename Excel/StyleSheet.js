@@ -2,10 +2,10 @@ define(['underscore', './util'], function (_, util) {
     var StyleSheet = function (config) {
         this.id = _.uniqueId('StyleSheet');
     };
-    _.extend(StyleSheet.prototype, {
+    $.extend(true, StyleSheet.prototype, {
         cellStyles: [{name:"Normal", xfId:"0", builtinId:"0"}],
         
-		differentialStyles: [],
+		differentialStyles: [{}],
 		
 		masterCellFormats: [{numFmtId: 0, fontId: 0, fillId: 0, borderId: 0, xfid: 0}],
 		
