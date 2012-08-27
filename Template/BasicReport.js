@@ -39,6 +39,7 @@ define(['../Excel/Workbook', '../Excel/Table'], function (Workbook, Table) {
 		
 		setData: function (worksheetData) {
 			this.worksheet.setData(worksheetData);
+			this.data = worksheetData;
 			this.table.setReferenceRange([1, 1], [this.columns.length, worksheetData.length]);
 		},
 		
@@ -46,6 +47,7 @@ define(['../Excel/Workbook', '../Excel/Table'], function (Workbook, Table) {
 			this.columns = columns;
 			this.worksheet.setColumns(columns);
 			this.table.setTableColumns(columns);
+			this.table.setReferenceRange([1, 1], [this.columns.length, this.data.length]);
 		}
 	});
 	return Template;
