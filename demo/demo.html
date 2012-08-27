@@ -24,7 +24,7 @@
                     }
                 }
             });
-            require(['../excel-builder', 'text!testdata.json', '../Excel/Table'], function (builder, testdata, Table) {
+            require(['../excel-builder', 'text!testdata.json', '../Template/BasicReport'], function (builder, testdata, BasicReport) {
                 var data = JSON.parse(testdata);
                 /* for converting data sets from key-> value to array of values
 				var stuff = [];
@@ -41,85 +41,38 @@
 				}
 				console.log(JSON.stringify(stuff))
 				*/
+				var basicReport = new BasicReport();
+				var columns = [
+					{id: 'id', name: "ID", type: 'number', width: 20},
+					{id: 'name', name:"Name", type: 'string', width: 50},
+					{id: 'price', name: "Price", type: 'number', style: basicReport.predefinedFormatters.currency.id},
+					{id: 'location', name: "Location", type: 'string'},
+					{id: 'startDate', name: "Start Date", type: 'date', style: basicReport.predefinedFormatters.date.id, width: 15},
+					{id: 'endDate', name: "End Date", type: 'date', style: basicReport.predefinedFormatters.date.id, width: 15}
+				];
 				
-                var wb = builder.createWorkbook();
-                var stylesheet = wb.getStyleSheet();
-				
-				var dateFormatter = stylesheet.createSimpleFormatter('date');
-				
-				var currencyFormatter = stylesheet.createFormat({format: "$ #,##0.00;$ #,##0.00;-"});
-				
-				var crazyStyle = stylesheet.createFormat({
-					font: {
-						bold: true,
-						italic: true,
-						underline: true,
-						strike: true,
-						outline: true,
-						shadow: true,
-						size: 20
-					}
-				});
-				
-				var boldStyle = stylesheet.createFormat({
-					font: { bold: true, underline: true},
-					alignment: 'center'
-				});
-				
-                var columns = [
-                    {id: 'id', type: 'number', style: crazyStyle.id, width: 20},
-                    {id: 'name', type: 'string', width: 50},
-                    {id: 'price', type: 'number', style: currencyFormatter.id},
-                    {id: 'location', type: 'string'},
-                    {id: 'startDate', type: 'date', style: dateFormatter.id, width: 15},
-                    {id: 'endDate', type: 'date', style: dateFormatter.id, width: 15}
-                ];
-                
-                var ws = wb.createWorksheet();
-                wb.addWorksheet(ws);
-                ws.setColumns(columns);
 				var worksheetData = [
 					[
-						{value: "ID", metadata: {style: boldStyle.id, type: 'string'}}, 
-						{value: "Name", metadata: {style: boldStyle.id, type: 'string'}}, 
-						{value: "Price", metadata: {style: boldStyle.id, type: 'string'}}, 
-						{value: "Location", metadata: {style: boldStyle.id, type: 'string'}}, 
-						{value: "Start Date", metadata: {style: boldStyle.id, type: 'string'}},
-						{value: "End Date", metadata: {style: boldStyle.id, type: 'string'}}
+						{value: "ID", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}, 
+						{value: "Name", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}, 
+						{value: "Price", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}, 
+						{value: "Location", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}, 
+						{value: "Start Date", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+						{value: "End Date", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}
 					]
 				].concat(data.slice(0, 50));
-				ws.setHeader([
-					[
-						{bold: true, text: "Generic Report"},
-						" - built on ",
-						{underline: true, text: "5/7/9"}
-					],
-					"Center Column",
-					"Right Column"
-				]);
-				ws.setFooter([
-					'',
-					'',
-					'Page &P of &N'
-				])
-                ws.setData(worksheetData);
-				ws.setPageOrientation('landscape');
 				
-				var table = new Table();
-				table.setTableColumns([
-					{name: "ID"}, 
-					{name: "Name"}, 
-					{name: "Price"}, 
-					{name: "Location"}, 
-					{name: "Start Date"},
-					{name: "End Date"}
+				basicReport.setHeader([
+					{bold: true, text: "Generic Report"}, "", ""
 				]);
-				table.setReferenceRange([1, 1], [6, worksheetData.length]);
-				table.styleInfo.themeStyle = "TableStyleLight1";
-				ws.addTable(table);
-				wb.addTable(table);
+				basicReport.setData(worksheetData);
+				basicReport.setColumns(columns);
+				basicReport.setFooter([
+					'', '', 'Page &P of &N'
+				]);
+				
                 $("#downloader").attr({
-                    href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+builder.createFile(wb)
+                    href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+builder.createFile(basicReport.prepare())
                 });
             });
             
