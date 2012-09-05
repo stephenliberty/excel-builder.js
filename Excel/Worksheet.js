@@ -1,7 +1,6 @@
 "use strict";
 define(['underscore', './util', './RelationshipManager', './Table'], function (_, util, RelationshipManager, Table) {
     var Worksheet = function (config) {
-        this.initialize(config);
         this.relations = null;
         this.columnFormats = [];
         this.data = [];
@@ -9,6 +8,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
         this._headers = [];
         this._footers = [];
         this._tables = [];
+        this.initialize(config);
     };
     $.extend(true, Worksheet.prototype, {
 		

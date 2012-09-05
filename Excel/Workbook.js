@@ -8,9 +8,9 @@ define([
 ], 
 function (_, util, StyleSheet, Worksheet, RelationshipManager, Paths) {
     var Workbook = function (config) {
-        this.initialize(config);
         this.worksheets = [];
         this.tables = [];
+        this.initialize(config);
     };
     $.extend(true, Workbook.prototype, {
 
