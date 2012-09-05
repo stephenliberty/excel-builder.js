@@ -1,7 +1,7 @@
 define(['underscore', './util', './Paths'], function (_, util, Paths) {
     var RelationshipManager = function () {
         this.relations = {};
-		this.lastId = 1;
+        this.lastId = 1;
     };
     
     _.uniqueId('rId'); //priming
@@ -36,4 +36,4 @@ define(['underscore', './util', './Paths'], function (_, util, Paths) {
     });
     
     return RelationshipManager;
-})
+});

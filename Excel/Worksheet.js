@@ -2,28 +2,21 @@
 define(['underscore', './util', './RelationshipManager', './Table'], function (_, util, RelationshipManager, Table) {
     var Worksheet = function (config) {
         this.initialize(config);
+        this.relations = null;
+        this.columnFormats = [];
+        this.data = [];
+        this.columns = [];
+        this._headers = [];
+        this._footers = [];
+        this._tables = [];
     };
     $.extend(true, Worksheet.prototype, {
-        
-		relations: null,
-		
-        columnFormats: [],
-        
-        data: [],
-        
-        columns: [],
-        
-		_headers: [],
-		
-		_footers: [],
-		
-		_tables: [],
 		
         initialize: function (config) {
             config = config || {};
             this.name = config.name;
-			this.id = _.uniqueId('Worksheet');
-			this._excelStartDate = new Date(1900, 1, 1, 0, 0, 0, 0).getTime();
+            this.id = _.uniqueId('Worksheet');
+            this._excelStartDate = new Date(1900, 1, 1, 0, 0, 0, 0).getTime();
             if(config.columns) {
                 this.setColumns(config.columns);
             }
@@ -31,70 +24,74 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             this.relations = new RelationshipManager();
         },
 		
-		addTable: function (table) {
-			this._tables.push(table);
-			this.relations.addRelation(table, 'table');
-		},
+        addTable: function (table) {
+            this._tables.push(table);
+            this.relations.addRelation(table, 'table');
+        },
 		
-		/**
-		* Expects an array length of three.
-		* [left, center, right]
-		*/
-		setHeader: function (headers) {
-			if(!_.isArray(headers)) {throw "Invalid argument type - setHeader expects an array of three instructions";}
-			this._headers = headers;
-		},
+        /**
+        * Expects an array length of three.
+        * [left, center, right]
+        */
+        setHeader: function (headers) {
+            if(!_.isArray(headers)) {
+                throw "Invalid argument type - setHeader expects an array of three instructions";
+            }
+            this._headers = headers;
+        },
 		
-		/**
-		* Expects an array length of three.
-		* [left, center, right]
-		*/
-		setFooter: function (footers) {
-			if(!_.isArray(footers)) {throw "Invalid argument type - setFooter expects an array of three instructions";}
-			this._footers = footers;
-		},
+        /**
+        * Expects an array length of three.
+        * [left, center, right]
+        */
+        setFooter: function (footers) {
+            if(!_.isArray(footers)) {
+                throw "Invalid argument type - setFooter expects an array of three instructions";
+            }
+            this._footers = footers;
+        },
 		
-		exportHeader: function (doc) {
-			var oddHeader = doc.createElement('oddHeader');
-			oddHeader.appendChild(doc.createTextNode(util.compilePageDetailPackage(this._headers)));
-			return oddHeader;
-		},
+        exportHeader: function (doc) {
+            var oddHeader = doc.createElement('oddHeader');
+            oddHeader.appendChild(doc.createTextNode(util.compilePageDetailPackage(this._headers)));
+            return oddHeader;
+        },
 		
-		exportFooter: function (doc) {
-			var oddFooter = doc.createElement('oddFooter');
-			oddFooter.appendChild(doc.createTextNode(util.compilePageDetailPackage(this._footers)));
-			return oddFooter;
-		},
+        exportFooter: function (doc) {
+            var oddFooter = doc.createElement('oddFooter');
+            oddFooter.appendChild(doc.createTextNode(util.compilePageDetailPackage(this._footers)));
+            return oddFooter;
+        },
 		
-		createCell: function (doc, metadata, data) {
-			var cell = util.createElement(doc, 'c'), value, textNode;
+        createCell: function (doc, metadata, data) {
+            var cell = util.createElement(doc, 'c'), value, textNode;
 			
-			if(metadata.style) {
-				cell.setAttribute('s', metadata.style);
-			}
+            if(metadata.style) {
+                cell.setAttribute('s', metadata.style);
+            }
 			
-			switch(metadata.type) {
-				case "number":
-					value = util.createElement(doc, 'v');
-					textNode = doc.createTextNode(data);
-					break;
-				case "date":
-					value = util.createElement(doc, 'v');
-					textNode = doc.createTextNode((data - this._excelStartDate)  / (60 * 60 * 24) / 1000);
-					break;
-				case "text":
-				default: 
-					value = util.createElement(doc, 'is');
-					cell.setAttribute('t', 'inlineStr');
-					textNode = util.createElement(doc, 't');
-					var stringNode = doc.createTextNode(data);
-					textNode.appendChild(stringNode)
-					break;
-			};
-			value.appendChild(textNode);
-			cell.appendChild(value);
-			return cell;
-		},
+            switch(metadata.type) {
+                case "number":
+                    value = util.createElement(doc, 'v');
+                    textNode = doc.createTextNode(data);
+                    break;
+                case "date":
+                    value = util.createElement(doc, 'v');
+                    textNode = doc.createTextNode((data - this._excelStartDate)  / (60 * 60 * 24) / 1000);
+                    break;
+                case "text":
+                default:
+                    value = util.createElement(doc, 'is');
+                    cell.setAttribute('t', 'inlineStr');
+                    textNode = util.createElement(doc, 't');
+                    var stringNode = doc.createTextNode(data);
+                    textNode.appendChild(stringNode)
+                    break;
+            };
+            value.appendChild(textNode);
+            cell.appendChild(value);
+            return cell;
+        },
 		
         toXML: function () {
             var data = this.data;
@@ -106,12 +103,12 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             
             var cols = util.createElement(doc, 'cols');
             
-			for(var i = 0, l = this.columns.length; i < l; i++) {
+            for(var i = 0, l = this.columns.length; i < l; i++) {
                 var col = util.createElement(doc, 'col', [
                     ['min', i + 1],
                     ['max', i + 1],
-					['width', 9.140625]
-                ]);
+                    ['width', 9.140625]
+                    ]);
                 if(this.columns[i].bestFit) {
                     col.setAttribute('bestFit', 1);
                 }
@@ -130,17 +127,17 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                 maxX = cellCount > maxX ? cellCount : maxX;
                 var rowNode = util.createElement(doc, 'row');
                 
-				for(var c = 0; c < cellCount; c++) {
-					columns[c] = columns[c] || {};
-					var cellValue = dataRow[c];
-					var cellMetadata = {
-						type: columns[c].type || 'text',
-						style: columns[c].style || ''
-					};
-					if (_.isObject(dataRow[c])) {
-						cellValue = dataRow[c].value;
-						_.extend(cellMetadata, dataRow[c].metadata);
-					}
+                for(var c = 0; c < cellCount; c++) {
+                    columns[c] = columns[c] || {};
+                    var cellValue = dataRow[c];
+                    var cellMetadata = {
+                        type: columns[c].type || 'text',
+                        style: columns[c].style || ''
+                    };
+                    if (_.isObject(dataRow[c])) {
+                        cellValue = dataRow[c].value;
+                        _.extend(cellMetadata, dataRow[c].metadata);
+                    }
                     var cell = this.createCell(doc, cellMetadata, cellValue)
                     rowNode.appendChild(cell);
                 }
@@ -149,51 +146,51 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             
             var dimension = util.createElement(doc, 'dimension', [
                 ['ref',  util.positionToLetterRef(1, 1) + ':' + util.positionToLetterRef(maxX, data.length)]
-            ]);
+                ]);
 			
             worksheet.appendChild(dimension);
             worksheet.appendChild(cols);
             worksheet.appendChild(sheetData);
 			
-			this.exportPageSettings(doc, worksheet);
+            this.exportPageSettings(doc, worksheet);
 			
-			if(this._headers.length > 0 || this._footers.length > 0) {
-				var headerFooter = doc.createElement('headerFooter');
-				if(this._headers.length > 0) {
-					headerFooter.appendChild(this.exportHeader(doc));
-				}
-				if(this._footers.length > 0) {
-					headerFooter.appendChild(this.exportFooter(doc));
-				}
-				worksheet.appendChild(headerFooter);
-			}
+            if(this._headers.length > 0 || this._footers.length > 0) {
+                var headerFooter = doc.createElement('headerFooter');
+                if(this._headers.length > 0) {
+                    headerFooter.appendChild(this.exportHeader(doc));
+                }
+                if(this._footers.length > 0) {
+                    headerFooter.appendChild(this.exportFooter(doc));
+                }
+                worksheet.appendChild(headerFooter);
+            }
 			
-			if(this._tables.length > 0) {
-				var tables = doc.createElement('tableParts');
-				tables.setAttribute('count', this._tables.length);
-				for(var i = 0, l = this._tables.length; i < l; i++) {
-					var table = doc.createElement('tablePart');
-					table.setAttribute('r:id', this.relations.getRelationshipId(this._tables[i]));
-					tables.appendChild(table);
-				}
-				worksheet.appendChild(tables);
-			}
+            if(this._tables.length > 0) {
+                var tables = doc.createElement('tableParts');
+                tables.setAttribute('count', this._tables.length);
+                for(var i = 0, l = this._tables.length; i < l; i++) {
+                    var table = doc.createElement('tablePart');
+                    table.setAttribute('r:id', this.relations.getRelationshipId(this._tables[i]));
+                    tables.appendChild(table);
+                }
+                worksheet.appendChild(tables);
+            }
 			
-			return doc;
+            return doc;
         },
         
-		exportPageSettings: function (doc, worksheet) {
+        exportPageSettings: function (doc, worksheet) {
 			
-			if(this._orientation) {
-				worksheet.appendChild(util.createElement(doc, 'pageSetup', [
-					['orientation', this._orientation]
-				]));
-			}
-		},
+            if(this._orientation) {
+                worksheet.appendChild(util.createElement(doc, 'pageSetup', [
+                    ['orientation', this._orientation]
+                    ]));
+            }
+        },
 		
-		setPageOrientation: function (orientation) {
-			this._orientation = orientation;
-		},
+        setPageOrientation: function (orientation) {
+            this._orientation = orientation;
+        },
 		
         /**
          * Expects an array containing the data type to default to for each column's cell
