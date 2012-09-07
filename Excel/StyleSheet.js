@@ -197,7 +197,7 @@ define(['underscore', './util'], function (_, util) {
                 fontStyle.size = instructions.size;
             }
             if(instructions.color) {
-            //going to be complicated
+				fontStyle.color = instructions.color;
             }
             if(instructions.fontName) {
                 fontStyle.fontName = instructions.fontName;
@@ -349,6 +349,9 @@ define(['underscore', './util'], function (_, util) {
                 if(fd.outline) {
                     font.appendChild(doc.createElement('outline'));
                 }
+				if(fd.color) {
+					font.appendChild(this.exportColor(doc, fd.color));
+				}
                 fonts.appendChild(font);
             }
             return fonts;

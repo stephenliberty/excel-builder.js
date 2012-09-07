@@ -11,9 +11,9 @@ define(['../Excel/Workbook', '../Excel/Table'], function (Workbook, Table) {
 		
 		this.predefinedFormatters = {
 			date: this.stylesheet.createSimpleFormatter('date'),
-			currency: this.stylesheet.createFormat({format: "$ #,##0.00;$ #,##0.00;-"}),
+			currency: this.stylesheet.createFormat({format: "$ #,##0.00;$ #,##0.00;-", font: {color: "FFE9F50A"}}),
 			header: this.stylesheet.createFormat({
-				font: { bold: true, underline: true},
+				font: { bold: true, underline: true, color: {theme: 3}},
 				alignment: {horizontal: 'center'}
 			})
 		};
