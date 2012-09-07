@@ -24,7 +24,12 @@ define(['underscore', './util'], function (_, util) {
         this.fonts = [{}];
         this.numberFormatters = [];
         this.fills = [{}];
-        this.borders = [{}]
+        this.borders = [{top: {},
+                left: {},
+                right: {},
+                bottom: {},
+                diagonal: {}}];
+        
     };
     $.extend(true, StyleSheet.prototype, {
         createSimpleFormatter: function (type) {
@@ -50,7 +55,12 @@ define(['underscore', './util'], function (_, util) {
             this.numberFormatters.push(format);
             return format;
         },
-		
+        
+        /**
+         * alignment: {
+         *  horizontal: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_HorizontalAlignment.html,
+         *  vertical: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_VerticalAlignment.html
+         */
         createFormat: function (styleInstructions) {
             var sid = this.masterCellFormats.length;
             var style = {
@@ -73,11 +83,63 @@ define(['underscore', './util'], function (_, util) {
                 }
                 style.numFmtId = styleInstructions.format;
             }
-			
+            
+            if (styleInstructions.border && _.isObject(styleInstructions.border)) {
+                style.borderId = this.createBorderFormatter(styleInstructions.border).id;
+            } else if (styleInstructions.border) {
+                if(_.isNaN(parseInt(styleInstructions.border))) {
+                    throw "Passing a non-numeric border id is not supported";
+                }
+                style.borderId = styleInstructions.borderId;
+            }
+            
+            if (styleInstructions.alignment && _.isObject(styleInstructions.alignment)) {
+                style.alignment = _.pick(
+                    styleInstructions,
+                    'horizontal',
+                    'justifyLastLine',
+                    'readingOrder',
+                    'relativeIndent',
+                    'shrinkToFit',
+                    'textRotation',
+                    'vertical',
+                    'wrapText'
+                );
+            }
+            
             this.masterCellFormats.push(style);
             return style;
         },
-		
+	
+        /**
+         * All params optional
+         * Expects: {
+         * top: {},
+         * left: {},
+         * right: {},
+         * bottom: {},
+         * diagonal: {},
+         * outline: boolean,
+         * diagonalUp: boolean,
+         * diagonalDown: boolean
+         * }
+         * Each border should follow:
+         * {
+         * style: styleString, http://www.schemacentral.com/sc/ooxml/t-ssml_ST_BorderStyle.html
+         * color: ARBG color (requires the A, so for example FF006666)
+         * }
+         */
+        createBorderFormatter: function (border) {
+            _.defaults(border, {
+                top: {},
+                left: {},
+                right: {},
+                bottom: {},
+                diagonal: {}
+            });
+            this.borders.push(border);
+        },
+        
         /**
         * Supported font styles:
         * bold
@@ -148,31 +210,53 @@ define(['underscore', './util'], function (_, util) {
             var borders = util.createElement(doc, 'borders', [
                 ['count', this.borders.length]
                 ]);
+            var data;
+            var borderGenerator = function (name) {
+                var b = doc.createElement(name);
+                border.appendChild(b);
+                if(data.left.style) {
+                    b.setAttribute('style', data[name].style);
+                }
+                if(data.left.color) {
+                    b.appendChild(this.exportColor(doc, data[name].color));
+                }
+                return b;
+            }
             
             for(var i = 0, l = this.borders.length; i < l; i++) {
                 var border = doc.createElement('border');
-                var data = this.borders[i];
-			
-                var left = doc.createElement('left');
-                border.appendChild(left);
-				
-                var right = doc.createElement('right');
-                border.appendChild(right);
-				
-                var top = doc.createElement('top');
-                border.appendChild(top);
-				
-                var bottom = doc.createElement('bottom');
-                border.appendChild(bottom);
-				
-                var diag = doc.createElement('diagonal');
-                border.appendChild(diag);
+                data = this.borders[i];
+		border.appendChild(borderGenerator('left'));
+                border.appendChild(borderGenerator('right'));
+                border.appendChild(borderGenerator('top'));
+                border.appendChild(borderGenerator('bottom'));
+                border.appendChild(borderGenerator('diagonal'));
 				
                 borders.appendChild(border);
             }
             return borders;
         },
-		
+	
+        exportColor: function (doc, color) {
+            var colorEl = doc.createElement('color');
+            if(_.isString(color)) {
+                colorEl.setAttribute('rgb', color);
+                return colorEl;
+            }
+            
+            if (!_.isUndefined(color.tint)) { 
+                colorEl.setAttribute('tint', color.tint);
+            }
+            if (!_.isUndefined(color.auto)) { 
+                colorEl.setAttribute('auto', !!color.auto);
+            }
+            if (!_.isUndefined(color.theme)) { 
+                colorEl.setAttribute('theme', color.theme);
+            }
+            
+            return colorEl;
+        },
+        
         exportMasterCellFormats: function (doc) {
             var cellFormats = util.createElement(doc, 'cellXfs', [
                 ['count', this.masterCellFormats.length]
@@ -194,7 +278,7 @@ define(['underscore', './util'], function (_, util) {
             }
             return records;
         },
-		
+	
         exportCellFormatElement: function (doc, styleInstructions) {
             var xf = doc.createElement('xf');
             var allowed = ['applyAlignment', 'applyBorder', 'applyFill', 'applyFont', 'applyNumberFormat', 
@@ -210,7 +294,7 @@ define(['underscore', './util'], function (_, util) {
             }
             return xf;
         },
-		
+	
         exportFonts: function (doc) {
             var fonts = util.createElement(doc, 'fonts', [
                 ['count', this.fonts.length]
