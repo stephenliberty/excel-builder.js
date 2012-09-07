@@ -95,7 +95,7 @@ define(['underscore', './util'], function (_, util) {
             
             if (styleInstructions.alignment && _.isObject(styleInstructions.alignment)) {
                 style.alignment = _.pick(
-                    styleInstructions,
+                    styleInstructions.alignment,
                     'horizontal',
                     'justifyLastLine',
                     'readingOrder',
@@ -226,7 +226,7 @@ define(['underscore', './util'], function (_, util) {
             for(var i = 0, l = this.borders.length; i < l; i++) {
                 var border = doc.createElement('border');
                 data = this.borders[i];
-		border.appendChild(borderGenerator('left'));
+				border.appendChild(borderGenerator('left'));
                 border.appendChild(borderGenerator('right'));
                 border.appendChild(borderGenerator('top'));
                 border.appendChild(borderGenerator('bottom'));
@@ -280,7 +280,7 @@ define(['underscore', './util'], function (_, util) {
         },
 	
         exportCellFormatElement: function (doc, styleInstructions) {
-            var xf = doc.createElement('xf');
+            var xf = doc.createElement('xf'), i = 0, l;
             var allowed = ['applyAlignment', 'applyBorder', 'applyFill', 'applyFont', 'applyNumberFormat', 
             'applyProtection', 'borderId', 'fillId', 'fontId', 'numFmtId', 'pivotButton', 'quotePrefix', 'xfId']
             var attributes = _.filter(_.keys(styleInstructions), function (key) {
@@ -288,6 +288,14 @@ define(['underscore', './util'], function (_, util) {
                     return true;
                 }
             });
+			if(styleInstructions.alignment) {
+				var alignment = doc.createElement('alignment');
+				var keys = _.keys(styleInstructions.alignment);
+				for(i = 0, l = keys.length; i < l; i++) {
+					alignment.setAttribute(keys[i], styleInstructions.alignment[keys[i]]);
+				}
+				xf.appendChild(alignment);
+			}
             var a = attributes.length;
             while(a--) {
                 xf.setAttribute(attributes[a], styleInstructions[attributes[a]]);

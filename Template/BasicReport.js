@@ -14,7 +14,7 @@ define(['../Excel/Workbook', '../Excel/Table'], function (Workbook, Table) {
 			currency: this.stylesheet.createFormat({format: "$ #,##0.00;$ #,##0.00;-"}),
 			header: this.stylesheet.createFormat({
 				font: { bold: true, underline: true},
-				alignment: 'center'
+				alignment: {horizontal: 'center'}
 			})
 		};
 		
