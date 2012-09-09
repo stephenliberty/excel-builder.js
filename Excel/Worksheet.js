@@ -106,24 +106,6 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             worksheet.setAttribute('xmlns:r', util.schemas.relationships);
             worksheet.setAttribute('xmlns:mc', util.schemas.markupCompat);
             
-            if(this.columns) {
-                var cols = util.createElement(doc, 'cols');
-                for(var i = 0, l = this.columns.length; i < l; i++) {
-                    var col = util.createElement(doc, 'col', [
-                        ['min', i + 1],
-                        ['max', i + 1],
-                        ['width', 9.140625]
-                        ]);
-                    if(this.columns[i].bestFit) {
-                        col.setAttribute('bestFit', 1);
-                    }
-                    if(this.columns[i].width) {
-                        col.setAttribute('width', this.columns[i].width);
-                    }
-                    cols.appendChild(col)
-                };
-            }
-            
             var maxX = 0;
             var sheetData = util.createElement(doc, 'sheetData');
 			
@@ -155,7 +137,25 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                 ]);
 			
             worksheet.appendChild(dimension);
-            worksheet.appendChild(cols);
+            
+            if(this.columns.length) {
+                var cols = util.createElement(doc, 'cols');
+                for(var i = 0, l = this.columns.length; i < l; i++) {
+                    var col = util.createElement(doc, 'col', [
+                        ['min', i + 1],
+                        ['max', i + 1],
+                        ['width', 9.140625]
+                        ]);
+                    if(this.columns[i].bestFit) {
+                        col.setAttribute('bestFit', 1);
+                    }
+                    if(this.columns[i].width) {
+                        col.setAttribute('width', this.columns[i].width);
+                    }
+                    cols.appendChild(col)
+                };
+                worksheet.appendChild(cols);
+            }
             worksheet.appendChild(sheetData);
 			
             this.exportPageSettings(doc, worksheet);
