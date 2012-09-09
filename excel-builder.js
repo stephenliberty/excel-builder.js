@@ -9,7 +9,7 @@ define([
             return new Workbook();
         },
         
-        createFile: function (workbook) {
+        createFile: function (workbook, options) {
             var zip = new JSZip();
             var files = workbook.generateFiles();
             var folders = {
@@ -30,7 +30,9 @@ define([
 //                console.log(f)
 //                f.add(path, content, {base64: false, binary: false});
             })
-            return zip.generate();
+            return zip.generate({
+                base64: (!options || !options.base64)
+            });
         }
     }
     

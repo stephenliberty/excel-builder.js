@@ -69,6 +69,11 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             if(metadata.style) {
                 cell.setAttribute('s', metadata.style);
             }
+            if(!metadata.type) {
+                if(typeof data == 'number') {
+                    metadata.type = 'number';
+                }
+            }
 			
             switch(metadata.type) {
                 case "number":
