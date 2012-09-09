@@ -119,12 +119,11 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                     columns[c] = columns[c] || {};
                     var cellValue = dataRow[c];
                     var cellMetadata = {
-                        type: columns[c].type || 'text',
                         style: columns[c].style || ''
                     };
                     if (_.isObject(dataRow[c])) {
                         cellValue = dataRow[c].value;
-                        _.extend(cellMetadata, dataRow[c].metadata);
+                        _.defaults(dataRow[c].metadata, cellMetadata);
                     }
                     var cell = this.createCell(doc, cellMetadata, cellValue)
                     rowNode.appendChild(cell);
