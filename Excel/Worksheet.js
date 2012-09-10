@@ -123,6 +123,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                     };
                     if (_.isObject(dataRow[c])) {
                         cellValue = dataRow[c].value;
+			if(!dataRow[c].metadata) { dataRow[c].metadata = {}; }
                         _.defaults(dataRow[c].metadata, cellMetadata);
                     }
                     var cell = this.createCell(doc, cellMetadata, cellValue)
