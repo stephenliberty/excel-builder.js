@@ -135,9 +135,11 @@ define(['underscore', './util'], function (_, util) {
                 left: {},
                 right: {},
                 bottom: {},
-                diagonal: {}
+                diagonal: {},
+	        id: this.borders.length
             });
             this.borders.push(border);
+	    return border;
         },
         
         /**
@@ -211,17 +213,17 @@ define(['underscore', './util'], function (_, util) {
                 ['count', this.borders.length]
                 ]);
             var data;
-            var borderGenerator = function (name) {
+            var borderGenerator = _.bind(function (name) {
                 var b = doc.createElement(name);
                 border.appendChild(b);
-                if(data.left.style) {
+                if(data[name].style) {
                     b.setAttribute('style', data[name].style);
                 }
-                if(data.left.color) {
+                if(data[name].color) {
                     b.appendChild(this.exportColor(doc, data[name].color));
                 }
                 return b;
-            }
+            }, this);
             
             for(var i = 0, l = this.borders.length; i < l; i++) {
                 var border = doc.createElement('border');
