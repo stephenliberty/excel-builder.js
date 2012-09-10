@@ -118,15 +118,12 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                 for(var c = 0; c < cellCount; c++) {
                     columns[c] = columns[c] || {};
                     var cellValue = dataRow[c];
-                    var cellMetadata = {
-                        style: columns[c].style || ''
-                    };
+                    var cellMetadata = {};
                     if (_.isObject(dataRow[c])) {
                         cellValue = dataRow[c].value;
-			if(!dataRow[c].metadata) { dataRow[c].metadata = {}; }
-                        _.defaults(dataRow[c].metadata, cellMetadata);
+                        _.defaults(cellMetadata, dataRow[c].metadata);
                     }
-                    var cell = this.createCell(doc, cellMetadata, cellValue)
+		    var cell = this.createCell(doc, cellMetadata, cellValue)
                     rowNode.appendChild(cell);
                 }
                 sheetData.appendChild(rowNode);
