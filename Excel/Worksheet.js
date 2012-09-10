@@ -138,22 +138,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             worksheet.appendChild(dimension);
             
             if(this.columns.length) {
-                var cols = util.createElement(doc, 'cols');
-                for(var i = 0, l = this.columns.length; i < l; i++) {
-                    var col = util.createElement(doc, 'col', [
-                        ['min', i + 1],
-                        ['max', i + 1],
-                        ['width', 9.140625]
-                        ]);
-                    if(this.columns[i].bestFit) {
-                        col.setAttribute('bestFit', 1);
-                    }
-                    if(this.columns[i].width) {
-                        col.setAttribute('width', this.columns[i].width);
-                    }
-                    cols.appendChild(col)
-                };
-                worksheet.appendChild(cols);
+                worksheet.appendChild(this.exportColumns(doc));
             }
             worksheet.appendChild(sheetData);
 			
@@ -182,6 +167,34 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             }
 			
             return doc;
+        },
+        
+        exportColumns: function (doc) {
+            var cols = util.createElement(doc, 'cols');
+            for(var i = 0, l = this.columns.length; i < l; i++) {
+                var cd = this.columns[i];
+                var col = util.createElement(doc, 'col', [
+                    ['min', cd.min || i + 1],
+                    ['max', cd.max || i + 1]
+                ]);
+                if (cd.hidden) {
+                    col.setAttribute('hidden', 1);
+                }
+                if(cd.bestFit) {
+                    col.setAttribute('bestFit', 1);
+                }
+                if(cd.customWidth) {
+                    col.setAttribute('customWidth', 1);
+                }
+                if(cd.width) {
+                    col.setAttribute('width', cd.width);
+                } else {
+                    col.setAttribute('width', 9.140625);
+                }
+                
+                cols.appendChild(col)
+            };
+            return cols;
         },
         
         exportPageSettings: function (doc, worksheet) {
