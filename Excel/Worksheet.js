@@ -63,41 +63,29 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             return oddFooter;
         },
 		
-        createCell: function (doc, metadata, data) {
-            var cell = util.createElement(doc, 'c'), value, textNode;
-			
-            if(metadata.style) {
-                cell.setAttribute('s', metadata.style);
-            }
-            if(!metadata.type) {
-                if(typeof data == 'number') {
-                    metadata.type = 'number';
-                }
-            }
-			
-            switch(metadata.type) {
-                case "number":
-                    value = util.createElement(doc, 'v');
-                    textNode = doc.createTextNode(data);
-                    break;
-                case "date":
-                    value = util.createElement(doc, 'v');
-                    textNode = doc.createTextNode((data - this._excelStartDate)  / (60 * 60 * 24) / 1000);
-                    break;
-                case "text":
-                default:
-                    value = util.createElement(doc, 'is');
-                    cell.setAttribute('t', 'inlineStr');
-                    textNode = util.createElement(doc, 't');
-                    var stringNode = doc.createTextNode(data);
-                    textNode.appendChild(stringNode)
-                    break;
-            };
-            value.appendChild(textNode);
-            cell.appendChild(value);
-            return cell;
+        createCell: function (doc, metadata, data, cellCache) {
+            
         },
-		
+	
+        _buildCache: function (doc) {
+            var numberNode = doc.createElement('c');
+            var value = doc.createElement('v');
+            value.appendChild(doc.createTextNode(""));
+            numberNode.appendChild(value);
+            var stringNode = doc.createElement('c');
+            stringNode.setAttribute('t', 'inlineStr');
+            var is = doc.createElement('is');
+            var t = doc.createElement('t');
+            t.appendChild(doc.createTextNode(""));
+            is.appendChild(t);
+            stringNode.appendChild(is);
+            return {
+                number: numberNode,
+                date: numberNode,
+                string: stringNode
+            }
+        },
+        
         toXML: function () {
             var data = this.data;
             var columns = this.columns || [];
@@ -108,22 +96,50 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             
             var maxX = 0;
             var sheetData = util.createElement(doc, 'sheetData');
-			
+            
+            var cellCache = this._buildCache(doc);
+            
             for(var row = 0, l = data.length; row < l; row++) {
                 var dataRow = data[row];
                 var cellCount = dataRow.length;
                 maxX = cellCount > maxX ? cellCount : maxX;
-                var rowNode = util.createElement(doc, 'row');
+                var rowNode = doc.createElement('row');
                 
                 for(var c = 0; c < cellCount; c++) {
                     columns[c] = columns[c] || {};
                     var cellValue = dataRow[c];
-                    var cellMetadata = {};
-                    if (_.isObject(dataRow[c])) {
+                    if (typeof dataRow[c] == 'object') {
                         cellValue = dataRow[c].value;
-                        _.defaults(cellMetadata, dataRow[c].metadata);
                     }
-		    var cell = this.createCell(doc, cellMetadata, cellValue)
+                    
+                    var cell, metadata = dataRow[c].metadata || {};
+			
+            
+                    if(!metadata.type) {
+                        if(typeof cellValue == 'number') {
+                            metadata.type = 'number';
+                        }
+                    }
+
+                    switch(metadata.type) {
+                        case "number":
+                            cell = cellCache.number.cloneNode(true);
+                            cell.firstChild.firstChild.nodeValue = cellValue;
+                            break;
+                        case "date":
+                            cell = cellCache.date.cloneNode(true);
+                            cell.firstChild.firstChild.nodeValue = (cellValue - this._excelStartDate)  / (60 * 60 * 24) / 1000;
+                            break;
+                        case "text":
+                        default:
+                            cell = cellCache.string.cloneNode(true);
+                            cell.firstChild.firstChild.firstChild.nodeValue = cellValue;
+                            break;
+                    };
+                    if(metadata.style) {
+                        cell.setAttribute('s', metadata.style);
+                    }
+                    
                     rowNode.appendChild(cell);
                 }
                 sheetData.appendChild(rowNode);
