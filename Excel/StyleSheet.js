@@ -23,12 +23,19 @@ define(['underscore', './util'], function (_, util) {
         }];
         this.fonts = [{}];
         this.numberFormatters = [];
-        this.fills = [{}];
-        this.borders = [{top: {},
-                left: {},
-                right: {},
-                bottom: {},
-                diagonal: {}}];
+        this.fills = [{}, {
+            type: 'pattern', 
+            patternType: 'gray125', 
+            fgColor: 'FF333333', 
+            bgColor: 'FF333333'
+        }];
+        this.borders = [{
+            top: {},
+            left: {},
+            right: {},
+            bottom: {},
+            diagonal: {}
+        }];
         
     };
     $.extend(true, StyleSheet.prototype, {
@@ -45,7 +52,15 @@ define(['underscore', './util'], function (_, util) {
             this.masterCellFormats.push(style);
             return style;
         },
-		
+
+        createFill: function (fillInstructions) {
+            var id = this.fills.length;
+            var fill = fillInstructions;
+            fill.id = id;
+            this.fills.push(fill);
+            return fill;
+        },
+
         createNumberFormatter: function (formatInstructions) {
             var id = this.numberFormatters.length + 100;
             var format = {
@@ -55,12 +70,12 @@ define(['underscore', './util'], function (_, util) {
             this.numberFormatters.push(format);
             return format;
         },
-        
+
         /**
-         * alignment: {
-         *  horizontal: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_HorizontalAlignment.html,
-         *  vertical: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_VerticalAlignment.html
-         */
+             * alignment: {
+             *  horizontal: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_HorizontalAlignment.html,
+             *  vertical: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_VerticalAlignment.html
+             */
         createFormat: function (styleInstructions) {
             var sid = this.masterCellFormats.length;
             var style = {
@@ -74,7 +89,7 @@ define(['underscore', './util'], function (_, util) {
                 }
                 style.fontId = styleInstructions.font;
             }
-			
+
             if (styleInstructions.format && _.isString(styleInstructions.format)) {
                 style.numFmtId = this.createNumberFormatter(styleInstructions.format).id;
             } else if(styleInstructions.format) {
@@ -83,16 +98,25 @@ define(['underscore', './util'], function (_, util) {
                 }
                 style.numFmtId = styleInstructions.format;
             }
-            
+
             if (styleInstructions.border && _.isObject(styleInstructions.border)) {
                 style.borderId = this.createBorderFormatter(styleInstructions.border).id;
             } else if (styleInstructions.border) {
                 if(_.isNaN(parseInt(styleInstructions.border))) {
                     throw "Passing a non-numeric border id is not supported";
                 }
-                style.borderId = styleInstructions.borderId;
+                style.borderId = styleInstructions.border;
             }
-            
+
+            if (styleInstructions.fill && _.isObject(styleInstructions.fill)) {
+                style.fillId = this.createFill(styleInstructions.fill).id;
+            } else if (styleInstructions.fill) {
+                if(_.isNaN(parseInt(styleInstructions.fill))) {
+                    throw "Passing a non-numeric fill id is not supported";
+                }
+                style.fillId = styleInstructions.fill;
+            }
+
             if (styleInstructions.alignment && _.isObject(styleInstructions.alignment)) {
                 style.alignment = _.pick(
                     styleInstructions.alignment,
@@ -104,31 +128,31 @@ define(['underscore', './util'], function (_, util) {
                     'textRotation',
                     'vertical',
                     'wrapText'
-                );
+                    );
             }
-            
+
             this.masterCellFormats.push(style);
             return style;
         },
-	
+
         /**
-         * All params optional
-         * Expects: {
-         * top: {},
-         * left: {},
-         * right: {},
-         * bottom: {},
-         * diagonal: {},
-         * outline: boolean,
-         * diagonalUp: boolean,
-         * diagonalDown: boolean
-         * }
-         * Each border should follow:
-         * {
-         * style: styleString, http://www.schemacentral.com/sc/ooxml/t-ssml_ST_BorderStyle.html
-         * color: ARBG color (requires the A, so for example FF006666)
-         * }
-         */
+             * All params optional
+             * Expects: {
+             * top: {},
+             * left: {},
+             * right: {},
+             * bottom: {},
+             * diagonal: {},
+             * outline: boolean,
+             * diagonalUp: boolean,
+             * diagonalDown: boolean
+             * }
+             * Each border should follow:
+             * {
+             * style: styleString, http://www.schemacentral.com/sc/ooxml/t-ssml_ST_BorderStyle.html
+             * color: ARBG color (requires the A, so for example FF006666)
+             * }
+             */
         createBorderFormatter: function (border) {
             _.defaults(border, {
                 top: {},
@@ -136,28 +160,28 @@ define(['underscore', './util'], function (_, util) {
                 right: {},
                 bottom: {},
                 diagonal: {},
-	        id: this.borders.length
+                id: this.borders.length
             });
             this.borders.push(border);
-	    return border;
+            return border;
         },
-        
+
         /**
-        * Supported font styles:
-        * bold
-        * italic
-        * underline (single, double, singleAccounting, doubleAccounting)
-        * size
-        * color
-        * fontName
-        * strike (strikethrough)
-        * outline (does this actually do anything?)
-        * shadow (does this actually do anything?)
-        * superscript
-        * subscript
-        *
-        * Color is a future goal - at the moment it's looking a bit complicated
-        */
+            * Supported font styles:
+            * bold
+            * italic
+            * underline (single, double, singleAccounting, doubleAccounting)
+            * size
+            * color
+            * fontName
+            * strike (strikethrough)
+            * outline (does this actually do anything?)
+            * shadow (does this actually do anything?)
+            * superscript
+            * subscript
+            *
+            * Color is a future goal - at the moment it's looking a bit complicated
+            */
         createFontStyle: function (instructions) {
             var fontId = this.fonts.length;
             var fontStyle = {
@@ -199,7 +223,7 @@ define(['underscore', './util'], function (_, util) {
                 fontStyle.size = instructions.size;
             }
             if(instructions.color) {
-				fontStyle.color = instructions.color;
+                fontStyle.color = instructions.color;
             }
             if(instructions.fontName) {
                 fontStyle.fontName = instructions.fontName;
@@ -207,7 +231,7 @@ define(['underscore', './util'], function (_, util) {
             this.fonts.push(fontStyle);
             return fontStyle;
         },
-        
+
         exportBorders: function (doc) {
             var borders = util.createElement(doc, 'borders', [
                 ['count', this.borders.length]
@@ -224,28 +248,28 @@ define(['underscore', './util'], function (_, util) {
                 }
                 return b;
             }, this);
-            
+
             for(var i = 0, l = this.borders.length; i < l; i++) {
                 var border = doc.createElement('border');
                 data = this.borders[i];
-				border.appendChild(borderGenerator('left'));
+                border.appendChild(borderGenerator('left'));
                 border.appendChild(borderGenerator('right'));
                 border.appendChild(borderGenerator('top'));
                 border.appendChild(borderGenerator('bottom'));
                 border.appendChild(borderGenerator('diagonal'));
-				
+
                 borders.appendChild(border);
             }
             return borders;
         },
-	
+
         exportColor: function (doc, color) {
             var colorEl = doc.createElement('color');
             if(_.isString(color)) {
                 colorEl.setAttribute('rgb', color);
                 return colorEl;
             }
-            
+
             if (!_.isUndefined(color.tint)) { 
                 colorEl.setAttribute('tint', color.tint);
             }
@@ -255,10 +279,10 @@ define(['underscore', './util'], function (_, util) {
             if (!_.isUndefined(color.theme)) { 
                 colorEl.setAttribute('theme', color.theme);
             }
-            
+
             return colorEl;
         },
-        
+
         exportMasterCellFormats: function (doc) {
             var cellFormats = util.createElement(doc, 'cellXfs', [
                 ['count', this.masterCellFormats.length]
@@ -269,7 +293,7 @@ define(['underscore', './util'], function (_, util) {
             }
             return cellFormats;
         },
-		
+
         exportMasterCellStyles: function (doc) {
             var records = util.createElement(doc, 'cellStyleXfs', [
                 ['count', this.masterCellStyles.length]
@@ -280,7 +304,7 @@ define(['underscore', './util'], function (_, util) {
             }
             return records;
         },
-	
+
         exportCellFormatElement: function (doc, styleInstructions) {
             var xf = doc.createElement('xf'), i = 0, l;
             var allowed = ['applyAlignment', 'applyBorder', 'applyFill', 'applyFont', 'applyNumberFormat', 
@@ -290,21 +314,24 @@ define(['underscore', './util'], function (_, util) {
                     return true;
                 }
             });
-			if(styleInstructions.alignment) {
-				var alignment = doc.createElement('alignment');
-				var keys = _.keys(styleInstructions.alignment);
-				for(i = 0, l = keys.length; i < l; i++) {
-					alignment.setAttribute(keys[i], styleInstructions.alignment[keys[i]]);
-				}
-				xf.appendChild(alignment);
-			}
+            if(styleInstructions.alignment) {
+                var alignment = doc.createElement('alignment');
+                var keys = _.keys(styleInstructions.alignment);
+                for(i = 0, l = keys.length; i < l; i++) {
+                    alignment.setAttribute(keys[i], styleInstructions.alignment[keys[i]]);
+                }
+                xf.appendChild(alignment);
+            }
             var a = attributes.length;
             while(a--) {
                 xf.setAttribute(attributes[a], styleInstructions[attributes[a]]);
             }
+            if(styleInstructions.fillId) {
+                xf.setAttribute('applyFill', '1');
+            }
             return xf;
         },
-	
+
         exportFonts: function (doc) {
             var fonts = util.createElement(doc, 'fonts', [
                 ['count', this.fonts.length]
@@ -315,15 +342,15 @@ define(['underscore', './util'], function (_, util) {
                 if(fd.size) {
                     font.appendChild(util.createElement(doc, 'sz', [
                         ['val', fd.size]
-                    ]));
+                        ]));
                 }
-				
+
                 if(fd.fontName) {
                     font.appendChild(util.createElement(doc, 'name', [
                         ['val', fd.name]
-                    ]));
+                        ]));
                 }
-				
+
                 if(fd.bold) {
                     font.appendChild(doc.createElement('b'));
                 }
@@ -333,7 +360,7 @@ define(['underscore', './util'], function (_, util) {
                 if(fd.vertAlign) {
                     font.appendChild(util.createElement(doc, 'vertAlign', [
                         ['val', fd.vertAlign]
-                    ]));
+                        ]));
                 }
                 if(fd.underline) { 
                     var u = doc.createElement('u');
@@ -351,14 +378,14 @@ define(['underscore', './util'], function (_, util) {
                 if(fd.outline) {
                     font.appendChild(doc.createElement('outline'));
                 }
-				if(fd.color) {
-					font.appendChild(this.exportColor(doc, fd.color));
-				}
+                if(fd.color) {
+                    font.appendChild(this.exportColor(doc, fd.color));
+                }
                 fonts.appendChild(font);
             }
             return fonts;
         },
-		
+
         exportFills: function (doc) {
             var fills = util.createElement(doc, 'fills', [
                 ['count', this.fills.length]
@@ -366,37 +393,113 @@ define(['underscore', './util'], function (_, util) {
             for(var i = 0, l = this.fills.length; i < l; i++) {
                 var fd = this.fills[i];
                 var fill = util.createElement(doc, 'fill');
-                if(fd.type == 'pattern') {
-                    fill.appendChild(util.createElement(doc, 'patternFill', [
-                        ['patternType', fd.patternType]
-                    ]));
+                if (fd.type == 'pattern') {
+                    var fillDef = this.exportPatternFill(doc, fd);
+                    fill.appendChild(fillDef);
+                } else if (fd.type == 'gradient') {
+                    var fillDef = this.exportGradientFill(doc, fd);
+                    fill.appendChild(fillDef);
                 }
                 fills.appendChild(fill);
             }
             return fills;
         },
-		
+        
+        exportGradientFill: function (doc, data) {
+            var fillDef = doc.createElement('gradientFill');
+            if(data.degree) {
+                fillDef.setAttribute('degree', data.degree);
+            } else if (data.left) {
+                fillDef.setAttribute('left', data.left);
+                fillDef.setAttribute('right', data.right);
+                fillDef.setAttribute('top', data.top);
+                fillDef.setAttribute('bottom', data.bottom);
+            }
+            var start = doc.createElement('stop');
+            start.setAttribute('position', data.start.pureAt || 0);
+            var startColor = doc.createElement('color');
+            if (typeof data.start == 'string' || data.start.color) {
+                startColor.setAttribute('rgb', data.start.color || data.start);
+            } else if (typeof data.start.theme) {
+                startColor.setAttribute('theme', data.start.theme);
+            }
+            
+            var end = doc.createElement('stop');
+            var endColor = doc.createElement('color');
+            end.setAttribute('position', data.end.pureAt || 1);
+            if (typeof data.start == 'string' || data.end.color) {
+                endColor.setAttribute('rgb', data.end.color || data.end);
+            } else if (typeof data.end.theme) {
+                endColor.setAttribute('theme', data.end.theme);
+            }
+            start.appendChild(startColor);
+            end.appendChild(endColor);
+            fillDef.appendChild(start);
+            fillDef.appendChild(end);
+            return fillDef;
+        },
+        
+        /**
+        * Pattern types: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_PatternType.html
+        */
+        exportPatternFill: function (doc, data) {
+            var fillDef = util.createElement(doc, 'patternFill', [
+                ['patternType', data.patternType]
+                ]);
+            if(!data.bgColor) {
+                data.bgColor = 'FFFFFFFF';
+            }
+            if(!data.fgColor) {
+                data.fgColor = 'FFFFFFFF';
+            }
+
+            var bgColor = doc.createElement('bgColor');
+            if(_.isString(data.bgColor)) {
+                bgColor.setAttribute('rgb', data.bgColor)
+            } else {
+                if(data.bgColor.theme) {
+                    bgColor.setAttribute('theme', data.bgColor.theme);
+                } else {
+                    bgColor.setAttribute('rgb', data.bgColor.rbg);
+                }
+            }
+
+            var fgColor = doc.createElement('fgColor');
+            if(_.isString(data.fgColor)) {
+                fgColor.setAttribute('rgb', data.fgColor)
+            } else {
+                if(data.fgColor.theme) {
+                    fgColor.setAttribute('theme', data.fgColor.theme);
+                } else {
+                    fgColor.setAttribute('rgb', data.fgColor.rbg);
+                }
+            }
+            fillDef.appendChild(fgColor);
+            fillDef.appendChild(bgColor);
+            return fillDef;
+        },
+
         exportNumberFormatters: function (doc) {
             var formatters = util.createElement(doc, 'numFmts', [
                 ['count', this.numberFormatters.length]
                 ]);
-			
+
             for(var i = 0, l = this.numberFormatters.length; i < l; i++) {
                 var fd = this.numberFormatters[i];
                 var formatter = util.createElement(doc, 'numFmt', [
                     ['numFmtId', fd.id],
                     ['formatCode', fd.formatCode]
-                ]);
+                    ]);
                 formatters.appendChild(formatter);
             }
-			
+
             return formatters;
         },
-		
+
         exportCellStyles: function (doc) {
             var cellStyles = doc.createElement('cellStyles');
             cellStyles.setAttribute('count', this.cellStyles.length);
-			
+
             for(var i = 0, l = this.cellStyles.length; i < l; i++) {
                 var style = this.cellStyles[i];
                 delete style.id; //Remove internal id
@@ -408,14 +511,14 @@ define(['underscore', './util'], function (_, util) {
                     record.setAttribute(attributes[a], style[attributes[a]]);
                 }
             }
-			
+
             return cellStyles;
         },
-		
+
         exportDifferentialStyles: function (doc) {
             var dfxs = doc.createElement('dfxs');
             dfxs.setAttribute('count', this.differentialStyles.length);
-			
+
             for(var i = 0, l = this.differentialStyles.length; i < l; i++) {
                 var style = this.differentialStyles[i];
                 delete style.id; //Remove internal id
@@ -427,10 +530,10 @@ define(['underscore', './util'], function (_, util) {
                     record.setAttribute(attributes[a], style[attributes[a]]);
                 }
             }
-			
+
             return dfxs;
         },
-		
+
         toXML: function () {
             var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'styleSheet');
             var styleSheet = doc.documentElement;
