@@ -70,13 +70,13 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
         _buildCache: function (doc) {
             var numberNode = doc.createElement('c');
             var value = doc.createElement('v');
-            value.appendChild(doc.createTextNode(""));
+            value.appendChild(doc.createTextNode("--temp--"));
             numberNode.appendChild(value);
             var stringNode = doc.createElement('c');
             stringNode.setAttribute('t', 'inlineStr');
             var is = doc.createElement('is');
             var t = doc.createElement('t');
-            t.appendChild(doc.createTextNode(""));
+            t.appendChild(doc.createTextNode("--temp--"));
             is.appendChild(t);
             stringNode.appendChild(is);
             return {

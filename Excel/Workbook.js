@@ -91,11 +91,10 @@ function (_, util, StyleSheet, Worksheet, RelationshipManager, Paths) {
 
             var sheets = util.createElement(doc, 'sheets');
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
-                var sheet = util.createElement(doc, 'sheet', [
-                    ['name', this.worksheets[i].name],
-                    ['sheetId', i+1],
-                    ['r:id', this.relations.getRelationshipId(this.worksheets[i])]
-                    ]);
+                var sheet = doc.createElement('sheet');
+                sheet.setAttribute('name', this.worksheets[i].name);
+                sheet.setAttribute('sheetId', i + 1);
+                sheet.setAttribute('r:id', this.relations.getRelationshipId(this.worksheets[i]))
                 sheets.appendChild(sheet);
             }
             wb.appendChild(sheets);
@@ -142,7 +141,10 @@ function (_, util, StyleSheet, Worksheet, RelationshipManager, Paths) {
 
             _.each(files, function (value, key) {
                 files[key] = value.xml || new XMLSerializer().serializeToString(value);  
-                files[key] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' + "\n" + files[key].replace(/xmlns=""/g, '')
+                var content = files[key].replace(/xmlns=""/g, '');
+                content = content.replace(/NS[\d]+:/g, '');
+                content = content.replace(/xmlns:NS[\d]+=""/g, '');
+                files[key] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' + "\n" + content;
             });
 
             return files;
