@@ -69,11 +69,13 @@ define([], function () {
             }
         },
 		
-        LETTER_REFS: [],
+        LETTER_REFS: {},
 	
         positionToLetterRef: function (x, y) {
             var digit = 1, index, num = x, string = "", alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            
+            if(this.LETTER_REFS[x]) {
+                return this.LETTER_REFS[x].concat(y);
+            }
             while (num > 0) {
                 num -= Math.pow(26, digit -1)
                 index = num % Math.pow(26, digit)
@@ -82,7 +84,7 @@ define([], function () {
                 string = alphabet[index] + string
                 digit += 1
             }
-			
+            this.LETTER_REFS[x] = string;
             return string.concat(y);
         },
 		

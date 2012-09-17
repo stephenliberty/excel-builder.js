@@ -72,6 +72,12 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             var value = doc.createElement('v');
             value.appendChild(doc.createTextNode("--temp--"));
             numberNode.appendChild(value);
+            
+            var formulaNode = doc.createElement('c');
+            var formulaValue = doc.createElement('f');
+            formulaValue.appendChild(doc.createTextNode("--temp--"));
+            formulaNode.appendChild(formulaValue);
+            
             var stringNode = doc.createElement('c');
             stringNode.setAttribute('t', 'inlineStr');
             var is = doc.createElement('is');
@@ -79,10 +85,13 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             t.appendChild(doc.createTextNode("--temp--"));
             is.appendChild(t);
             stringNode.appendChild(is);
+            
+            
             return {
                 number: numberNode,
                 date: numberNode,
-                string: stringNode
+                string: stringNode,
+                formula: formulaNode
             }
         },
         
@@ -129,6 +138,10 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                         case "date":
                             cell = cellCache.date.cloneNode(true);
                             cell.firstChild.firstChild.nodeValue = (cellValue - this._excelStartDate)  / (60 * 60 * 24) / 1000;
+                            break;
+                        case "formula":
+                            cell = cellCache.formula.cloneNode(true);
+                            cell.firstChild.firstChild.nodeValue = cellValue;
                             break;
                         case "text":
                         default:

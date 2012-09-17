@@ -94,7 +94,12 @@ define(['underscore', './util'], function (_, util) {
             var s = this.ref[0];
             var e = this.ref[1];
             table.setAttribute('ref', util.positionToLetterRef(s[0], s[1]) + ":" + util.positionToLetterRef(e[0], e[1]));
+            
+            /** TOTALS **/
             table.setAttribute('totalsRowShown', this.totalsRowShown ? "1" : "0");
+            
+            /** HEADER **/
+            table.setAttribute('headerRowCount', this.headerRowCount);
             if(this.headerRowDxfId) {
                 table.setAttribute('headerRowDxfId', this.headerRowDxfId);
             }
@@ -139,15 +144,14 @@ define(['underscore', './util'], function (_, util) {
         },
 		
         exportTableStyleInfo: function (doc) {
-            var attrs = [];
             var ts = this.styleInfo;
-            attrs.push(['name', ts.themeStyle]);
-            attrs.push(['showFirstColumn', ts.showFirstColumn ? "1" : "0"]);
-            attrs.push(['showLastColumn', ts.showLastColumn ? "1" : "0"]);
-            attrs.push(['showColumnStripes', ts.showColumnStripes ? "1" : "0"]);
-            attrs.push(['showRowStripes', ts.showRowStripes ? "1" : "0"]);
-            var ts = util.createElement(doc, 'tableStyleInfo', attrs);
-            return ts;
+            var tableStyle = doc.createElement('tableStyleInfo');
+            tableStyle.setAttribute('name', ts.themeStyle);
+            tableStyle.setAttribute('showFirstColumn', ts.showFirstColumn ? "1" : "0");
+            tableStyle.setAttribute('showLastColumn', ts.showLastColumn ? "1" : "0");
+            tableStyle.setAttribute('showColumnStripes', ts.showColumnStripes ? "1" : "0");
+            tableStyle.setAttribute('showRowStripes', ts.showRowStripes ? "1" : "0");
+            return tableStyle;
         },
 		
         addAutoFilter: function (startRef, endRef) {
