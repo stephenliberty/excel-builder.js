@@ -16,7 +16,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
         this._tables = [];
         this.initialize(config);
     };
-    $.extend(true, Worksheet.prototype, {
+    _.extend(Worksheet.prototype, {
 		
         initialize: function (config) {
             config = config || {};

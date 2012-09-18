@@ -12,7 +12,7 @@ function (_, util, StyleSheet, Worksheet, RelationshipManager, Paths) {
         this.tables = [];
         this.initialize(config);
     };
-    $.extend(true, Workbook.prototype, {
+    _.extend(Workbook.prototype, {
 
         initialize: function (config) {
             this.id = _.uniqueId('Workbook');

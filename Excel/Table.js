@@ -24,7 +24,7 @@ define(['underscore', './util'], function (_, util) {
         });
         this.initialize(config);
     };
-    $.extend(true, Table.prototype, {
+    _.extend(Table.prototype, {
 		
         initialize: function (config) {
             this.displayName = _.uniqueId("Table");

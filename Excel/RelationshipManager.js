@@ -6,7 +6,7 @@ define(['underscore', './util', './Paths'], function (_, util, Paths) {
     
     _.uniqueId('rId'); //priming
     
-    $.extend(true, RelationshipManager.prototype, {
+    _.extend(RelationshipManager.prototype, {
         
         addRelation: function (object, type) {
             this.relations[object.id] = {

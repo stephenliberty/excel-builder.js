@@ -38,7 +38,7 @@ define(['underscore', './util'], function (_, util) {
         }];
         this.tableStyles = [];
     };
-    $.extend(true, StyleSheet.prototype, {
+    _.extend(StyleSheet.prototype, {
         createSimpleFormatter: function (type) {
             var sid = this.masterCellFormats.length;
             var style = {
