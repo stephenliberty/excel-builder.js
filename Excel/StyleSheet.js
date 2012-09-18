@@ -144,7 +144,13 @@ define(['underscore', './util'], function (_, util) {
                 style.font = styleInstructions.font;
             }
             if (styleInstructions.border && _.isObject(styleInstructions.border)) {
-                style.border = styleInstructions.border;
+                style.border = _.defaults(styleInstructions.border, {
+                    top: {},
+                    left: {},
+                    right: {},
+                    bottom: {},
+                    diagonal: {}
+		});
             }
             if (styleInstructions.fill && _.isObject(styleInstructions.fill)) {
                 style.fill = styleInstructions.fill;
@@ -579,11 +585,11 @@ define(['underscore', './util'], function (_, util) {
             if(style.font) {
                 dxf.appendChild(this.exportFont(doc, style.font));
             }
-            if(style.border) {
-                dxf.appendChild(this.exportBorder(doc, style.font));
-            }
             if(style.fill) {
-                dxf.appendChild(this.exportFill(doc, style.font));
+                dxf.appendChild(this.exportFill(doc, style.fill));
+            }
+	    if(style.border) {
+                dxf.appendChild(this.exportBorder(doc, style.border));
             }
             if(style.numFmt) {
                 dxf.appendChild(this.exportNumberFormatter(doc, style.numFmt));

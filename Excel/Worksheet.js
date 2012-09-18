@@ -216,7 +216,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                 if(cd.bestFit) {
                     col.setAttribute('bestFit', 1);
                 }
-                if(cd.customWidth) {
+                if(cd.customWidth || cd.width) {
                     col.setAttribute('customWidth', 1);
                 }
                 if(cd.width) {
