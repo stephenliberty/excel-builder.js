@@ -1,5 +1,11 @@
 "use strict";
+/**
+ * @module Excel/Worksheet
+ */
 define(['underscore', './util', './RelationshipManager', './Table'], function (_, util, RelationshipManager, Table) {
+    /**
+     * @constructor
+     */
     var Worksheet = function (config) {
         this.relations = null;
         this.columnFormats = [];

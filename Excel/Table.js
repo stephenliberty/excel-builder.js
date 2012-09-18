@@ -17,7 +17,6 @@ define(['underscore', './util'], function (_, util) {
             totalsRowCellStyle: null,
             totalsRowCount: 0,
             totalsRowDxfId: null,
-            totalsRowShown: false,
             tableColumns: [],
             autoFilter: null,
             sortState: null,
@@ -96,7 +95,7 @@ define(['underscore', './util'], function (_, util) {
             table.setAttribute('ref', util.positionToLetterRef(s[0], s[1]) + ":" + util.positionToLetterRef(e[0], e[1]));
             
             /** TOTALS **/
-            table.setAttribute('totalsRowShown', this.totalsRowShown ? "1" : "0");
+            table.setAttribute('totalsRowCount', this.totalsRowCount);
             
             /** HEADER **/
             table.setAttribute('headerRowCount', this.headerRowCount);
@@ -131,6 +130,13 @@ define(['underscore', './util'], function (_, util) {
                 tableColumn.setAttribute('id', i + 1);
                 tableColumn.setAttribute('name', tc.name);
                 tableColumns.appendChild(tableColumn);
+                
+                if(tc.totalsRowFunction) {
+                    tableColumn.setAttribute('totalsRowFunction', tc.totalsRowFunction);
+                }
+                if(tc.totalsRowLabel) {
+                    tableColumn.setAttribute('totalsRowLabel', tc.totalsRowLabel);
+                }
             }
             return tableColumns;
         },
@@ -139,7 +145,7 @@ define(['underscore', './util'], function (_, util) {
             var autoFilter = doc.createElement('autoFilter');
             var s = this.autoFilter[0];
             var e = this.autoFilter[1]
-            autoFilter.setAttribute('ref', util.positionToLetterRef(s[0], s[1]) + ":" + util.positionToLetterRef(e[0], e[1]));
+            autoFilter.setAttribute('ref', util.positionToLetterRef(s[0], s[1]) + ":" + util.positionToLetterRef(e[0], e[1]  - this.totalsRowCount));
             return autoFilter;
         },
 		

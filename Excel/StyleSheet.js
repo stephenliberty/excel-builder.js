@@ -6,7 +6,7 @@ define(['underscore', './util'], function (_, util) {
             xfId:"0", 
             builtinId:"0"
         }];
-        
+        this.defaultTableStyle = false;
         this.differentialStyles = [{}];
         this.masterCellFormats = [{
             numFmtId: 0, 
@@ -36,7 +36,7 @@ define(['underscore', './util'], function (_, util) {
             bottom: {},
             diagonal: {}
         }];
-        
+        this.tableStyles = [];
     };
     $.extend(true, StyleSheet.prototype, {
         createSimpleFormatter: function (type) {
@@ -72,10 +72,10 @@ define(['underscore', './util'], function (_, util) {
         },
 
         /**
-             * alignment: {
-             *  horizontal: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_HorizontalAlignment.html,
-             *  vertical: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_VerticalAlignment.html
-             */
+        * alignment: {
+        *  horizontal: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_HorizontalAlignment.html
+        *  vertical: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_VerticalAlignment.html
+        */
         createFormat: function (styleInstructions) {
             var sid = this.masterCellFormats.length;
             var style = {
@@ -134,25 +134,59 @@ define(['underscore', './util'], function (_, util) {
             this.masterCellFormats.push(style);
             return style;
         },
-
+        
+        createDifferentialStyle: function (styleInstructions) {
+            var id = this.differentialStyles.length;
+            var style = {
+                id: id
+            }
+            if(styleInstructions.font && _.isObject(styleInstructions.font)) {
+                style.font = styleInstructions.font;
+            }
+            if (styleInstructions.border && _.isObject(styleInstructions.border)) {
+                style.border = styleInstructions.border;
+            }
+            if (styleInstructions.fill && _.isObject(styleInstructions.fill)) {
+                style.fill = styleInstructions.fill;
+            }
+            if (styleInstructions.alignment && _.isObject(styleInstructions.alignment)) {
+                style.alignment = styleInstructions.alignment;
+            }
+            if (styleInstructions.format && _.isString(styleInstructions.format)) {
+                style.numFmt = styleInstructions.format;
+            }
+            this.differentialStyles[id] = style;
+            return style;
+        },
+        
         /**
-             * All params optional
-             * Expects: {
-             * top: {},
-             * left: {},
-             * right: {},
-             * bottom: {},
-             * diagonal: {},
-             * outline: boolean,
-             * diagonalUp: boolean,
-             * diagonalDown: boolean
-             * }
-             * Each border should follow:
-             * {
-             * style: styleString, http://www.schemacentral.com/sc/ooxml/t-ssml_ST_BorderStyle.html
-             * color: ARBG color (requires the A, so for example FF006666)
-             * }
-             */
+         * Should be an object containing keys that match with one of the keys from this list:
+         * http://www.schemacentral.com/sc/ooxml/t-ssml_ST_TableStyleType.html
+         * 
+         * The value should be a reference to a differential format (dxf)
+         */
+        createTableStyle: function (instructions) {
+            this.tableStyles.push(instructions);
+        },
+        
+        /**
+        * All params optional
+        * Expects: {
+        * top: {},
+        * left: {},
+        * right: {},
+        * bottom: {},
+        * diagonal: {},
+        * outline: boolean,
+        * diagonalUp: boolean,
+        * diagonalDown: boolean
+        * }
+        * Each border should follow:
+        * {
+        * style: styleString, http://www.schemacentral.com/sc/ooxml/t-ssml_ST_BorderStyle.html
+        * color: ARBG color (requires the A, so for example FF006666)
+        * }
+        */
         createBorderFormatter: function (border) {
             _.defaults(border, {
                 top: {},
@@ -167,21 +201,21 @@ define(['underscore', './util'], function (_, util) {
         },
 
         /**
-            * Supported font styles:
-            * bold
-            * italic
-            * underline (single, double, singleAccounting, doubleAccounting)
-            * size
-            * color
-            * fontName
-            * strike (strikethrough)
-            * outline (does this actually do anything?)
-            * shadow (does this actually do anything?)
-            * superscript
-            * subscript
-            *
-            * Color is a future goal - at the moment it's looking a bit complicated
-            */
+        * Supported font styles:
+        * bold
+        * italic
+        * underline (single, double, singleAccounting, doubleAccounting)
+        * size
+        * color
+        * fontName
+        * strike (strikethrough)
+        * outline (does this actually do anything?)
+        * shadow (does this actually do anything?)
+        * superscript
+        * subscript
+        *
+        * Color is a future goal - at the moment it's looking a bit complicated
+        */
         createFontStyle: function (instructions) {
             var fontId = this.fonts.length;
             var fontStyle = {
@@ -233,34 +267,35 @@ define(['underscore', './util'], function (_, util) {
         },
 
         exportBorders: function (doc) {
-            var borders = util.createElement(doc, 'borders', [
-                ['count', this.borders.length]
-                ]);
-            var data;
-            var borderGenerator = _.bind(function (name) {
+            var borders = doc.createElement('borders');
+            borders.setAttribute('count', this.borders.length);
+            
+            for(var i = 0, l = this.borders.length; i < l; i++) {
+                borders.appendChild(this.exportBorder(doc, this.borders[i]));
+            }
+            return borders;
+        },
+
+        exportBorder: function (doc, data) {
+            var border = doc.createElement('border');
+            var self = this;
+            var borderGenerator = function (name) {
                 var b = doc.createElement(name);
                 border.appendChild(b);
                 if(data[name].style) {
                     b.setAttribute('style', data[name].style);
                 }
                 if(data[name].color) {
-                    b.appendChild(this.exportColor(doc, data[name].color));
+                    b.appendChild(self.exportColor(doc, data[name].color));
                 }
                 return b;
-            }, this);
-
-            for(var i = 0, l = this.borders.length; i < l; i++) {
-                var border = doc.createElement('border');
-                data = this.borders[i];
-                border.appendChild(borderGenerator('left'));
-                border.appendChild(borderGenerator('right'));
-                border.appendChild(borderGenerator('top'));
-                border.appendChild(borderGenerator('bottom'));
-                border.appendChild(borderGenerator('diagonal'));
-
-                borders.appendChild(border);
-            }
-            return borders;
+            };
+            border.appendChild(borderGenerator('left'));
+            border.appendChild(borderGenerator('right'));
+            border.appendChild(borderGenerator('top'));
+            border.appendChild(borderGenerator('bottom'));
+            border.appendChild(borderGenerator('diagonal'));
+            return border;
         },
 
         exportColor: function (doc, color) {
@@ -315,12 +350,8 @@ define(['underscore', './util'], function (_, util) {
                 }
             });
             if(styleInstructions.alignment) {
-                var alignment = doc.createElement('alignment');
-                var keys = _.keys(styleInstructions.alignment);
-                for(i = 0, l = keys.length; i < l; i++) {
-                    alignment.setAttribute(keys[i], styleInstructions.alignment[keys[i]]);
-                }
-                xf.appendChild(alignment);
+                var alignmentData = styleInstructions.alignment;
+                xf.appendChild(this.exportAlignment(doc, alignmentData));
             }
             var a = attributes.length;
             while(a--) {
@@ -331,78 +362,94 @@ define(['underscore', './util'], function (_, util) {
             }
             return xf;
         },
-
+        
+        exportAlignment: function (doc, alignmentData) {
+            var alignment = doc.createElement('alignment');
+            var keys = _.keys(alignmentData);
+            for(var i = 0, l = keys.length; i < l; i++) {
+                alignment.setAttribute(keys[i], alignmentData[keys[i]]);
+            }
+            return alignment;
+        },
+        
         exportFonts: function (doc) {
-            var fonts = util.createElement(doc, 'fonts', [
-                ['count', this.fonts.length]
-                ]);
+            var fonts = doc.createElement('fonts');
+            fonts.setAttribute('count', this.fonts.length);
             for(var i = 0, l = this.fonts.length; i < l; i++) {
                 var fd = this.fonts[i];
-                var font = util.createElement(doc, 'font');
-                if(fd.size) {
-                    font.appendChild(util.createElement(doc, 'sz', [
-                        ['val', fd.size]
-                        ]));
-                }
-
-                if(fd.fontName) {
-                    font.appendChild(util.createElement(doc, 'name', [
-                        ['val', fd.name]
-                        ]));
-                }
-
-                if(fd.bold) {
-                    font.appendChild(doc.createElement('b'));
-                }
-                if(fd.italic) {
-                    font.appendChild(doc.createElement('i'));
-                }
-                if(fd.vertAlign) {
-                    font.appendChild(util.createElement(doc, 'vertAlign', [
-                        ['val', fd.vertAlign]
-                        ]));
-                }
-                if(fd.underline) { 
-                    var u = doc.createElement('u');
-                    if(fd.underline !== true) {
-                        u.setAttribute('val', fd.underline);
-                    }
-                    font.appendChild(u); 
-                }
-                if(fd.strike) {
-                    font.appendChild(doc.createElement('strike'));
-                }
-                if(fd.shadow) {
-                    font.appendChild(doc.createElement('shadow'));
-                }
-                if(fd.outline) {
-                    font.appendChild(doc.createElement('outline'));
-                }
-                if(fd.color) {
-                    font.appendChild(this.exportColor(doc, fd.color));
-                }
-                fonts.appendChild(font);
+                fonts.appendChild(this.exportFont(doc, fd));
             }
             return fonts;
         },
+        
+        exportFont: function (doc, fd) {
+            var font = doc.createElement('font');
+            if(fd.size) {
+                var size = doc.createElement('sz');
+                size.setAttribute('val', fd.size);
+                font.appendChild(size);
+            }
+
+            if(fd.fontName) {
+                var fontName = doc.createElement('name');
+                fontName.setAttribute('val', fd.name);
+                font.appendChild(fontName);
+            }
+
+            if(fd.bold) {
+                font.appendChild(doc.createElement('b'));
+            }
+            if(fd.italic) {
+                font.appendChild(doc.createElement('i'));
+            }
+            if(fd.vertAlign) {
+                var vertAlign = doc.createElement('vertAlign');
+                vertAlign.setAttribute('val', fd.vertAlign);
+                font.appendChild(vertAlign);
+            }
+            if(fd.underline) { 
+                var u = doc.createElement('u');
+                if(fd.underline !== true) {
+                    u.setAttribute('val', fd.underline);
+                }
+                font.appendChild(u); 
+            }
+            if(fd.strike) {
+                font.appendChild(doc.createElement('strike'));
+            }
+            if(fd.shadow) {
+                font.appendChild(doc.createElement('shadow'));
+            }
+            if(fd.outline) {
+                font.appendChild(doc.createElement('outline'));
+            }
+            if(fd.color) {
+                font.appendChild(this.exportColor(doc, fd.color));
+            }
+            return font;
+        },
 
         exportFills: function (doc) {
-            var fills = util.createElement(doc, 'fills', [
-                ['count', this.fills.length]
-                ]);
+            var fills = doc.createElement('fills');
+            fills.setAttribute('count', this.fills.length);
             for(var i = 0, l = this.fills.length; i < l; i++) {
                 var fd = this.fills[i];
-                var fill = util.createElement(doc, 'fill');
-                if (fd.type == 'pattern') {
-                    var fillDef = this.exportPatternFill(doc, fd);
-                    fill.appendChild(fillDef);
-                } else if (fd.type == 'gradient') {
-                    var fillDef = this.exportGradientFill(doc, fd);
-                    fill.appendChild(fillDef);
-                }
-                fills.appendChild(fill);
+                fills.appendChild(this.exportFill(doc, fd));
             }
             return fills;
+        },
+        
+        exportFill: function (doc, fd) {
+            var fillDef;
+            var fill = doc.createElement('fill');
+            if (fd.type == 'pattern') {
+                fillDef = this.exportPatternFill(doc, fd);
+                fill.appendChild(fillDef);
+            } else if (fd.type == 'gradient') {
+                fillDef = this.exportGradientFill(doc, fd);
+                fill.appendChild(fillDef);
+            }
+            return fill;
         },
         
         exportGradientFill: function (doc, data) {
@@ -480,20 +527,20 @@ define(['underscore', './util'], function (_, util) {
         },
 
         exportNumberFormatters: function (doc) {
-            var formatters = util.createElement(doc, 'numFmts', [
-                ['count', this.numberFormatters.length]
-                ]);
-
+            var formatters = doc.createElement('numFmts');
+            formatters.setAttribute('count', this.numberFormatters.length);
             for(var i = 0, l = this.numberFormatters.length; i < l; i++) {
                 var fd = this.numberFormatters[i];
-                var formatter = util.createElement(doc, 'numFmt', [
-                    ['numFmtId', fd.id],
-                    ['formatCode', fd.formatCode]
-                    ]);
-                formatters.appendChild(formatter);
+                formatters.appendChild(this.exportNumberFormatter(doc, fd));
             }
-
             return formatters;
+        },
+        
+        exportNumberFormatter: function (doc, fd) {
+            var numFmt = doc.createElement('numFmt');
+            numFmt.setAttribute('numFmtId', fd.id);
+            numFmt.setAttribute('formatCode', fd.formatCode);
+            return numFmt;
         },
 
         exportCellStyles: function (doc) {
@@ -516,24 +563,67 @@ define(['underscore', './util'], function (_, util) {
         },
 
         exportDifferentialStyles: function (doc) {
-            var dfxs = doc.createElement('dfxs');
-            dfxs.setAttribute('count', this.differentialStyles.length);
+            var dxfs = doc.createElement('dxfs');
+            dxfs.setAttribute('count', this.differentialStyles.length);
 
             for(var i = 0, l = this.differentialStyles.length; i < l; i++) {
                 var style = this.differentialStyles[i];
-                delete style.id; //Remove internal id
-                var record = util.createElement(doc, 'dfx');
-                dfxs.appendChild(record);
-                var attributes = _.keys(style);
-                var a = attributes.length;
-                while(a--) {
-                    record.setAttribute(attributes[a], style[attributes[a]]);
-                }
+                dxfs.appendChild(this.exportDFX(doc, style));
             }
 
-            return dfxs;
+            return dxfs;
         },
-
+        
+        exportDFX: function (doc, style) {
+            var dxf = doc.createElement('dxf');
+            if(style.font) {
+                dxf.appendChild(this.exportFont(doc, style.font));
+            }
+            if(style.border) {
+                dxf.appendChild(this.exportBorder(doc, style.font));
+            }
+            if(style.fill) {
+                dxf.appendChild(this.exportFill(doc, style.font));
+            }
+            if(style.numFmt) {
+                dxf.appendChild(this.exportNumberFormatter(doc, style.numFmt));
+            }
+            if(style.alignment) {
+                dxf.appendChild(this.exportAlignment(doc, style.alignment));
+            }
+            return dxf;
+        },
+        
+        exportTableStyles: function (doc) {
+            var tableStyles = doc.createElement('tableStyles');
+            tableStyles.setAttribute('count', this.tableStyles.length);
+            if(this.defaultTableStyle) {
+                tableStyles.setAttribute('defaultTableStyle', this.defaultTableStyle);
+            }
+            for(var i = 0, l = this.tableStyles.length; i < l; i++) {
+                tableStyles.appendChild(this.exportTableStyle(doc, this.tableStyles[i]));
+            }
+            return tableStyles;
+        },
+        
+        exportTableStyle: function (doc, style) {
+            var tableStyle = doc.createElement('tableStyle');
+            tableStyle.setAttribute('name', style.name);
+            tableStyle.setAttribute('pivot', 0);
+            var i = 0;
+            
+            _.each(style, function (value, key) {
+                if(key == 'name') {return;}
+                i++;
+                var styleEl = doc.createElement('tableStyleElement');
+                styleEl.setAttribute('type', key);
+                styleEl.setAttribute('dxfId', value);
+                tableStyle.appendChild(styleEl);
+            });
+            tableStyle.setAttribute('count', i);
+            return tableStyle;
+        },
+        
         toXML: function () {
             var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'styleSheet');
             var styleSheet = doc.documentElement;
@@ -545,6 +635,9 @@ define(['underscore', './util'], function (_, util) {
             styleSheet.appendChild(this.exportMasterCellFormats(doc));
             styleSheet.appendChild(this.exportCellStyles(doc));
             styleSheet.appendChild(this.exportDifferentialStyles(doc));
+            if(this.tableStyles.length) {
+                styleSheet.appendChild(this.exportTableStyles(doc));
+            }
             return doc;
         }
     });
