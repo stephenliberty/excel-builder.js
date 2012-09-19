@@ -22,7 +22,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             config = config || {};
             this.name = config.name;
             this.id = _.uniqueId('Worksheet');
-            this._excelStartDate = new Date(1900, 1, 1, 0, 0, 0, 0).getTime();
+            this._timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000;
             if(config.columns) {
                 this.setColumns(config.columns);
             }
@@ -143,7 +143,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                             break;
                         case "date":
                             cell = cellCache.date.cloneNode(true);
-                            cell.firstChild.firstChild.nodeValue = (cellValue - this._excelStartDate)  / (60 * 60 * 24) / 1000;
+                            cell.firstChild.firstChild.nodeValue = 25569.0 + ((cellValue - this._timezoneOffset)  / (60 * 60 * 24 * 1000));
                             break;
                         case "formula":
                             cell = cellCache.formula.cloneNode(true);
