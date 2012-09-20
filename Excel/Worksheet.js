@@ -29,7 +29,11 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
 			
             this.relations = new RelationshipManager();
         },
-		
+        
+	setSharedStringCollection: function (stringCollection) {
+            this.sharedStrings = stringCollection;
+        },
+        
         addTable: function (table) {
             this._tables.push(table);
             this.relations.addRelation(table, 'table');
@@ -85,12 +89,10 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             formulaNode.appendChild(formulaValue);
             
             var stringNode = doc.createElement('c');
-            stringNode.setAttribute('t', 'inlineStr');
-            var is = doc.createElement('is');
-            var t = doc.createElement('t');
-            t.appendChild(doc.createTextNode("--temp--"));
-            is.appendChild(t);
-            stringNode.appendChild(is);
+            stringNode.setAttribute('t', 's');
+            var stringValue = doc.createElement('v');
+            stringValue.appendChild(doc.createTextNode("--temp--"));
+            stringNode.appendChild(stringValue);
             
             
             return {
@@ -151,16 +153,23 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                             break;
                         case "text":
                         default:
+                            var id;
+                            if(typeof this.sharedStrings.strings[cellValue] != 'undefined') {
+                                var id = this.sharedStrings.strings[cellValue];
+                            } else {
+                                id = this.sharedStrings.addString(cellValue);
+                            }
                             cell = cellCache.string.cloneNode(true);
-                            cell.firstChild.firstChild.firstChild.nodeValue = cellValue;
+                            cell.firstChild.firstChild.nodeValue = id;
                             break;
                     };
                     if(metadata.style) {
                         cell.setAttribute('s', metadata.style);
                     }
-                    
+                    cell.setAttribute('r', util.positionToLetterRef(c + 1, row + 1));
                     rowNode.appendChild(cell);
                 }
+                rowNode.setAttribute('r', row + 1);
                 sheetData.appendChild(rowNode);
             } 
             
