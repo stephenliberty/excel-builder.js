@@ -1,3 +1,7 @@
+"use strict";
+/**
+ * @module Excel/util
+ */
 define([], function () {
     var util = {
         createXmlDoc: function (ns, base) {

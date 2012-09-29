@@ -1,5 +1,8 @@
 "use strict";
 /**
+ * This module represents an excel worksheet in its basic form - no tables, charts, etc. Its purpose is 
+ * to hold data, the data's link to how it should be styled, and any links to other outside resources.
+ * 
  * @module Excel/Worksheet
  */
 define(['underscore', './util', './RelationshipManager', './Table'], function (_, util, RelationshipManager, Table) {
@@ -41,7 +44,11 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
 		
         /**
         * Expects an array length of three.
-        * [left, center, right]
+        * 
+        * @see Excel/util compilePageDetailPiece 
+        * @see <a href='/cookbook/addingHeadersAndFooters.html'>Adding headers and footers to a worksheet</a>
+        * 
+        * @param {Array} headers [left, center, right]
         */
         setHeader: function (headers) {
             if(!_.isArray(headers)) {
@@ -52,7 +59,11 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
 		
         /**
         * Expects an array length of three.
-        * [left, center, right]
+        * 
+        * @see Excel/util compilePageDetailPiece 
+        * @see <a href='/cookbook/addingHeadersAndFooters.html'>Adding headers and footers to a worksheet</a>
+        * 
+        * @param {Array} footers [left, center, right]
         */
         setFooter: function (footers) {
             if(!_.isArray(footers)) {
@@ -253,14 +264,20 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
         },
 		
         /**
-         * Expects an array containing the data type to default to for each column's cell
+         * Expects an array of column definitions. Each column definition needs to have a width assigned to it. 
+         * 
+         * @param {Array} Columns
          */
         setColumns: function (columns) {
             this.columns = columns;
-            this.styles = [];
-            
         },
         
+        /**
+         * Expects an array of data to be translated into cells. 
+         * 
+         * @param {Array} data Two dimensional array - [ [A1, A2], [B1, B2] ]
+         * @see <a href='/cookbook/addingDataToAWorksheet.html'>Adding data to a worksheet</a>
+         */
         setData: function (data) {
             this.data = data;
         },

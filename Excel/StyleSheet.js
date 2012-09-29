@@ -1,3 +1,7 @@
+"use strict";
+/**
+ * @module Excel/StyleSheet
+ */
 define(['underscore', './util'], function (_, util) {
     var StyleSheet = function (config) {
         this.id = _.uniqueId('StyleSheet');

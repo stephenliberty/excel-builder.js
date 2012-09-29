@@ -1,3 +1,7 @@
+"use strict";
+/**
+ * @module Excel/Table
+ */
 define(['underscore', './util'], function (_, util) {
     var Table = function (config) {
         _.defaults(this, {

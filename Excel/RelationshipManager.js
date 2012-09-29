@@ -1,3 +1,7 @@
+"use strict";
+/**
+ * @module Excel/RelationshipManager
+ */
 define(['underscore', './util', './Paths'], function (_, util, Paths) {
     var RelationshipManager = function () {
         this.relations = {};

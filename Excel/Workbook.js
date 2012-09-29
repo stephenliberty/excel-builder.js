@@ -1,4 +1,9 @@
+"use strict";
+/**
+ * @module Excel/Workbook
+ */
 define([
+    'require',
     'underscore', 
     './util', 
     './StyleSheet', 
@@ -7,7 +12,7 @@ define([
     './RelationshipManager',
     './Paths'
 ], 
-function (_, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths) {
+function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths) {
     var Workbook = function (config) {
         this.worksheets = [];
         this.tables = [];
@@ -125,13 +130,23 @@ function (_, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Pa
                 files['/xl/tables/table' + (i + 1) + '.xml'] = this.tables[i].toXML();
                 Paths[this.tables[i].id] = '/xl/tables/table' + (i + 1) + '.xml';
             }
+//            
+//            var worker = new Worker(require.toUrl('./WorksheetExportWorker.js'));
+//            worker.addEventListener('message', function(event) {
+//                console.log("Called back by the worker!\n", event.data);
+//            }, false);
+//            worker.postMessage({
+//                instruction: 'setup', 
+//                basePath: require.toUrl('./WorksheetExportWorker.js')
+//                
+//            });
+            
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
                 files['/xl/worksheets/sheet' + (i + 1) + '.xml'] = this.worksheets[i].toXML();
                 Paths[this.worksheets[i].id] = 'worksheets/sheet' + (i + 1) + '.xml';
                 files['/xl/worksheets/_rels/sheet' + (i + 1) + '.xml.rels'] = this.worksheets[i].relations.toXML();
-                console.log(files['worksheets/sheet' + (i + 1) + '.xml']);
             }
-
+            
             _.extend(files, {
                 '/[Content_Types].xml': this.createContentTypes(),
                 '/_rels/.rels': this.createWorkbookRelationship(),
