@@ -9,6 +9,13 @@ define(['underscore', './util'], function (_, util) {
         this.id = _.uniqueId('SharedStrings');
     }
     _.extend(sharedStrings.prototype, {
+        /**
+         * Adds a string to the shared string file, and returns the ID of the 
+         * string which can be used to reference it in worksheets.
+         * 
+         * @param string {String}
+         * @return int
+         */
         addString: function (string) {
             this.strings[string] = this.stringArray.length;
             this.stringArray[this.stringArray.length] = string;
