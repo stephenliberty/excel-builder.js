@@ -2,9 +2,12 @@
 /**
  * @module Excel/util
  */
-define([], function () {
+define(['./XMLDOM'], function (XMLDOM) {
     var util = {
         createXmlDoc: function (ns, base) {
+            if(typeof document === 'undefined') {
+                return new XMLDOM(ns || null, base, null);
+            }
             if(document.implementation && document.implementation.createDocument) {
                 return document.implementation.createDocument(ns || null, base, null);
             } else if (window.ActiveXObject) {

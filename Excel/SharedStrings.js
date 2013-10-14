@@ -22,6 +22,10 @@ define(['underscore', './util'], function (_, util) {
             return this.strings[string];
         },
         
+        exportData: function () {
+            return this.strings;
+        },
+        
         toXML: function () {
             var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'sst');
             var sharedStringTable = doc.documentElement;

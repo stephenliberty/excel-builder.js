@@ -12,11 +12,22 @@ define(['underscore', './util', './Paths'], function (_, util, Paths) {
     
     _.extend(RelationshipManager.prototype, {
         
+        importData: function (data) {
+            this.relations = data.relations;
+            this.lastId = data.lastId;
+        },
+        exportData: function () {
+            return {
+                relations: this.relations,
+                lastId: this.lastId
+            };
+        },
+        
         addRelation: function (object, type) {
             this.relations[object.id] = {
                 id: 'rId' + this.lastId++,
                 schema: util.schemas[type]
-            }
+            };
         },
         
         getRelationshipId: function (object) {

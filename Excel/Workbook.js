@@ -120,33 +120,19 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 ]));
             return doc;
         },
-
-        generateFiles: function () {
+        
+        _generateCorePaths: function (files) {
             Paths[this.styleSheet.id] = 'styles.xml';
             Paths[this.sharedStrings.id] = 'sharedStrings.xml';
             Paths[this.id] = '/xl/workbook.xml';
-            var files = {};
+            
             for(var i = 0, l = this.tables.length; i < l; i++) {
                 files['/xl/tables/table' + (i + 1) + '.xml'] = this.tables[i].toXML();
                 Paths[this.tables[i].id] = '/xl/tables/table' + (i + 1) + '.xml';
             }
-//            
-//            var worker = new Worker(require.toUrl('./WorksheetExportWorker.js'));
-//            worker.addEventListener('message', function(event) {
-//                console.log("Called back by the worker!\n", event.data);
-//            }, false);
-//            worker.postMessage({
-//                instruction: 'setup', 
-//                basePath: require.toUrl('./WorksheetExportWorker.js')
-//                
-//            });
-            
-            for(var i = 0, l = this.worksheets.length; i < l; i++) {
-                files['/xl/worksheets/sheet' + (i + 1) + '.xml'] = this.worksheets[i].toXML();
-                Paths[this.worksheets[i].id] = 'worksheets/sheet' + (i + 1) + '.xml';
-                files['/xl/worksheets/_rels/sheet' + (i + 1) + '.xml.rels'] = this.worksheets[i].relations.toXML();
-            }
-            
+        },
+        
+        _prepareFilesForPackaging: function (files) {
             _.extend(files, {
                 '/[Content_Types].xml': this.createContentTypes(),
                 '/_rels/.rels': this.createWorkbookRelationship(),
@@ -163,6 +149,134 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 content = content.replace(/xmlns:NS[\d]+=""/g, '');
                 files[key] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' + "\n" + content;
             });
+        },
+        
+        generateFilesAsync: function (options) {
+            var requireJsPath = options.requireJsPath;
+            var self = this;
+            if(!options.requireJsPath) {
+                requireJsPath = document.getElementById('requirejs') ? document.getElementById('requirejs').src : '';
+            }
+            if(!requireJsPath) {
+                throw "Please add 'requirejs' to the script that includes requirejs, or specify the path as an argument";
+            }
+            var files = {},
+                doneCount = this.worksheets.length,
+                stringsCollectedCount = this.worksheets.length,
+                workers = [];
+            
+            var result = {
+                status: "Not Started",
+                terminate: function () {
+                    for(var i = 0; i < workers.length; i++) {
+                        workers[i].terminate();
+                    }
+                }
+            };
+            this._generateCorePaths(files);
+            
+            var done = function () {
+                if(--doneCount === 0) {
+                    self._prepareFilesForPackaging(files);
+                    for(var i = 0; i < workers.length; i++) {
+                        workers[i].terminate();
+                    }
+                    options.success(files);
+                }
+            };
+            var stringsCollected = function () {
+                if(--stringsCollectedCount === 0) {
+                    for(var i = 0; i < workers.length; i++) {
+                        workers[i].postMessage({
+                            instruction: 'export',
+                            sharedStrings: self.sharedStrings.exportData()
+                        });
+                    }
+                }
+            }
+            
+            
+            for(var i = 0, l = this.worksheets.length; i < l; i++) {
+                workers.push(
+                    this._createWorker(requireJsPath, i, function (worksheetIndex) {
+                        return {
+                            error: function () {
+                                for(var i = 0; i < workers.length; i++) {
+                                    workers[i].terminate();
+                                }
+                                //message, filename, lineno
+                                options.error.apply(this, arguments);
+                            },
+                            stringsCollected: function () {
+                                stringsCollected();
+                            },
+                            finished: function (data) {
+                                files['/xl/worksheets/sheet' + (worksheetIndex + 1) + '.xml'] = {xml: data};
+                                Paths[self.worksheets[worksheetIndex].id] = 'worksheets/sheet' + (worksheetIndex + 1) + '.xml';
+                                files['/xl/worksheets/_rels/sheet' + (worksheetIndex + 1) + '.xml.rels'] = self.worksheets[worksheetIndex].relations.toXML();
+                                done();
+                            }
+                        };
+                    }(i))
+                );
+            }
+            
+            return result;
+        },
+                
+        _createWorker: function (requireJsPath, worksheetIndex, callbacks) {
+            var worker = new Worker(require.toUrl('./WorksheetExportWorker.js'));
+            var self = this;
+            worker.addEventListener('error', callbacks.error);
+            worker.addEventListener('message', function(event, data) {
+//                console.log("Called back by the worker!\n", event.data);
+                switch(event.data.status) {
+                    case "ready":
+                        worker.postMessage({
+                            instruction: 'start',
+                            data: self.worksheets[worksheetIndex].exportData()
+                        });
+                        break;
+                    case "sharedStrings":
+                        for(var i = 0; i < event.data.data.length; i++) {
+                            self.sharedStrings.addString(event.data.data[i]);
+                        }
+                        callbacks.stringsCollected();
+                        break;
+                    case "finished":
+                        callbacks.finished(event.data.data);
+                        break;
+                }
+            }, false);
+            worker.postMessage({
+                instruction: 'setup',
+                config: {
+                    paths: {
+                        underscore: require.toUrl('underscore').slice(0, -3)
+                    },
+                    shim: {
+                        'underscore': {
+                            exports: '_'
+                        }
+                    }
+                },
+                requireJsPath: requireJsPath
+            });
+            return worker;
+        },
+        
+        generateFiles: function () {
+            var files = {};
+            this._generateCorePaths(files);
+            
+            
+            for(var i = 0, l = this.worksheets.length; i < l; i++) {
+                files['/xl/worksheets/sheet' + (i + 1) + '.xml'] = this.worksheets[i].toXML();
+                Paths[this.worksheets[i].id] = 'worksheets/sheet' + (i + 1) + '.xml';
+                files['/xl/worksheets/_rels/sheet' + (i + 1) + '.xml.rels'] = this.worksheets[i].relations.toXML();
+            }
+            
+            this._prepareFilesForPackaging(files);
 
             return files;
         }

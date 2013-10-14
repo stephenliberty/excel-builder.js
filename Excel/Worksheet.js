@@ -33,6 +33,34 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
             this.relations = new RelationshipManager();
         },
         
+        /**
+         * Returns an object that can be consumed by a WorksheetExportWorker
+         * @returns {Object}
+         */
+        exportData: function () {
+            return {
+                relations: this.relations.exportData(),
+                columnFormats: this.columnFormats,
+                data: this.data,
+                columns: this.columns,
+                _headers: this._headers,
+                _footers: this._footers,
+                _tables: this._tables,
+                name: this.name,
+                id: this.id
+            };
+        },
+          
+        /**
+         * Imports data - to be used while inside of a WorksheetExportWorker.
+         * @param {Object} data
+         */
+        importData: function (data) {
+            this.relations.importData(data.relations);
+            delete data.relations;
+            _.extend(this, data);
+        },
+        
 	setSharedStringCollection: function (stringCollection) {
             this.sharedStrings = stringCollection;
         },
@@ -112,6 +140,36 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                 string: stringNode,
                 formula: formulaNode
             }
+        },
+        
+        collectSharedStrings: function () {
+            var data = this.data;
+            var maxX = 0;
+            var strings = {};
+            for(var row = 0, l = data.length; row < l; row++) {
+                var dataRow = data[row];
+                var cellCount = dataRow.length;
+                maxX = cellCount > maxX ? cellCount : maxX;
+                for(var c = 0; c < cellCount; c++) {
+                    var cellValue = dataRow[c];
+                    if (typeof dataRow[c] == 'object') {
+                        cellValue = dataRow[c].value;
+                    }
+                    var metadata = dataRow[c].metadata || {};
+                    
+                    if(!metadata.type) {
+                        if(typeof cellValue == 'number') {
+                            metadata.type = 'number';
+                        }
+                    }
+                    if(metadata.type == "text" || !metadata.type) {
+                        if(typeof strings[cellValue] == 'undefined') {
+                            strings[cellValue] = true;
+                        }
+                    }
+                }
+            }
+            return _.keys(strings);
         },
         
         toXML: function () {
