@@ -85,7 +85,7 @@ define([], function () {
                 index = num % Math.pow(26, digit)
                 num -= index
                 index = index / Math.pow(26, digit - 1)
-                string = alphabet[index] + string
+                string = alphabet.charAt(index) + string
                 digit += 1
             }
             this.LETTER_REFS[x] = string;
@@ -109,4 +109,4 @@ define([], function () {
     };
 	
     return util;
-})
+});
