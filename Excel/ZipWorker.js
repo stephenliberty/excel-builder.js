@@ -11,9 +11,12 @@ onmessage = function(event) {
         zip.file(path, content, {base64: false});
     };
     postMessage({
+        base64: !!event.data.base64
+    });
+    postMessage({
         status: 'done',
         data: zip.generate({
-            base64: event.data.base64
+            base64: !!event.data.base64
         })
     });
 };

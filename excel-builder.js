@@ -46,7 +46,7 @@ define([
                     worker.postMessage({
                         files: files,
                         ziplib: require.toUrl('JSZip'),
-                        base64: options.base64
+                        base64: (!options || options.base64 !== false)
                     });
                 },
                 error: function () {
@@ -68,7 +68,7 @@ define([
                 zip.file(path, content, {base64: false});
             })
             return zip.generate({
-                base64: (!options || !options.base64)
+                base64: (!options || options.base64 !== false)
             });
         }
     }
