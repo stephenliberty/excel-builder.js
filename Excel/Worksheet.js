@@ -13,6 +13,7 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
         this.relations = null;
         this.columnFormats = [];
         this.data = [];
+        this.mergedCells = [];
         this.columns = [];
         this._headers = [];
         this._footers = [];
@@ -276,6 +277,16 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
                 }
                 worksheet.appendChild(tables);
             }
+
+            if (this.mergedCells.length > 0) {
+                var mergeCells = doc.createElement('mergeCells');
+                for (var i = 0, l = this.mergedCells.length; i < l; i++) {
+                    var mergeCell = doc.createElement('mergeCell');
+                    mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
+                    mergeCells.appendChild(mergeCell);
+                }
+                worksheet.appendChild(mergeCells);
+            }
 			
             return doc;
         },
@@ -338,6 +349,16 @@ define(['underscore', './util', './RelationshipManager', './Table'], function (_
          */
         setData: function (data) {
             this.data = data;
+        },
+
+        /**
+         * Merge cells in given range
+         *
+         * @param cell1 - A1, A2...
+         * @param cell2 - A2, A3...
+         */
+        mergeCells: function(cell1, cell2) {
+            this.mergedCells.push([cell1, cell2]);
         },
         
         /**
