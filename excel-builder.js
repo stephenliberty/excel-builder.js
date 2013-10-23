@@ -65,7 +65,11 @@ define([
             var files = workbook.generateFiles();
             _.each(files, function (content, path) {
                 path = path.substr(1);
-                zip.file(path, content, {base64: false});
+                if(path.indexOf('.xml') !== -1 || path.indexOf('.rel') !== -1) {
+                    zip.file(path, content, {base64: false});
+                } else {
+                    zip.file(path, content, {base64: true, binary: true});
+                }
             })
             return zip.generate({
                 base64: (!options || options.base64 !== false)

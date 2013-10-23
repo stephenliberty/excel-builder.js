@@ -25,13 +25,14 @@ define(['underscore', './util', './Paths'], function (_, util, Paths) {
         
         addRelation: function (object, type) {
             this.relations[object.id] = {
-                id: 'rId' + this.lastId++,
+                id: _.uniqueId('rId'),
                 schema: util.schemas[type]
             };
+            return this.relations[object.id].id;
         },
         
         getRelationshipId: function (object) {
-            return this.relations[object.id].id
+            return this.relations[object.id] ? this.relations[object.id].id : null;
         },
 		
         toXML: function () {

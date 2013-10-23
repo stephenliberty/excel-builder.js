@@ -12,10 +12,12 @@ define([
     './RelationshipManager',
     './Paths'
 ], 
-function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths) {
+function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths, Drawings) {
     var Workbook = function (config) {
         this.worksheets = [];
         this.tables = [];
+        this.drawings = [];
+        this.media = {};
         this.initialize(config);
     };
     _.extend(Workbook.prototype, {
@@ -36,7 +38,7 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
             })
             return new Worksheet(config);
         },
-
+        
         getStyleSheet: function () {
             return this.styleSheet;
         },
@@ -44,7 +46,43 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         addTable: function (table) {
             this.tables.push(table);
         },
-
+                
+        addDrawings: function (drawings) {
+            this.drawings.push(drawings);
+        },
+        
+        addMedia: function (type, fileName, fileData, contentType) {
+            var fileNamePieces = fileName.split('.');
+            var extension = fileNamePieces[fileNamePieces.length - 1];
+            if(!contentType) {
+                switch(extension.toLowerCase()) {
+                    case 'jpeg':
+                    case 'jpg':
+                        contentType = "image/jpeg";
+                        break;
+                    case 'png': 
+                        contentType = "image/png";
+                        break;
+                    case 'gif': 
+                        contentType = "image/gif";
+                        break;
+                    default: 
+                        contentType = null;
+                        break;
+                }
+            }
+            if(!this.media[fileName]) {
+                this.media[fileName] = {
+                    id: fileName,
+                    data: fileData,
+                    fileName: fileName,
+                    contentType: contentType,
+                    extension: extension
+                };
+            }
+            return this.media[fileName];
+        },
+        
         addWorksheet: function (worksheet) {
             this.relations.addRelation(worksheet, 'worksheet');
             worksheet.setSharedStringCollection(this.sharedStrings);
@@ -54,20 +92,31 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         createContentTypes: function () {
             var doc = util.createXmlDoc(util.schemas.contentTypes, 'Types');
             var types = doc.documentElement;
-            //doc.appendChild(types)
+            
             types.appendChild(util.createElement(doc, 'Default', [
                 ['Extension', "rels"],
                 ['ContentType', "application/vnd.openxmlformats-package.relationships+xml"]
-                ]));
+            ]));
             types.appendChild(util.createElement(doc, 'Default', [
                 ['Extension', "xml"],
                 ['ContentType', "application/xml"]
+            ]));
+            
+            var extensions = {};
+            for(var filename in this.media) {
+                extensions[this.media[filename].extension] = this.media[filename].contentType;
+            }
+            for(var extension in extensions) {
+                types.appendChild(util.createElement(doc, 'Default', [
+                    ['Extension', extension],
+                    ['ContentType', extensions[extension]]
                 ]));
-
+            }
+            
             types.appendChild(util.createElement(doc, 'Override', [
                 ['PartName', "/xl/workbook.xml"],
                 ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"]
-                ]));
+            ]));
             types.appendChild(util.createElement(doc, 'Override', [
                 ['PartName', "/xl/sharedStrings.xml"],
                 ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"]
@@ -89,7 +138,14 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                     ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"]
                 ]));
             }
-
+            
+            for(var i = 0, l = this.drawings.length; i < l; i++) {
+                types.appendChild(util.createElement(doc, 'Override', [
+                    ['PartName', '/xl/drawings/drawing' + (i + 1) + '.xml'],
+                    ['ContentType', 'application/vnd.openxmlformats-officedocument.drawing+xml']
+                ]));
+            }
+            
             return doc;
         },
 
@@ -130,9 +186,24 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 files['/xl/tables/table' + (i + 1) + '.xml'] = this.tables[i].toXML();
                 Paths[this.tables[i].id] = '/xl/tables/table' + (i + 1) + '.xml';
             }
+            
+            for(var fileName in this.media) {
+                var media = this.media[fileName];
+                files['/xl/media/' + fileName] = media.data;
+                Paths[fileName] = '/xl/media/' + fileName;
+            }
+            
+            for(var i = 0, l = this.drawings.length; i < l; i++) {
+                files['/xl/drawings/drawing' + (i + 1) + '.xml'] = this.drawings[i].toXML();
+                Paths[this.drawings[i].id] = '/xl/drawings/drawing' + (i + 1) + '.xml';
+                files['/xl/drawings/_rels/drawing' + (i + 1) + '.xml.rels'] = this.drawings[i].relations.toXML();
+            }
+            
+            
         },
         
         _prepareFilesForPackaging: function (files) {
+            
             _.extend(files, {
                 '/[Content_Types].xml': this.createContentTypes(),
                 '/_rels/.rels': this.createWorkbookRelationship(),
@@ -143,11 +214,13 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
             });
             
             _.each(files, function (value, key) {
-                files[key] = value.xml || new XMLSerializer().serializeToString(value);  
-                var content = files[key].replace(/xmlns=""/g, '');
-                content = content.replace(/NS[\d]+:/g, '');
-                content = content.replace(/xmlns:NS[\d]+=""/g, '');
-                files[key] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' + "\n" + content;
+                if(key.indexOf('.xml') != -1 || key.indexOf('.rels') != -1) {
+                    files[key] = value.xml || new XMLSerializer().serializeToString(value);  
+                    var content = files[key].replace(/xmlns=""/g, '');
+                    content = content.replace(/NS[\d]+:/g, '');
+                    content = content.replace(/xmlns:NS[\d]+=""/g, '');
+                    files[key] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' + "\n" + content;
+                }
             });
         },
         

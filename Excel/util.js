@@ -4,6 +4,32 @@
  */
 define(['./XMLDOM'], function (XMLDOM) {
     var util = {
+        
+        _idSpaces: {},
+        
+        /**
+         * Returns a number based on a namespace. So, running with 'Picture' will return 1. Run again, you will get 2. Run with 'Foo', you'll get 1.
+         * @param {String} space
+         * @returns {Number}
+         */
+        uniqueId: function (space) {
+            if(!this._idSpaces[space]) {
+                this._idSpaces[space] = 1;
+            }
+            return this._idSpaces[space]++;
+        },
+        
+        /**
+         * Attempts to create an XML document. Due to limitations in web workers, 
+         * it may return a 'fake' xml document created from the XMLDOM.js file. 
+         * 
+         * Takes a namespace to start the xml file in, as well as the root element
+         * of the xml file. 
+         * 
+         * @param {type} ns
+         * @param {type} base
+         * @returns {ActiveXObject|@exp;document@pro;implementation@call;createDocument|@new;XMLDOM}
+         */
         createXmlDoc: function (ns, base) {
             if(typeof document === 'undefined') {
                 return new XMLDOM(ns || null, base, null);
@@ -20,6 +46,15 @@ define(['./XMLDOM'], function (XMLDOM) {
             throw "No xml document generator";
         },
         
+        /**
+         * Creates an xml node (element). Used to simplify some calls, as IE is
+         * very particular about namespaces and such. 
+         * 
+         * @param {XMLDOM} doc An xml document (actual DOM or fake DOM, not a string)
+         * @param {type} name The name of the element
+         * @param {type} attributes
+         * @returns {XML Node}
+         */
         createElement: function (doc, name, attributes) {
             var el = doc.createElement(name);
             var ie = !el.setAttributeNS
@@ -35,47 +70,6 @@ define(['./XMLDOM'], function (XMLDOM) {
             return el;
         },
         
-        compilePageDetailPackage: function (data) {
-            data = data || "";
-            return [
-            "&L", this.compilePageDetailPiece(data[0] || ""),
-            "&C", this.compilePageDetailPiece(data[1] || ""),
-            "&R", this.compilePageDetailPiece(data[2] || "")
-            ].join('');
-        },
-		
-        compilePageDetailPiece: function (data) {
-            if(_.isString(data)) {
-                return '&"-,Regular"'.concat(data);
-            }
-            if(_.isObject(data) && !_.isArray(data)) { 
-                var string = "";
-                if(data.font || data.bold) {
-                    var weighting = data.bold ? "Bold" : "Regular";
-                    string += '&"' + (data.font || '-');
-                    string += ',' + weighting + '"';
-                } else {
-                    string += '&"-,Regular"';
-                }
-                if(data.underline) {
-                    string += "&U";
-                }
-                if(data.fontSize) {
-                    string += "&"+data.fontSize;
-                }
-                string += data.text;
-				
-                return string;
-            }
-			
-            if(_.isArray(data)) {
-                var self = this;
-                return _.reduce(data, function (m, v) {
-                    return m.concat(self.compilePageDetailPiece(v));
-                }, "");
-            }
-        },
-		
         LETTER_REFS: {},
 	
         positionToLetterRef: function (x, y) {
@@ -107,7 +101,12 @@ define(['./XMLDOM'], function (XMLDOM) {
             'x14ac': "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac",
             'officeDocument': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
             'package': "http://schemas.openxmlformats.org/package/2006/relationships",
-            'table': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table"
+            'table': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table",
+            'spreadsheetDrawing': 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',
+            'drawing': 'http://schemas.openxmlformats.org/drawingml/2006/main',
+            'drawingRelationship': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing',
+            'image': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',
+            'chart': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart'
         }
     };
 	
