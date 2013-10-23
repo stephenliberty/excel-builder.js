@@ -45,6 +45,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 columnFormats: this.columnFormats,
                 data: this.data,
                 columns: this.columns,
+                mergedCells: this.mergedCells,
                 _headers: this._headers,
                 _footers: this._footers,
                 _tables: this._tables,
