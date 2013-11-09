@@ -11,6 +11,8 @@ define(['underscore', '../util'], function (_, util) {
     OneCellAnchor = function (config) {
         this.x = null;
         this.y = null;
+        this.xOff = null;
+        this.yOff = null;
         this.width = null;
         this.height = null;
         if(config) {
@@ -39,11 +41,11 @@ define(['underscore', '../util'], function (_, util) {
             var fromCol = util.createElement(xmlDoc, 'xdr:col');
             fromCol.appendChild(xmlDoc.createTextNode(this.x));
             var fromColOff = util.createElement(xmlDoc, 'xdr:colOff');
-            fromColOff.appendChild(xmlDoc.createTextNode(this.xOff));
+            fromColOff.appendChild(xmlDoc.createTextNode(this.xOff || 0));
             var fromRow = util.createElement(xmlDoc, 'xdr:row');
             fromRow.appendChild(xmlDoc.createTextNode(this.y));
             var fromRowOff = util.createElement(xmlDoc, 'xdr:rowOff');
-            fromRowOff.appendChild(xmlDoc.createTextNode(this.yOff));
+            fromRowOff.appendChild(xmlDoc.createTextNode(this.yOff || 0));
             from.appendChild(fromCol);
             from.appendChild(fromColOff);
             from.appendChild(fromRow);
