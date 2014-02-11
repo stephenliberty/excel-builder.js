@@ -58,7 +58,7 @@ define([
         /**
          * Turns a workbook into a downloadable file.
          * @param {Excel/Workbook} workbook The workbook that is being converted
-         * @param {Object} options - options to modify how the excel doc is created. Only accepts a base64 boolean at the moment.
+         * @param {Object} options - options to modify how the zip is created. See http://stuk.github.io/jszip/#doc_generate_options
          */
         createFile: function (workbook, options) {
             var zip = new JSZip();
@@ -71,9 +71,9 @@ define([
                     zip.file(path, content, {base64: true, binary: true});
                 }
             })
-            return zip.generate({
-                base64: (!options || options.base64 !== false)
-            });
+            return zip.generate(_.defaults(options || {}, {
+                type: "base64"
+            }));
         }
     }
     
