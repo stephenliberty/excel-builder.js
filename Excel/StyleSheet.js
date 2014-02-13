@@ -291,7 +291,6 @@ define(['underscore', './util'], function (_, util) {
             var self = this;
             var borderGenerator = function (name) {
                 var b = doc.createElement(name);
-                border.appendChild(b);
                 if(data[name].style) {
                     b.setAttribute('style', data[name].style);
                 }
