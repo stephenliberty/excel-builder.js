@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 				options: {
 					baseUrl: ".",
 					name: "<%= pkg.name %>",
-					/*optimize: "none",*/
+					// optimize: "none",
 					paths: {
 						"requireLib": "node_modules/requirejs/require",
 						"underscore": "node_modules/underscore/underscore-min",
