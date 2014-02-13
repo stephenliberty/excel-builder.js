@@ -67,18 +67,26 @@ define(['underscore'], function (_) {
     _.extend(XMLDOM.XMLNode.prototype, {
         
         toString: function () {
-            var string = "<" + this.nodeName + " ";
-            var attrs = [];
+            var string = "<" + this.nodeName;
+			var attrs = [];
             for(var attr in this.attributes) {
                 attrs.push(attr + "=\""+this.attributes[attr]+"\"");
             }
-            string+= attrs.join(" ") + ">";
-            
-            for(var i = 0, l = this.children.length; i < l; i++) {
-                string += this.children[i].toString();
+            if (attrs.length > 0){
+				string+= " " + attrs.join(" ");
             }
-            
-            string += "</" + this.nodeName + ">";
+
+            var childContent = "";
+            for(var i = 0, l = this.children.length; i < l; i++) {
+				childContent += this.children[i].toString();
+            }
+
+            if (childContent){
+				string +=  ">" + childContent + "</" + this.nodeName + ">";
+            } else {
+				string += "/>";
+            }
+
             return string;
         },
         
