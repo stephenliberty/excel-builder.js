@@ -238,10 +238,10 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 maxX = cellCount > maxX ? cellCount : maxX;
                 for(var c = 0; c < cellCount; c++) {
                     var cellValue = dataRow[c];
-                    if (typeof dataRow[c] == 'object') {
-                        cellValue = dataRow[c].value;
+                    var metadata = cellValue && cellValue.metadata || {};
+                    if (cellValue && typeof cellValue == 'object') {
+                        cellValue = cellValue.value;
                     }
-                    var metadata = dataRow[c].metadata || {};
                     
                     if(!metadata.type) {
                         if(typeof cellValue == 'number') {
@@ -280,12 +280,11 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 for(var c = 0; c < cellCount; c++) {
                     columns[c] = columns[c] || {};
                     var cellValue = dataRow[c];
-                    if (typeof dataRow[c] == 'object') {
-                        cellValue = dataRow[c].value;
+                    var cell, metadata = cellValue && cellValue.metadata || {};
+
+                    if (cellValue && typeof cellValue == 'object') {
+                        cellValue = cellValue.value;
                     }
-                    
-                    var cell, metadata = dataRow[c].metadata || {};
-			
             
                     if(!metadata.type) {
                         if(typeof cellValue == 'number') {
