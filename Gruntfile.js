@@ -11,7 +11,7 @@ module.exports = function(grunt) {
 					// optimize: "none",
 					paths: {
 						"requireLib": "node_modules/requirejs/require",
-						"underscore": "node_modules/underscore/underscore-min",
+						"underscore": "node_modules/underscore/underscore",
 						"JSZip": "node_modules/jszip/dist/jszip"
 					},
 					shim: {
