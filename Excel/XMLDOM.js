@@ -42,7 +42,7 @@ define(['underscore'], function (_) {
              };
          },
         toString: function () {
-            return this.nodeValue;
+            return _.escape(this.nodeValue);
         }
      });
     
@@ -70,7 +70,7 @@ define(['underscore'], function (_) {
             var string = "<" + this.nodeName;
 			var attrs = [];
             for(var attr in this.attributes) {
-                attrs.push(attr + "=\""+this.attributes[attr]+"\"");
+                attrs.push(attr + "=\""+_.escape(this.attributes[attr])+"\"");
             }
             if (attrs.length > 0){
 				string+= " " + attrs.join(" ");
