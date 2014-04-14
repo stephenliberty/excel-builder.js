@@ -1,8 +1,8 @@
-"use strict";
 /**
  * @module Excel/Table
  */
 define(['underscore', './util'], function (_, util) {
+    "use strict";
     var Table = function (config) {
         _.defaults(this, {
             name: "",
@@ -148,7 +148,7 @@ define(['underscore', './util'], function (_, util) {
         exportAutoFilter: function (doc) {
             var autoFilter = doc.createElement('autoFilter');
             var s = this.autoFilter[0];
-            var e = this.autoFilter[1]
+            var e = this.autoFilter[1];
             autoFilter.setAttribute('ref', util.positionToLetterRef(s[0], s[1]) + ":" + util.positionToLetterRef(e[0], e[1]  - this.totalsRowCount));
             return autoFilter;
         },

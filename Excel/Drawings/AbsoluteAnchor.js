@@ -1,4 +1,5 @@
 define(['underscore', '../util'], function (_, util) {
+    "use strict";
     /**
      * 
      * @param {Object} config
@@ -8,7 +9,7 @@ define(['underscore', '../util'], function (_, util) {
      * @param {Number} config.height Height in EMU's
      * @constructor
      */
-    AbsoluteAnchor = function (config) {
+    var AbsoluteAnchor = function (config) {
         this.x = null;
         this.y = null;
         this.width = null;

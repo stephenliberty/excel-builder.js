@@ -1,8 +1,8 @@
-"use strict";
 /**
  * @module Excel/Drawings
  */
 define(['underscore', './RelationshipManager', './util'], function (_, RelationshipManager, util) {
+    "use strict";
     var Drawings = function () {
         this.drawings = [];
         this.relations = new RelationshipManager();
@@ -27,8 +27,6 @@ define(['underscore', './RelationshipManager', './util'], function (_, Relations
             var drawings = doc.documentElement;
 //            drawings.setAttribute('xmlns:xdr', util.schemas.spreadsheetDrawing);
             drawings.setAttribute('xmlns:a', util.schemas.drawing);
-            
-            var existingRelationships = {};
             
             for(var i = 0, l = this.drawings.length; i < l; i++) {
                 

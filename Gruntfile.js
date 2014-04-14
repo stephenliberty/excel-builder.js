@@ -4,7 +4,7 @@ module.exports = function(grunt) {
     
     var compileOptions = {
         baseUrl: ".",
-        name: "<%= pkg.name %>",
+        name: "buildtools/index",
         optimize: "none",
         paths: {
             "underscore": "node_modules/underscore/underscore",
@@ -19,6 +19,18 @@ module.exports = function(grunt) {
             }
         }
     };
+    
+    var files = grunt.file.expand({
+        cwd: './dist',
+        filter: function (src) {
+            if(src.indexOf('WorksheetExportWorker') != -1) {
+                return false;
+            }
+            return true;
+        }
+    }, '../Excel/**/*.js');
+    
+    grunt.file.write('./buildtools/index.js', "define(" + JSON.stringify(files) + ", function () {})");
     
     // Project configuration.
     grunt.initConfig({
@@ -43,12 +55,37 @@ module.exports = function(grunt) {
                     out: "dist/<%= pkg.name %>.dist.js"
                 }, compileOptions)
             }
+        },
+        uglify: {
+            options: {
+                compress: {
+                    drop_console: true
+                }
+            },
+            optimize: {
+                files: {
+                    'dist/<%= pkg.name %>.compiled.min.js': ['dist/<%= pkg.name %>.compiled.js'],
+                    'dist/<%= pkg.name %>.dist.min.js': ['dist/<%= pkg.name %>.dist.js']
+                }
+            }
+        },
+        jshint: {
+            options: {
+                jshintrc: true
+            },
+            all: {
+                //http://stackoverflow.com/questions/20695823/grunt-contrib-jshint-ignores-has-no-effect (hence the ! in front of **/*Worker.js
+                src: ['Excel/**/*.js', '!**/*Worker.js']
+            }
         }
     });
+    
+    
 
-    // Load the plugin that provides the "requirejs" task.
     grunt.loadNpmTasks('grunt-contrib-requirejs');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 
     // Default task(s).
-    grunt.registerTask('default', ['requirejs']);
+    grunt.registerTask('default', ['jshint:all', 'requirejs', 'optimize']);
 };

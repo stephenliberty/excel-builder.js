@@ -1,9 +1,9 @@
-"use strict";
 /**
  * @module Excel/StyleSheet
  */
 define(['underscore', './util'], function (_, util) {
-    var StyleSheet = function (config) {
+    "use strict";
+    var StyleSheet = function () {
         this.id = _.uniqueId('StyleSheet');
         this.cellStyles = [{
             name:"Normal", 
@@ -70,7 +70,7 @@ define(['underscore', './util'], function (_, util) {
             var format = {
                 id: id,
                 formatCode: formatInstructions
-            }
+            };
             this.numberFormatters.push(format);
             return format;
         },
@@ -79,6 +79,7 @@ define(['underscore', './util'], function (_, util) {
         * alignment: {
         *  horizontal: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_HorizontalAlignment.html
         *  vertical: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_VerticalAlignment.html
+        *  @param {Object} styleInstructions
         */
         createFormat: function (styleInstructions) {
             var sid = this.masterCellFormats.length;
@@ -97,7 +98,7 @@ define(['underscore', './util'], function (_, util) {
             if (styleInstructions.format && _.isString(styleInstructions.format)) {
                 style.numFmtId = this.createNumberFormatter(styleInstructions.format).id;
             } else if(styleInstructions.format) {
-                if(_.isNaN(parseInt(styleInstructions.format))) {
+                if(_.isNaN(parseInt(styleInstructions.format, 10))) {
                     throw "Invalid number formatter id";
                 }
                 style.numFmtId = styleInstructions.format;
@@ -106,7 +107,7 @@ define(['underscore', './util'], function (_, util) {
             if (styleInstructions.border && _.isObject(styleInstructions.border)) {
                 style.borderId = this.createBorderFormatter(styleInstructions.border).id;
             } else if (styleInstructions.border) {
-                if(_.isNaN(parseInt(styleInstructions.border))) {
+                if(_.isNaN(parseInt(styleInstructions.border, 10))) {
                     throw "Passing a non-numeric border id is not supported";
                 }
                 style.borderId = styleInstructions.border;
@@ -115,7 +116,7 @@ define(['underscore', './util'], function (_, util) {
             if (styleInstructions.fill && _.isObject(styleInstructions.fill)) {
                 style.fillId = this.createFill(styleInstructions.fill).id;
             } else if (styleInstructions.fill) {
-                if(_.isNaN(parseInt(styleInstructions.fill))) {
+                if(_.isNaN(parseInt(styleInstructions.fill, 10))) {
                     throw "Passing a non-numeric fill id is not supported";
                 }
                 style.fillId = styleInstructions.fill;
@@ -143,7 +144,7 @@ define(['underscore', './util'], function (_, util) {
             var id = this.differentialStyles.length;
             var style = {
                 id: id
-            }
+            };
             if(styleInstructions.font && _.isObject(styleInstructions.font)) {
                 style.font = styleInstructions.font;
             }
@@ -174,6 +175,7 @@ define(['underscore', './util'], function (_, util) {
          * http://www.schemacentral.com/sc/ooxml/t-ssml_ST_TableStyleType.html
          * 
          * The value should be a reference to a differential format (dxf)
+         * @param {Object} instructions
          */
         createTableStyle: function (instructions) {
             this.tableStyles.push(instructions);
@@ -196,6 +198,7 @@ define(['underscore', './util'], function (_, util) {
         * style: styleString, http://www.schemacentral.com/sc/ooxml/t-ssml_ST_BorderStyle.html
         * color: ARBG color (requires the A, so for example FF006666)
         * }
+        * @param {Object} border
         */
         createBorderFormatter: function (border) {
             _.defaults(border, {
@@ -225,6 +228,7 @@ define(['underscore', './util'], function (_, util) {
         * subscript
         *
         * Color is a future goal - at the moment it's looking a bit complicated
+        * @param {Object} instructions
         */
         createFontStyle: function (instructions) {
             var fontId = this.fonts.length;
@@ -248,7 +252,7 @@ define(['underscore', './util'], function (_, util) {
                     'double',
                     'singleAccounting',
                     'doubleAccounting'
-                    ], instructions.underline) != -1) {
+                    ], instructions.underline) !== -1) {
                     fontStyle.underline = instructions.underline;
                 } else {
                     fontStyle.underline = true;
@@ -350,11 +354,11 @@ define(['underscore', './util'], function (_, util) {
         },
 
         exportCellFormatElement: function (doc, styleInstructions) {
-            var xf = doc.createElement('xf'), i = 0, l;
+            var xf = doc.createElement('xf');
             var allowed = ['applyAlignment', 'applyBorder', 'applyFill', 'applyFont', 'applyNumberFormat', 
-            'applyProtection', 'borderId', 'fillId', 'fontId', 'numFmtId', 'pivotButton', 'quotePrefix', 'xfId']
+            'applyProtection', 'borderId', 'fillId', 'fontId', 'numFmtId', 'pivotButton', 'quotePrefix', 'xfId'];
             var attributes = _.filter(_.keys(styleInstructions), function (key) {
-                if(_.indexOf(allowed, key) != -1) {
+                if(_.indexOf(allowed, key) !== -1) {
                     return true;
                 }
             });
@@ -451,10 +455,10 @@ define(['underscore', './util'], function (_, util) {
         exportFill: function (doc, fd) {
             var fillDef;
             var fill = doc.createElement('fill');
-            if (fd.type == 'pattern') {
+            if (fd.type === 'pattern') {
                 fillDef = this.exportPatternFill(doc, fd);
                 fill.appendChild(fillDef);
-            } else if (fd.type == 'gradient') {
+            } else if (fd.type === 'gradient') {
                 fillDef = this.exportGradientFill(doc, fd);
                 fill.appendChild(fillDef);
             }
@@ -474,7 +478,7 @@ define(['underscore', './util'], function (_, util) {
             var start = doc.createElement('stop');
             start.setAttribute('position', data.start.pureAt || 0);
             var startColor = doc.createElement('color');
-            if (typeof data.start == 'string' || data.start.color) {
+            if (typeof data.start === 'string' || data.start.color) {
                 startColor.setAttribute('rgb', data.start.color || data.start);
             } else if (typeof data.start.theme) {
                 startColor.setAttribute('theme', data.start.theme);
@@ -483,7 +487,7 @@ define(['underscore', './util'], function (_, util) {
             var end = doc.createElement('stop');
             var endColor = doc.createElement('color');
             end.setAttribute('position', data.end.pureAt || 1);
-            if (typeof data.start == 'string' || data.end.color) {
+            if (typeof data.start === 'string' || data.end.color) {
                 endColor.setAttribute('rgb', data.end.color || data.end);
             } else if (typeof data.end.theme) {
                 endColor.setAttribute('theme', data.end.theme);
@@ -497,6 +501,8 @@ define(['underscore', './util'], function (_, util) {
         
         /**
         * Pattern types: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_PatternType.html
+        * @param {XMLDoc} doc
+        * @param {Object} data
         */
         exportPatternFill: function (doc, data) {
             var fillDef = util.createElement(doc, 'patternFill', [
@@ -511,7 +517,7 @@ define(['underscore', './util'], function (_, util) {
 
             var bgColor = doc.createElement('bgColor');
             if(_.isString(data.bgColor)) {
-                bgColor.setAttribute('rgb', data.bgColor)
+                bgColor.setAttribute('rgb', data.bgColor);
             } else {
                 if(data.bgColor.theme) {
                     bgColor.setAttribute('theme', data.bgColor.theme);
@@ -522,7 +528,7 @@ define(['underscore', './util'], function (_, util) {
 
             var fgColor = doc.createElement('fgColor');
             if(_.isString(data.fgColor)) {
-                fgColor.setAttribute('rgb', data.fgColor)
+                fgColor.setAttribute('rgb', data.fgColor);
             } else {
                 if(data.fgColor.theme) {
                     fgColor.setAttribute('theme', data.fgColor.theme);
@@ -622,7 +628,7 @@ define(['underscore', './util'], function (_, util) {
             var i = 0;
             
             _.each(style, function (value, key) {
-                if(key == 'name') {return;}
+                if(key === 'name') {return;}
                 i++;
                 var styleEl = doc.createElement('tableStyleElement');
                 styleEl.setAttribute('type', key);

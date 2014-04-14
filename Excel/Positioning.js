@@ -1,4 +1,5 @@
 define([], function () {
+    "use strict";
     return {
         /**
          * Converts pixel sizes to 'EMU's, which is what Open XML uses. 

@@ -1,5 +1,6 @@
 define(['underscore', '../util'], function (_, util) {
-    TwoCellAnchor = function (config) {
+    'use strict';
+    var TwoCellAnchor = function (config) {
         this.from = {xOff: 0, yOff: 0};
         this.to = {xOff: 0, yOff: 0};
         if(config) {

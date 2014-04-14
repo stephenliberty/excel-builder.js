@@ -1,5 +1,6 @@
 define(['./Drawing', 'underscore', '../util'], function (Drawing, _, util) {
-    Picture = function () {
+    "use strict";
+    var Picture = function () {
         this.media = null;
         this.id = _.uniqueId('Picture');
         this.pictureId = util.uniqueId('Picture');

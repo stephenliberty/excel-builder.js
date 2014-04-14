@@ -1,8 +1,8 @@
-"use strict";
 /**
  * @module Excel/util
  */
 define(['./XMLDOM'], function (XMLDOM) {
+    "use strict";
     var util = {
         
         _idSpaces: {},
@@ -37,7 +37,7 @@ define(['./XMLDOM'], function (XMLDOM) {
             if(document.implementation && document.implementation.createDocument) {
                 return document.implementation.createDocument(ns || null, base, null);
             } else if (window.ActiveXObject) {
-                var doc = new ActiveXObject( "Microsoft.XMLDOM" );
+                var doc = new window.ActiveXObject( "Microsoft.XMLDOM" );
                 var rootNode = doc.createElement(base);
                 rootNode.setAttribute('xmlns', ns);
                 doc.appendChild(rootNode);
@@ -57,14 +57,14 @@ define(['./XMLDOM'], function (XMLDOM) {
          */
         createElement: function (doc, name, attributes) {
             var el = doc.createElement(name);
-            var ie = !el.setAttributeNS
+            var ie = !el.setAttributeNS;
             attributes = attributes || [];
             var i = attributes.length;
             while (i--) {
-                if(!ie && attributes[i][0].indexOf('xmlns') != -1) {
-                    el.setAttributeNS("http://www.w3.org/2000/xmlns/", attributes[i][0], attributes[i][1])
+                if(!ie && attributes[i][0].indexOf('xmlns') !== -1) {
+                    el.setAttributeNS("http://www.w3.org/2000/xmlns/", attributes[i][0], attributes[i][1]);
                 } else {
-                    el.setAttribute(attributes[i][0], attributes[i][1])
+                    el.setAttribute(attributes[i][0], attributes[i][1]);
                 }
             }
             return el;
@@ -78,12 +78,12 @@ define(['./XMLDOM'], function (XMLDOM) {
                 return this.LETTER_REFS[x].concat(y);
             }
             while (num > 0) {
-                num -= Math.pow(26, digit -1)
-                index = num % Math.pow(26, digit)
-                num -= index
-                index = index / Math.pow(26, digit - 1)
-                string = alphabet.charAt(index) + string
-                digit += 1
+                num -= Math.pow(26, digit -1);
+                index = num % Math.pow(26, digit);
+                num -= index;
+                index = index / Math.pow(26, digit - 1);
+                string = alphabet.charAt(index) + string;
+                digit += 1;
             }
             this.LETTER_REFS[x] = string;
             return string.concat(y);

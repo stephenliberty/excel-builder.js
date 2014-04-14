@@ -1,8 +1,8 @@
-"use strict";
 /**
  * @module Excel/RelationshipManager
  */
 define(['underscore', './util', './Paths'], function (_, util, Paths) {
+    "use strict";
     var RelationshipManager = function () {
         this.relations = {};
         this.lastId = 1;

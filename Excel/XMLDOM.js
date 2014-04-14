@@ -1,6 +1,6 @@
 define(['underscore'], function (_) {
-    
-    var XMLDOM = function (ns, rootNodeName, documentType) {
+    'use strict';
+    var XMLDOM = function (ns, rootNodeName) {
         this.documentElement = this.createElement(rootNodeName);
         this.documentElement.setAttribute('xmlns', ns);
     };
@@ -24,12 +24,10 @@ define(['underscore'], function (_) {
         switch(config.type) {
             case "XML":
                 return new XMLDOM.XMLNode(config);
-                break;
             case "TEXT":
                 return new XMLDOM.TextNode(config.nodeValue);
-                break;
         }
-    }
+    };
     
     XMLDOM.TextNode = function (text) {
         this.nodeValue = text;
@@ -60,7 +58,9 @@ define(['underscore'], function (_) {
         
         if(config.attributes) {
             for(var attr in config.attributes) {
-                this.setAttribute(attr, config.attributes[attr]);
+                if(config.attributes.hasOwnProperty(attr)) {
+                    this.setAttribute(attr, config.attributes[attr]);
+                }
             }
         }
     };
@@ -68,23 +68,25 @@ define(['underscore'], function (_) {
         
         toString: function () {
             var string = "<" + this.nodeName;
-			var attrs = [];
+            var attrs = [];
             for(var attr in this.attributes) {
-                attrs.push(attr + "=\""+_.escape(this.attributes[attr])+"\"");
+                if(this.attributes.hasOwnProperty(attr)) {
+                    attrs.push(attr + "=\""+_.escape(this.attributes[attr])+"\"");
+                }
             }
             if (attrs.length > 0){
-				string+= " " + attrs.join(" ");
+                string+= " " + attrs.join(" ");
             }
 
             var childContent = "";
             for(var i = 0, l = this.children.length; i < l; i++) {
-				childContent += this.children[i].toString();
+                childContent += this.children[i].toString();
             }
 
             if (childContent){
-				string +=  ">" + childContent + "</" + this.nodeName + ">";
+                string +=  ">" + childContent + "</" + this.nodeName + ">";
             } else {
-				string += "/>";
+                string += "/>";
             }
 
             return string;

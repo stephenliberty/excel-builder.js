@@ -1,13 +1,13 @@
-"use strict";
 /**
  * @module Excel/SharedStrings
  */
 define(['underscore', './util'], function (_, util) {
+    "use strict";
     var sharedStrings = function () {
         this.strings = {};
         this.stringArray = [];
         this.id = _.uniqueId('SharedStrings');
-    }
+    };
     _.extend(sharedStrings.prototype, {
         /**
          * Adds a string to the shared string file, and returns the ID of the 

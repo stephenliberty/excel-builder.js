@@ -20,3 +20,9 @@ Install dependencies:
 Combine & uglify:
 
 	grunt requirejs
+
+Distributables
+---------------
+excel-builder.compiled.js -> All files in the EB package + Underscore
+
+excel-builder.dist.js -> All files in the EB package + Underscore, with no need for external AMD provider (Web worker will not function in this build).

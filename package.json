@@ -22,12 +22,14 @@
   "homepage": "https://github.com/stephenliberty/excel-builder.js",
   "devDependencies": {
     "grunt": "~0.4.2",
-    "grunt-contrib-requirejs": "~0.4.1"
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-contrib-uglify": "*",
+    "almond": "*",
+    "grunt-contrib-jshint": "*"
   },
   "dependencies": {
     "underscore": "~1.6.0",
     "jszip": "~2.1.0",
-    "requirejs": "~2.1.10",
-    "almond": "*"
+    "requirejs": "~2.1.10"
   }
 }

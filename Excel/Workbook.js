@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @module Excel/Workbook
  */
@@ -14,6 +13,7 @@ define([
     './XMLDOM'
 ], 
 function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths, XMLDOM) {
+    "use strict";
     var Workbook = function (config) {
         this.worksheets = [];
         this.tables = [];
@@ -23,7 +23,7 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
     };
     _.extend(Workbook.prototype, {
 
-        initialize: function (config) {
+        initialize: function () {
             this.id = _.uniqueId('Workbook');
             this.styleSheet = new StyleSheet();
             this.sharedStrings = new SharedStrings();
@@ -33,10 +33,10 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         },
 
         createWorksheet: function (config) {
-            config = config || {}
+            config = config || {};
             _.defaults(config, {
                 name: 'Sheet '.concat(this.worksheets.length + 1)
-            })
+            });
             return new Worksheet(config);
         },
         
@@ -93,6 +93,7 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         createContentTypes: function () {
             var doc = util.createXmlDoc(util.schemas.contentTypes, 'Types');
             var types = doc.documentElement;
+            var i, l;
             
             types.appendChild(util.createElement(doc, 'Default', [
                 ['Extension', "rels"],
@@ -105,13 +106,17 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
             
             var extensions = {};
             for(var filename in this.media) {
-                extensions[this.media[filename].extension] = this.media[filename].contentType;
+                if(this.media.hasOwnProperty(filename)) {
+                    extensions[this.media[filename].extension] = this.media[filename].contentType;
+                }
             }
             for(var extension in extensions) {
-                types.appendChild(util.createElement(doc, 'Default', [
-                    ['Extension', extension],
-                    ['ContentType', extensions[extension]]
-                ]));
+                if(extensions.hasOwnProperty(extension)) {
+                    types.appendChild(util.createElement(doc, 'Default', [
+                        ['Extension', extension],
+                        ['ContentType', extensions[extension]]
+                    ]));
+                }
             }
             
             types.appendChild(util.createElement(doc, 'Override', [
@@ -127,20 +132,20 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"]
             ]));
 
-            for(var i = 0, l = this.worksheets.length; i < l; i++) {
+            for(i = 0, l = this.worksheets.length; i < l; i++) {
                 types.appendChild(util.createElement(doc, 'Override', [
                     ['PartName', "/xl/worksheets/sheet" + (i + 1) + ".xml"],
                     ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"]
                 ]));
             }
-            for(var i = 0, l = this.tables.length; i < l; i++) {
+            for(i = 0, l = this.tables.length; i < l; i++) {
                 types.appendChild(util.createElement(doc, 'Override', [
                     ['PartName', "/xl/tables/table" + (i + 1) + ".xml"],
                     ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"]
                 ]));
             }
             
-            for(var i = 0, l = this.drawings.length; i < l; i++) {
+            for(i = 0, l = this.drawings.length; i < l; i++) {
                 types.appendChild(util.createElement(doc, 'Override', [
                     ['PartName', '/xl/drawings/drawing' + (i + 1) + '.xml'],
                     ['ContentType', 'application/vnd.openxmlformats-officedocument.drawing+xml']
@@ -160,7 +165,7 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 var sheet = doc.createElement('sheet');
                 sheet.setAttribute('name', this.worksheets[i].name);
                 sheet.setAttribute('sheetId', i + 1);
-                sheet.setAttribute('r:id', this.relations.getRelationshipId(this.worksheets[i]))
+                sheet.setAttribute('r:id', this.relations.getRelationshipId(this.worksheets[i]));
                 sheets.appendChild(sheet);
             }
             wb.appendChild(sheets);
@@ -179,22 +184,25 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         },
         
         _generateCorePaths: function (files) {
+            var i, l;
             Paths[this.styleSheet.id] = 'styles.xml';
             Paths[this.sharedStrings.id] = 'sharedStrings.xml';
             Paths[this.id] = '/xl/workbook.xml';
             
-            for(var i = 0, l = this.tables.length; i < l; i++) {
+            for(i = 0, l = this.tables.length; i < l; i++) {
                 files['/xl/tables/table' + (i + 1) + '.xml'] = this.tables[i].toXML();
                 Paths[this.tables[i].id] = '/xl/tables/table' + (i + 1) + '.xml';
             }
             
             for(var fileName in this.media) {
-                var media = this.media[fileName];
-                files['/xl/media/' + fileName] = media.data;
-                Paths[fileName] = '/xl/media/' + fileName;
+                if(this.media.hasOwnProperty(fileName)) {
+                    var media = this.media[fileName];
+                    files['/xl/media/' + fileName] = media.data;
+                    Paths[fileName] = '/xl/media/' + fileName;
+                }
             }
             
-            for(var i = 0, l = this.drawings.length; i < l; i++) {
+            for(i = 0, l = this.drawings.length; i < l; i++) {
                 files['/xl/drawings/drawing' + (i + 1) + '.xml'] = this.drawings[i].toXML();
                 Paths[this.drawings[i].id] = '/xl/drawings/drawing' + (i + 1) + '.xml';
                 files['/xl/drawings/_rels/drawing' + (i + 1) + '.xml.rels'] = this.drawings[i].relations.toXML();
@@ -215,12 +223,12 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
             });
 
             _.each(files, function (value, key) {
-				if(key.indexOf('.xml') != -1 || key.indexOf('.rels') != -1) {
-					if (value instanceof XMLDOM){
-						files[key] = value.toString();
-					} else {
-						files[key] = value.xml || new XMLSerializer().serializeToString(value);
-					}
+                if(key.indexOf('.xml') !== -1 || key.indexOf('.rels') !== -1) {
+                    if (value instanceof XMLDOM){
+                        files[key] = value.toString();
+                    } else {
+                        files[key] = value.xml || new window.XMLSerializer().serializeToString(value);
+                    }
                     var content = files[key].replace(/xmlns=""/g, '');
                     content = content.replace(/NS[\d]+:/g, '');
                     content = content.replace(/xmlns:NS[\d]+=""/g, '');
@@ -271,31 +279,33 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                         });
                     }
                 }
-            }
+            };
             
+            
+            var worksheetWorker = function (worksheetIndex) {
+                return {
+                    error: function () {
+                        for(var i = 0; i < workers.length; i++) {
+                            workers[i].terminate();
+                        }
+                        //message, filename, lineno
+                        options.error.apply(this, arguments);
+                    },
+                    stringsCollected: function () {
+                        stringsCollected();
+                    },
+                    finished: function (data) {
+                        files['/xl/worksheets/sheet' + (worksheetIndex + 1) + '.xml'] = {xml: data};
+                        Paths[self.worksheets[worksheetIndex].id] = 'worksheets/sheet' + (worksheetIndex + 1) + '.xml';
+                        files['/xl/worksheets/_rels/sheet' + (worksheetIndex + 1) + '.xml.rels'] = self.worksheets[worksheetIndex].relations.toXML();
+                        done();
+                    }
+                };
+            };
             
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
                 workers.push(
-                    this._createWorker(requireJsPath, i, function (worksheetIndex) {
-                        return {
-                            error: function () {
-                                for(var i = 0; i < workers.length; i++) {
-                                    workers[i].terminate();
-                                }
-                                //message, filename, lineno
-                                options.error.apply(this, arguments);
-                            },
-                            stringsCollected: function () {
-                                stringsCollected();
-                            },
-                            finished: function (data) {
-                                files['/xl/worksheets/sheet' + (worksheetIndex + 1) + '.xml'] = {xml: data};
-                                Paths[self.worksheets[worksheetIndex].id] = 'worksheets/sheet' + (worksheetIndex + 1) + '.xml';
-                                files['/xl/worksheets/_rels/sheet' + (worksheetIndex + 1) + '.xml.rels'] = self.worksheets[worksheetIndex].relations.toXML();
-                                done();
-                            }
-                        };
-                    }(i))
+                    this._createWorker(requireJsPath, i, worksheetWorker(i))
                 );
             }
             
@@ -303,10 +313,10 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         },
                 
         _createWorker: function (requireJsPath, worksheetIndex, callbacks) {
-            var worker = new Worker(require.toUrl('./WorksheetExportWorker.js'));
+            var worker = new window.Worker(require.toUrl('./WorksheetExportWorker.js'));
             var self = this;
             worker.addEventListener('error', callbacks.error);
-            worker.addEventListener('message', function(event, data) {
+            worker.addEventListener('message', function(event) {
 //                console.log("Called back by the worker!\n", event.data);
                 switch(event.data.status) {
                     case "ready":

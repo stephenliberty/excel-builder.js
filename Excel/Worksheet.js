@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This module represents an excel worksheet in its basic form - no tables, charts, etc. Its purpose is 
  * to hold data, the data's link to how it should be styled, and any links to other outside resources.
@@ -6,6 +5,7 @@
  * @module Excel/Worksheet
  */
 define(['underscore', './util', './RelationshipManager'], function (_, util, RelationshipManager) {
+    "use strict";
     /**
      * @constructor
      */
@@ -22,7 +22,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
-		
+        
         initialize: function (config) {
             config = config || {};
             this.name = config.name;
@@ -31,7 +31,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             if(config.columns) {
                 this.setColumns(config.columns);
             }
-			
+            
             this.relations = new RelationshipManager();
         },
         
@@ -64,7 +64,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             _.extend(this, data);
         },
         
-	setSharedStringCollection: function (stringCollection) {
+    setSharedStringCollection: function (stringCollection) {
             this.sharedStrings = stringCollection;
         },
         
@@ -77,7 +77,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             this._drawings.push(table);
             this.relations.addRelation(table, 'drawingRelationship');
         },
-		
+        
         /**
         * Expects an array length of three.
         * 
@@ -92,7 +92,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             }
             this._headers = headers;
         },
-		
+        
         /**
         * Expects an array length of three.
         * 
@@ -121,7 +121,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             "&R", this.compilePageDetailPiece(data[2] || "")
             ].join('');
         },
-	
+    
         /**
          * Turns instructions on page header/footer details into something
          * usable by Excel.
@@ -149,10 +149,10 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                     string += "&"+data.fontSize;
                 }
                 string += data.text;
-				
+                
                 return string;
             }
-			
+            
             if(_.isArray(data)) {
                 var self = this;
                 return _.reduce(data, function (m, v) {
@@ -173,14 +173,14 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             oddHeader.appendChild(doc.createTextNode(this.compilePageDetailPackage(this._headers)));
             return oddHeader;
         },
-	
+    
         /**
          * Creates the footer node.
          * 
          * @todo implement the ability to do even/odd footers
          * @param {XML Doc} doc
          * @returns {XML Node}
-         */	
+         */    
         exportFooter: function (doc) {
             var oddFooter = doc.createElement('oddFooter');
             oddFooter.appendChild(doc.createTextNode(this.compilePageDetailPackage(this._footers)));
@@ -219,7 +219,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 date: numberNode,
                 string: stringNode,
                 formula: formulaNode
-            }
+            };
         },
         
         /**
@@ -239,17 +239,17 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 for(var c = 0; c < cellCount; c++) {
                     var cellValue = dataRow[c];
                     var metadata = cellValue && cellValue.metadata || {};
-                    if (cellValue && typeof cellValue == 'object') {
+                    if (cellValue && typeof cellValue === 'object') {
                         cellValue = cellValue.value;
                     }
                     
                     if(!metadata.type) {
-                        if(typeof cellValue == 'number') {
+                        if(typeof cellValue === 'number') {
                             metadata.type = 'number';
                         }
                     }
-                    if(metadata.type == "text" || !metadata.type) {
-                        if(typeof strings[cellValue] == 'undefined') {
+                    if(metadata.type === "text" || !metadata.type) {
+                        if(typeof strings[cellValue] === 'undefined') {
                             strings[cellValue] = true;
                         }
                     }
@@ -263,6 +263,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             var columns = this.columns || [];
             var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'worksheet');
             var worksheet = doc.documentElement;
+            var i, l, row;
             worksheet.setAttribute('xmlns:r', util.schemas.relationships);
             worksheet.setAttribute('xmlns:mc', util.schemas.markupCompat);
             
@@ -271,7 +272,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             
             var cellCache = this._buildCache(doc);
             
-            for(var row = 0, l = data.length; row < l; row++) {
+            for(row = 0, l = data.length; row < l; row++) {
                 var dataRow = data[row];
                 var cellCount = dataRow.length;
                 maxX = cellCount > maxX ? cellCount : maxX;
@@ -282,12 +283,12 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                     var cellValue = dataRow[c];
                     var cell, metadata = cellValue && cellValue.metadata || {};
 
-                    if (cellValue && typeof cellValue == 'object') {
+                    if (cellValue && typeof cellValue === 'object') {
                         cellValue = cellValue.value;
                     }
             
                     if(!metadata.type) {
-                        if(typeof cellValue == 'number') {
+                        if(typeof cellValue === 'number') {
                             metadata.type = 'number';
                         }
                     }
@@ -306,17 +307,18 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                             cell.firstChild.firstChild.nodeValue = cellValue;
                             break;
                         case "text":
+                            /*falls through*/
                         default:
                             var id;
-                            if(typeof this.sharedStrings.strings[cellValue] != 'undefined') {
-                                var id = this.sharedStrings.strings[cellValue];
+                            if(typeof this.sharedStrings.strings[cellValue] !== 'undefined') {
+                                id = this.sharedStrings.strings[cellValue];
                             } else {
                                 id = this.sharedStrings.addString(cellValue);
                             }
                             cell = cellCache.string.cloneNode(true);
                             cell.firstChild.firstChild.nodeValue = id;
                             break;
-                    };
+                    }
                     if(metadata.style) {
                         cell.setAttribute('s', metadata.style);
                     }
@@ -341,9 +343,9 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 worksheet.appendChild(this.exportColumns(doc));
             }
             worksheet.appendChild(sheetData);
-			
+            
             this.exportPageSettings(doc, worksheet);
-			
+            
             if(this._headers.length > 0 || this._footers.length > 0) {
                 var headerFooter = doc.createElement('headerFooter');
                 if(this._headers.length > 0) {
@@ -354,19 +356,19 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 }
                 worksheet.appendChild(headerFooter);
             }
-			
+            
             if(this._tables.length > 0) {
                 var tables = doc.createElement('tableParts');
                 tables.setAttribute('count', this._tables.length);
-                for(var i = 0, l = this._tables.length; i < l; i++) {
+                for(i = 0, l = this._tables.length; i < l; i++) {
                     var table = doc.createElement('tablePart');
                     table.setAttribute('r:id', this.relations.getRelationshipId(this._tables[i]));
                     tables.appendChild(table);
                 }
                 worksheet.appendChild(tables);
             }
-	    
-            for(var i = 0, l = this._drawings.length; i < l; i++) {
+        
+            for(i = 0, l = this._drawings.length; i < l; i++) {
                 var drawing = doc.createElement('drawing');
                 drawing.setAttribute('r:id', this.relations.getRelationshipId(this._drawings[i]));
                 worksheet.appendChild(drawing);
@@ -374,7 +376,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             
             if (this.mergedCells.length > 0) {
                 var mergeCells = doc.createElement('mergeCells');
-                for (var i = 0, l = this.mergedCells.length; i < l; i++) {
+                for (i = 0, l = this.mergedCells.length; i < l; i++) {
                     var mergeCell = doc.createElement('mergeCell');
                     mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
                     mergeCells.appendChild(mergeCell);
@@ -412,8 +414,8 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                     col.setAttribute('width', 9.140625);
                 }
                 
-                cols.appendChild(col)
-            };
+                cols.appendChild(col);
+            }
             return cols;
         },
         
@@ -425,14 +427,14 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
          * @returns {undefined}
          */
         exportPageSettings: function (doc, worksheet) {
-			
+            
             if(this._orientation) {
                 worksheet.appendChild(util.createElement(doc, 'pageSetup', [
                     ['orientation', this._orientation]
                 ]));
             }
         },
-	
+    
         /**
          * http://www.schemacentral.com/sc/ooxml/t-ssml_ST_Orientation.html
          * 
@@ -444,11 +446,11 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
         setPageOrientation: function (orientation) {
             this._orientation = orientation;
         },
-		
+        
         /**
          * Expects an array of column definitions. Each column definition needs to have a width assigned to it. 
          * 
-         * @param {Array} Columns
+         * @param {Array} columns
          */
         setColumns: function (columns) {
             this.columns = columns;
@@ -487,6 +489,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
          * phonetic
          * style
          * width
+         * @param {Array} columnFormats
          */
         setColumnFormats: function (columnFormats) {
             this.columnFormats = columnFormats;
