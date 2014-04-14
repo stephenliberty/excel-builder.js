@@ -1767,7 +1767,7 @@ var requirejs, require, define;
 
 define('Excel/XMLDOM.js',['underscore'], function (_) {
     
-    var XMLDOM = function (ns, rootNodeName, documentType) {
+    var XMLDOM = function (ns, rootNodeName) {
         this.documentElement = this.createElement(rootNodeName);
         this.documentElement.setAttribute('xmlns', ns);
     };
@@ -1791,12 +1791,10 @@ define('Excel/XMLDOM.js',['underscore'], function (_) {
         switch(config.type) {
             case "XML":
                 return new XMLDOM.XMLNode(config);
-                break;
             case "TEXT":
                 return new XMLDOM.TextNode(config.nodeValue);
-                break;
         }
-    }
+    };
     
     XMLDOM.TextNode = function (text) {
         this.nodeValue = text;
@@ -1827,7 +1825,9 @@ define('Excel/XMLDOM.js',['underscore'], function (_) {
         
         if(config.attributes) {
             for(var attr in config.attributes) {
-                this.setAttribute(attr, config.attributes[attr]);
+                if(config.attributes.hasOwnProperty(attr)) {
+                    this.setAttribute(attr, config.attributes[attr]);
+                }
             }
         }
     };
@@ -1835,23 +1835,25 @@ define('Excel/XMLDOM.js',['underscore'], function (_) {
         
         toString: function () {
             var string = "<" + this.nodeName;
-			var attrs = [];
+            var attrs = [];
             for(var attr in this.attributes) {
-                attrs.push(attr + "=\""+_.escape(this.attributes[attr])+"\"");
+                if(this.attributes.hasOwnProperty(attr)) {
+                    attrs.push(attr + "=\""+_.escape(this.attributes[attr])+"\"");
+                }
             }
             if (attrs.length > 0){
-				string+= " " + attrs.join(" ");
+                string+= " " + attrs.join(" ");
             }
 
             var childContent = "";
             for(var i = 0, l = this.children.length; i < l; i++) {
-				childContent += this.children[i].toString();
+                childContent += this.children[i].toString();
             }
 
             if (childContent){
-				string +=  ">" + childContent + "</" + this.nodeName + ">";
+                string +=  ">" + childContent + "</" + this.nodeName + ">";
             } else {
-				string += "/>";
+                string += "/>";
             }
 
             return string;
@@ -1894,11 +1896,11 @@ define('Excel/XMLDOM.js',['underscore'], function (_) {
     
     return XMLDOM;
 });
-
 /**
  * @module Excel/util
  */
 define('Excel/util.js',['./XMLDOM'], function (XMLDOM) {
+    
     var util = {
         
         _idSpaces: {},
@@ -1933,7 +1935,7 @@ define('Excel/util.js',['./XMLDOM'], function (XMLDOM) {
             if(document.implementation && document.implementation.createDocument) {
                 return document.implementation.createDocument(ns || null, base, null);
             } else if (window.ActiveXObject) {
-                var doc = new ActiveXObject( "Microsoft.XMLDOM" );
+                var doc = new window.ActiveXObject( "Microsoft.XMLDOM" );
                 var rootNode = doc.createElement(base);
                 rootNode.setAttribute('xmlns', ns);
                 doc.appendChild(rootNode);
@@ -1953,14 +1955,14 @@ define('Excel/util.js',['./XMLDOM'], function (XMLDOM) {
          */
         createElement: function (doc, name, attributes) {
             var el = doc.createElement(name);
-            var ie = !el.setAttributeNS
+            var ie = !el.setAttributeNS;
             attributes = attributes || [];
             var i = attributes.length;
             while (i--) {
-                if(!ie && attributes[i][0].indexOf('xmlns') != -1) {
-                    el.setAttributeNS("http://www.w3.org/2000/xmlns/", attributes[i][0], attributes[i][1])
+                if(!ie && attributes[i][0].indexOf('xmlns') !== -1) {
+                    el.setAttributeNS("http://www.w3.org/2000/xmlns/", attributes[i][0], attributes[i][1]);
                 } else {
-                    el.setAttribute(attributes[i][0], attributes[i][1])
+                    el.setAttribute(attributes[i][0], attributes[i][1]);
                 }
             }
             return el;
@@ -1974,12 +1976,12 @@ define('Excel/util.js',['./XMLDOM'], function (XMLDOM) {
                 return this.LETTER_REFS[x].concat(y);
             }
             while (num > 0) {
-                num -= Math.pow(26, digit -1)
-                index = num % Math.pow(26, digit)
-                num -= index
-                index = index / Math.pow(26, digit - 1)
-                string = alphabet.charAt(index) + string
-                digit += 1
+                num -= Math.pow(26, digit -1);
+                index = num % Math.pow(26, digit);
+                num -= index;
+                index = index / Math.pow(26, digit - 1);
+                string = alphabet.charAt(index) + string;
+                digit += 1;
             }
             this.LETTER_REFS[x] = string;
             return string.concat(y);
@@ -2008,18 +2010,17 @@ define('Excel/util.js',['./XMLDOM'], function (XMLDOM) {
 	
     return util;
 });
-
 /**
  * This is mostly a global spot where all of the relationship managers can get and set
  * path information from/to. 
  * @module Excel/Paths
  */
 define('Excel/Paths.js',{});
-
 /**
  * @module Excel/RelationshipManager
  */
 define('Excel/RelationshipManager.js',['underscore', './util', './Paths'], function (_, util, Paths) {
+    
     var RelationshipManager = function () {
         this.relations = {};
         this.lastId = 1;
@@ -2070,11 +2071,11 @@ define('Excel/RelationshipManager.js',['underscore', './util', './Paths'], funct
     
     return RelationshipManager;
 });
-
 /**
  * @module Excel/Drawings
  */
 define('Excel/Drawings.js',['underscore', './RelationshipManager', './util'], function (_, RelationshipManager, util) {
+    
     var Drawings = function () {
         this.drawings = [];
         this.relations = new RelationshipManager();
@@ -2100,8 +2101,6 @@ define('Excel/Drawings.js',['underscore', './RelationshipManager', './util'], fu
 //            drawings.setAttribute('xmlns:xdr', util.schemas.spreadsheetDrawing);
             drawings.setAttribute('xmlns:a', util.schemas.drawing);
             
-            var existingRelationships = {};
-            
             for(var i = 0, l = this.drawings.length; i < l; i++) {
                 
                 var rId = this.relations.getRelationshipId(this.drawings[i].getMediaData());
@@ -2118,6 +2117,7 @@ define('Excel/Drawings.js',['underscore', './RelationshipManager', './util'], fu
     return Drawings;
 });
 define('Excel/Drawings/AbsoluteAnchor',['underscore', '../util'], function (_, util) {
+    
     /**
      * 
      * @param {Object} config
@@ -2127,7 +2127,7 @@ define('Excel/Drawings/AbsoluteAnchor',['underscore', '../util'], function (_, u
      * @param {Number} config.height Height in EMU's
      * @constructor
      */
-    AbsoluteAnchor = function (config) {
+    var AbsoluteAnchor = function (config) {
         this.x = null;
         this.y = null;
         this.width = null;
@@ -2180,8 +2180,9 @@ define('Excel/Drawings/AbsoluteAnchor',['underscore', '../util'], function (_, u
     });
     return AbsoluteAnchor;
 });
-define('Excel/Drawings/Chart.js',['underscore', '../util'], function (_, util) {
-    Chart = function (config) {
+define('Excel/Drawings/Chart.js',['underscore', '../util'], function (_) {
+    
+    var Chart = function () {
         
     };
     _.extend(Chart.prototype, {
@@ -2190,6 +2191,7 @@ define('Excel/Drawings/Chart.js',['underscore', '../util'], function (_, util) {
     return Chart;
 });
 define('Excel/Drawings/OneCellAnchor.js',['underscore', '../util'], function (_, util) {
+    
     /**
      * 
      * @param {Object} config
@@ -2199,7 +2201,7 @@ define('Excel/Drawings/OneCellAnchor.js',['underscore', '../util'], function (_,
      * @param {Number} config.height Height in EMU's
      * @constructor
      */
-    OneCellAnchor = function (config) {
+    var OneCellAnchor = function (config) {
         this.x = null;
         this.y = null;
         this.xOff = null;
@@ -2258,7 +2260,8 @@ define('Excel/Drawings/OneCellAnchor.js',['underscore', '../util'], function (_,
     return OneCellAnchor;
 });
 define('Excel/Drawings/TwoCellAnchor.js',['underscore', '../util'], function (_, util) {
-    TwoCellAnchor = function (config) {
+    
+    var TwoCellAnchor = function (config) {
         this.from = {xOff: 0, yOff: 0};
         this.to = {xOff: 0, yOff: 0};
         if(config) {
@@ -2332,7 +2335,6 @@ define('Excel/Drawings/TwoCellAnchor.js',['underscore', '../util'], function (_,
     });
     return TwoCellAnchor;
 });
-
 /**
  * This is mostly a global spot where all of the relationship managers can get and set
  * path information from/to. 
@@ -2341,6 +2343,7 @@ define('Excel/Drawings/TwoCellAnchor.js',['underscore', '../util'], function (_,
 define('Excel/Drawings/Drawing',[
     'underscore', './AbsoluteAnchor', './OneCellAnchor', './TwoCellAnchor'
 ], function (_, AbsoluteAnchor, OneCellAnchor, TwoCellAnchor) {
+    
     /**
      * @constructor
      */
@@ -2376,7 +2379,8 @@ define('Excel/Drawings/Drawing',[
     return Drawing;
 });
 define('Excel/Drawings/Picture.js',['./Drawing', 'underscore', '../util'], function (Drawing, _, util) {
-    Picture = function () {
+    
+    var Picture = function () {
         this.media = null;
         this.id = _.uniqueId('Picture');
         this.pictureId = util.uniqueId('Picture');
@@ -2478,6 +2482,7 @@ define('Excel/Drawings/Picture.js',['./Drawing', 'underscore', '../util'], funct
     return Picture;
 });
 define('Excel/Positioning.js',[], function () {
+    
     return {
         /**
          * Converts pixel sizes to 'EMU's, which is what Open XML uses. 
@@ -2493,16 +2498,16 @@ define('Excel/Positioning.js',[], function () {
         }
     };
 });
-
 /**
  * @module Excel/SharedStrings
  */
 define('Excel/SharedStrings',['underscore', './util'], function (_, util) {
+    
     var sharedStrings = function () {
         this.strings = {};
         this.stringArray = [];
         this.id = _.uniqueId('SharedStrings');
-    }
+    };
     _.extend(sharedStrings.prototype, {
         /**
          * Adds a string to the shared string file, and returns the ID of the 
@@ -2546,12 +2551,12 @@ define('Excel/SharedStrings',['underscore', './util'], function (_, util) {
     });
     return sharedStrings;
 });
-
 /**
  * @module Excel/StyleSheet
  */
 define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
-    var StyleSheet = function (config) {
+    
+    var StyleSheet = function () {
         this.id = _.uniqueId('StyleSheet');
         this.cellStyles = [{
             name:"Normal", 
@@ -2618,7 +2623,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             var format = {
                 id: id,
                 formatCode: formatInstructions
-            }
+            };
             this.numberFormatters.push(format);
             return format;
         },
@@ -2627,6 +2632,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
         * alignment: {
         *  horizontal: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_HorizontalAlignment.html
         *  vertical: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_VerticalAlignment.html
+        *  @param {Object} styleInstructions
         */
         createFormat: function (styleInstructions) {
             var sid = this.masterCellFormats.length;
@@ -2645,7 +2651,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             if (styleInstructions.format && _.isString(styleInstructions.format)) {
                 style.numFmtId = this.createNumberFormatter(styleInstructions.format).id;
             } else if(styleInstructions.format) {
-                if(_.isNaN(parseInt(styleInstructions.format))) {
+                if(_.isNaN(parseInt(styleInstructions.format, 10))) {
                     throw "Invalid number formatter id";
                 }
                 style.numFmtId = styleInstructions.format;
@@ -2654,7 +2660,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             if (styleInstructions.border && _.isObject(styleInstructions.border)) {
                 style.borderId = this.createBorderFormatter(styleInstructions.border).id;
             } else if (styleInstructions.border) {
-                if(_.isNaN(parseInt(styleInstructions.border))) {
+                if(_.isNaN(parseInt(styleInstructions.border, 10))) {
                     throw "Passing a non-numeric border id is not supported";
                 }
                 style.borderId = styleInstructions.border;
@@ -2663,7 +2669,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             if (styleInstructions.fill && _.isObject(styleInstructions.fill)) {
                 style.fillId = this.createFill(styleInstructions.fill).id;
             } else if (styleInstructions.fill) {
-                if(_.isNaN(parseInt(styleInstructions.fill))) {
+                if(_.isNaN(parseInt(styleInstructions.fill, 10))) {
                     throw "Passing a non-numeric fill id is not supported";
                 }
                 style.fillId = styleInstructions.fill;
@@ -2691,7 +2697,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             var id = this.differentialStyles.length;
             var style = {
                 id: id
-            }
+            };
             if(styleInstructions.font && _.isObject(styleInstructions.font)) {
                 style.font = styleInstructions.font;
             }
@@ -2722,6 +2728,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
          * http://www.schemacentral.com/sc/ooxml/t-ssml_ST_TableStyleType.html
          * 
          * The value should be a reference to a differential format (dxf)
+         * @param {Object} instructions
          */
         createTableStyle: function (instructions) {
             this.tableStyles.push(instructions);
@@ -2744,6 +2751,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
         * style: styleString, http://www.schemacentral.com/sc/ooxml/t-ssml_ST_BorderStyle.html
         * color: ARBG color (requires the A, so for example FF006666)
         * }
+        * @param {Object} border
         */
         createBorderFormatter: function (border) {
             _.defaults(border, {
@@ -2773,6 +2781,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
         * subscript
         *
         * Color is a future goal - at the moment it's looking a bit complicated
+        * @param {Object} instructions
         */
         createFontStyle: function (instructions) {
             var fontId = this.fonts.length;
@@ -2796,7 +2805,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
                     'double',
                     'singleAccounting',
                     'doubleAccounting'
-                    ], instructions.underline) != -1) {
+                    ], instructions.underline) !== -1) {
                     fontStyle.underline = instructions.underline;
                 } else {
                     fontStyle.underline = true;
@@ -2898,11 +2907,11 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
         },
 
         exportCellFormatElement: function (doc, styleInstructions) {
-            var xf = doc.createElement('xf'), i = 0, l;
+            var xf = doc.createElement('xf');
             var allowed = ['applyAlignment', 'applyBorder', 'applyFill', 'applyFont', 'applyNumberFormat', 
-            'applyProtection', 'borderId', 'fillId', 'fontId', 'numFmtId', 'pivotButton', 'quotePrefix', 'xfId']
+            'applyProtection', 'borderId', 'fillId', 'fontId', 'numFmtId', 'pivotButton', 'quotePrefix', 'xfId'];
             var attributes = _.filter(_.keys(styleInstructions), function (key) {
-                if(_.indexOf(allowed, key) != -1) {
+                if(_.indexOf(allowed, key) !== -1) {
                     return true;
                 }
             });
@@ -2999,10 +3008,10 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
         exportFill: function (doc, fd) {
             var fillDef;
             var fill = doc.createElement('fill');
-            if (fd.type == 'pattern') {
+            if (fd.type === 'pattern') {
                 fillDef = this.exportPatternFill(doc, fd);
                 fill.appendChild(fillDef);
-            } else if (fd.type == 'gradient') {
+            } else if (fd.type === 'gradient') {
                 fillDef = this.exportGradientFill(doc, fd);
                 fill.appendChild(fillDef);
             }
@@ -3022,7 +3031,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             var start = doc.createElement('stop');
             start.setAttribute('position', data.start.pureAt || 0);
             var startColor = doc.createElement('color');
-            if (typeof data.start == 'string' || data.start.color) {
+            if (typeof data.start === 'string' || data.start.color) {
                 startColor.setAttribute('rgb', data.start.color || data.start);
             } else if (typeof data.start.theme) {
                 startColor.setAttribute('theme', data.start.theme);
@@ -3031,7 +3040,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             var end = doc.createElement('stop');
             var endColor = doc.createElement('color');
             end.setAttribute('position', data.end.pureAt || 1);
-            if (typeof data.start == 'string' || data.end.color) {
+            if (typeof data.start === 'string' || data.end.color) {
                 endColor.setAttribute('rgb', data.end.color || data.end);
             } else if (typeof data.end.theme) {
                 endColor.setAttribute('theme', data.end.theme);
@@ -3045,6 +3054,8 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
         
         /**
         * Pattern types: http://www.schemacentral.com/sc/ooxml/t-ssml_ST_PatternType.html
+        * @param {XMLDoc} doc
+        * @param {Object} data
         */
         exportPatternFill: function (doc, data) {
             var fillDef = util.createElement(doc, 'patternFill', [
@@ -3059,7 +3070,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
 
             var bgColor = doc.createElement('bgColor');
             if(_.isString(data.bgColor)) {
-                bgColor.setAttribute('rgb', data.bgColor)
+                bgColor.setAttribute('rgb', data.bgColor);
             } else {
                 if(data.bgColor.theme) {
                     bgColor.setAttribute('theme', data.bgColor.theme);
@@ -3070,7 +3081,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
 
             var fgColor = doc.createElement('fgColor');
             if(_.isString(data.fgColor)) {
-                fgColor.setAttribute('rgb', data.fgColor)
+                fgColor.setAttribute('rgb', data.fgColor);
             } else {
                 if(data.fgColor.theme) {
                     fgColor.setAttribute('theme', data.fgColor.theme);
@@ -3170,7 +3181,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             var i = 0;
             
             _.each(style, function (value, key) {
-                if(key == 'name') {return;}
+                if(key === 'name') {return;}
                 i++;
                 var styleEl = doc.createElement('tableStyleElement');
                 styleEl.setAttribute('type', key);
@@ -3201,11 +3212,11 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
     return StyleSheet;
 });
 
-
 /**
  * @module Excel/Table
  */
 define('Excel/Table.js',['underscore', './util'], function (_, util) {
+    
     var Table = function (config) {
         _.defaults(this, {
             name: "",
@@ -3351,7 +3362,7 @@ define('Excel/Table.js',['underscore', './util'], function (_, util) {
         exportAutoFilter: function (doc) {
             var autoFilter = doc.createElement('autoFilter');
             var s = this.autoFilter[0];
-            var e = this.autoFilter[1]
+            var e = this.autoFilter[1];
             autoFilter.setAttribute('ref', util.positionToLetterRef(s[0], s[1]) + ":" + util.positionToLetterRef(e[0], e[1]  - this.totalsRowCount));
             return autoFilter;
         },
@@ -3374,7 +3385,6 @@ define('Excel/Table.js',['underscore', './util'], function (_, util) {
     return Table;
 });
 
-
 /**
  * This module represents an excel worksheet in its basic form - no tables, charts, etc. Its purpose is 
  * to hold data, the data's link to how it should be styled, and any links to other outside resources.
@@ -3382,6 +3392,7 @@ define('Excel/Table.js',['underscore', './util'], function (_, util) {
  * @module Excel/Worksheet
  */
 define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], function (_, util, RelationshipManager) {
+    
     /**
      * @constructor
      */
@@ -3398,7 +3409,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
-		
+        
         initialize: function (config) {
             config = config || {};
             this.name = config.name;
@@ -3407,7 +3418,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             if(config.columns) {
                 this.setColumns(config.columns);
             }
-			
+            
             this.relations = new RelationshipManager();
         },
         
@@ -3440,7 +3451,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             _.extend(this, data);
         },
         
-	setSharedStringCollection: function (stringCollection) {
+    setSharedStringCollection: function (stringCollection) {
             this.sharedStrings = stringCollection;
         },
         
@@ -3453,7 +3464,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             this._drawings.push(table);
             this.relations.addRelation(table, 'drawingRelationship');
         },
-		
+        
         /**
         * Expects an array length of three.
         * 
@@ -3468,7 +3479,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             }
             this._headers = headers;
         },
-		
+        
         /**
         * Expects an array length of three.
         * 
@@ -3497,7 +3508,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             "&R", this.compilePageDetailPiece(data[2] || "")
             ].join('');
         },
-	
+    
         /**
          * Turns instructions on page header/footer details into something
          * usable by Excel.
@@ -3525,10 +3536,10 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
                     string += "&"+data.fontSize;
                 }
                 string += data.text;
-				
+                
                 return string;
             }
-			
+            
             if(_.isArray(data)) {
                 var self = this;
                 return _.reduce(data, function (m, v) {
@@ -3549,14 +3560,14 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             oddHeader.appendChild(doc.createTextNode(this.compilePageDetailPackage(this._headers)));
             return oddHeader;
         },
-	
+    
         /**
          * Creates the footer node.
          * 
          * @todo implement the ability to do even/odd footers
          * @param {XML Doc} doc
          * @returns {XML Node}
-         */	
+         */    
         exportFooter: function (doc) {
             var oddFooter = doc.createElement('oddFooter');
             oddFooter.appendChild(doc.createTextNode(this.compilePageDetailPackage(this._footers)));
@@ -3595,7 +3606,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
                 date: numberNode,
                 string: stringNode,
                 formula: formulaNode
-            }
+            };
         },
         
         /**
@@ -3615,17 +3626,17 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
                 for(var c = 0; c < cellCount; c++) {
                     var cellValue = dataRow[c];
                     var metadata = cellValue && cellValue.metadata || {};
-                    if (cellValue && typeof cellValue == 'object') {
+                    if (cellValue && typeof cellValue === 'object') {
                         cellValue = cellValue.value;
                     }
                     
                     if(!metadata.type) {
-                        if(typeof cellValue == 'number') {
+                        if(typeof cellValue === 'number') {
                             metadata.type = 'number';
                         }
                     }
-                    if(metadata.type == "text" || !metadata.type) {
-                        if(typeof strings[cellValue] == 'undefined') {
+                    if(metadata.type === "text" || !metadata.type) {
+                        if(typeof strings[cellValue] === 'undefined') {
                             strings[cellValue] = true;
                         }
                     }
@@ -3639,6 +3650,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             var columns = this.columns || [];
             var doc = util.createXmlDoc(util.schemas.spreadsheetml, 'worksheet');
             var worksheet = doc.documentElement;
+            var i, l, row;
             worksheet.setAttribute('xmlns:r', util.schemas.relationships);
             worksheet.setAttribute('xmlns:mc', util.schemas.markupCompat);
             
@@ -3647,7 +3659,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             
             var cellCache = this._buildCache(doc);
             
-            for(var row = 0, l = data.length; row < l; row++) {
+            for(row = 0, l = data.length; row < l; row++) {
                 var dataRow = data[row];
                 var cellCount = dataRow.length;
                 maxX = cellCount > maxX ? cellCount : maxX;
@@ -3658,12 +3670,12 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
                     var cellValue = dataRow[c];
                     var cell, metadata = cellValue && cellValue.metadata || {};
 
-                    if (cellValue && typeof cellValue == 'object') {
+                    if (cellValue && typeof cellValue === 'object') {
                         cellValue = cellValue.value;
                     }
             
                     if(!metadata.type) {
-                        if(typeof cellValue == 'number') {
+                        if(typeof cellValue === 'number') {
                             metadata.type = 'number';
                         }
                     }
@@ -3682,17 +3694,18 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
                             cell.firstChild.firstChild.nodeValue = cellValue;
                             break;
                         case "text":
+                            /*falls through*/
                         default:
                             var id;
-                            if(typeof this.sharedStrings.strings[cellValue] != 'undefined') {
-                                var id = this.sharedStrings.strings[cellValue];
+                            if(typeof this.sharedStrings.strings[cellValue] !== 'undefined') {
+                                id = this.sharedStrings.strings[cellValue];
                             } else {
                                 id = this.sharedStrings.addString(cellValue);
                             }
                             cell = cellCache.string.cloneNode(true);
                             cell.firstChild.firstChild.nodeValue = id;
                             break;
-                    };
+                    }
                     if(metadata.style) {
                         cell.setAttribute('s', metadata.style);
                     }
@@ -3717,9 +3730,9 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
                 worksheet.appendChild(this.exportColumns(doc));
             }
             worksheet.appendChild(sheetData);
-			
+            
             this.exportPageSettings(doc, worksheet);
-			
+            
             if(this._headers.length > 0 || this._footers.length > 0) {
                 var headerFooter = doc.createElement('headerFooter');
                 if(this._headers.length > 0) {
@@ -3730,19 +3743,19 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
                 }
                 worksheet.appendChild(headerFooter);
             }
-			
+            
             if(this._tables.length > 0) {
                 var tables = doc.createElement('tableParts');
                 tables.setAttribute('count', this._tables.length);
-                for(var i = 0, l = this._tables.length; i < l; i++) {
+                for(i = 0, l = this._tables.length; i < l; i++) {
                     var table = doc.createElement('tablePart');
                     table.setAttribute('r:id', this.relations.getRelationshipId(this._tables[i]));
                     tables.appendChild(table);
                 }
                 worksheet.appendChild(tables);
             }
-	    
-            for(var i = 0, l = this._drawings.length; i < l; i++) {
+        
+            for(i = 0, l = this._drawings.length; i < l; i++) {
                 var drawing = doc.createElement('drawing');
                 drawing.setAttribute('r:id', this.relations.getRelationshipId(this._drawings[i]));
                 worksheet.appendChild(drawing);
@@ -3750,7 +3763,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
             
             if (this.mergedCells.length > 0) {
                 var mergeCells = doc.createElement('mergeCells');
-                for (var i = 0, l = this.mergedCells.length; i < l; i++) {
+                for (i = 0, l = this.mergedCells.length; i < l; i++) {
                     var mergeCell = doc.createElement('mergeCell');
                     mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
                     mergeCells.appendChild(mergeCell);
@@ -3788,8 +3801,8 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
                     col.setAttribute('width', 9.140625);
                 }
                 
-                cols.appendChild(col)
-            };
+                cols.appendChild(col);
+            }
             return cols;
         },
         
@@ -3801,14 +3814,14 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
          * @returns {undefined}
          */
         exportPageSettings: function (doc, worksheet) {
-			
+            
             if(this._orientation) {
                 worksheet.appendChild(util.createElement(doc, 'pageSetup', [
                     ['orientation', this._orientation]
                 ]));
             }
         },
-	
+    
         /**
          * http://www.schemacentral.com/sc/ooxml/t-ssml_ST_Orientation.html
          * 
@@ -3820,11 +3833,11 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
         setPageOrientation: function (orientation) {
             this._orientation = orientation;
         },
-		
+        
         /**
          * Expects an array of column definitions. Each column definition needs to have a width assigned to it. 
          * 
-         * @param {Array} Columns
+         * @param {Array} columns
          */
         setColumns: function (columns) {
             this.columns = columns;
@@ -3863,6 +3876,7 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
          * phonetic
          * style
          * width
+         * @param {Array} columnFormats
          */
         setColumnFormats: function (columnFormats) {
             this.columnFormats = columnFormats;
@@ -3870,7 +3884,6 @@ define('Excel/Worksheet.js',['underscore', './util', './RelationshipManager'], f
     });
     return Worksheet;
 });
-
 
 /**
  * @module Excel/Workbook
@@ -3887,6 +3900,7 @@ define('Excel/Workbook.js',[
     './XMLDOM'
 ], 
 function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths, XMLDOM) {
+    
     var Workbook = function (config) {
         this.worksheets = [];
         this.tables = [];
@@ -3896,7 +3910,7 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
     };
     _.extend(Workbook.prototype, {
 
-        initialize: function (config) {
+        initialize: function () {
             this.id = _.uniqueId('Workbook');
             this.styleSheet = new StyleSheet();
             this.sharedStrings = new SharedStrings();
@@ -3906,10 +3920,10 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         },
 
         createWorksheet: function (config) {
-            config = config || {}
+            config = config || {};
             _.defaults(config, {
                 name: 'Sheet '.concat(this.worksheets.length + 1)
-            })
+            });
             return new Worksheet(config);
         },
         
@@ -3966,6 +3980,7 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         createContentTypes: function () {
             var doc = util.createXmlDoc(util.schemas.contentTypes, 'Types');
             var types = doc.documentElement;
+            var i, l;
             
             types.appendChild(util.createElement(doc, 'Default', [
                 ['Extension', "rels"],
@@ -3978,13 +3993,17 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
             
             var extensions = {};
             for(var filename in this.media) {
-                extensions[this.media[filename].extension] = this.media[filename].contentType;
+                if(this.media.hasOwnProperty(filename)) {
+                    extensions[this.media[filename].extension] = this.media[filename].contentType;
+                }
             }
             for(var extension in extensions) {
-                types.appendChild(util.createElement(doc, 'Default', [
-                    ['Extension', extension],
-                    ['ContentType', extensions[extension]]
-                ]));
+                if(extensions.hasOwnProperty(extension)) {
+                    types.appendChild(util.createElement(doc, 'Default', [
+                        ['Extension', extension],
+                        ['ContentType', extensions[extension]]
+                    ]));
+                }
             }
             
             types.appendChild(util.createElement(doc, 'Override', [
@@ -4000,20 +4019,20 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"]
             ]));
 
-            for(var i = 0, l = this.worksheets.length; i < l; i++) {
+            for(i = 0, l = this.worksheets.length; i < l; i++) {
                 types.appendChild(util.createElement(doc, 'Override', [
                     ['PartName', "/xl/worksheets/sheet" + (i + 1) + ".xml"],
                     ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"]
                 ]));
             }
-            for(var i = 0, l = this.tables.length; i < l; i++) {
+            for(i = 0, l = this.tables.length; i < l; i++) {
                 types.appendChild(util.createElement(doc, 'Override', [
                     ['PartName', "/xl/tables/table" + (i + 1) + ".xml"],
                     ['ContentType', "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"]
                 ]));
             }
             
-            for(var i = 0, l = this.drawings.length; i < l; i++) {
+            for(i = 0, l = this.drawings.length; i < l; i++) {
                 types.appendChild(util.createElement(doc, 'Override', [
                     ['PartName', '/xl/drawings/drawing' + (i + 1) + '.xml'],
                     ['ContentType', 'application/vnd.openxmlformats-officedocument.drawing+xml']
@@ -4033,7 +4052,7 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 var sheet = doc.createElement('sheet');
                 sheet.setAttribute('name', this.worksheets[i].name);
                 sheet.setAttribute('sheetId', i + 1);
-                sheet.setAttribute('r:id', this.relations.getRelationshipId(this.worksheets[i]))
+                sheet.setAttribute('r:id', this.relations.getRelationshipId(this.worksheets[i]));
                 sheets.appendChild(sheet);
             }
             wb.appendChild(sheets);
@@ -4052,22 +4071,25 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         },
         
         _generateCorePaths: function (files) {
+            var i, l;
             Paths[this.styleSheet.id] = 'styles.xml';
             Paths[this.sharedStrings.id] = 'sharedStrings.xml';
             Paths[this.id] = '/xl/workbook.xml';
             
-            for(var i = 0, l = this.tables.length; i < l; i++) {
+            for(i = 0, l = this.tables.length; i < l; i++) {
                 files['/xl/tables/table' + (i + 1) + '.xml'] = this.tables[i].toXML();
                 Paths[this.tables[i].id] = '/xl/tables/table' + (i + 1) + '.xml';
             }
             
             for(var fileName in this.media) {
-                var media = this.media[fileName];
-                files['/xl/media/' + fileName] = media.data;
-                Paths[fileName] = '/xl/media/' + fileName;
+                if(this.media.hasOwnProperty(fileName)) {
+                    var media = this.media[fileName];
+                    files['/xl/media/' + fileName] = media.data;
+                    Paths[fileName] = '/xl/media/' + fileName;
+                }
             }
             
-            for(var i = 0, l = this.drawings.length; i < l; i++) {
+            for(i = 0, l = this.drawings.length; i < l; i++) {
                 files['/xl/drawings/drawing' + (i + 1) + '.xml'] = this.drawings[i].toXML();
                 Paths[this.drawings[i].id] = '/xl/drawings/drawing' + (i + 1) + '.xml';
                 files['/xl/drawings/_rels/drawing' + (i + 1) + '.xml.rels'] = this.drawings[i].relations.toXML();
@@ -4088,12 +4110,12 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
             });
 
             _.each(files, function (value, key) {
-				if(key.indexOf('.xml') != -1 || key.indexOf('.rels') != -1) {
-					if (value instanceof XMLDOM){
-						files[key] = value.toString();
-					} else {
-						files[key] = value.xml || new XMLSerializer().serializeToString(value);
-					}
+                if(key.indexOf('.xml') !== -1 || key.indexOf('.rels') !== -1) {
+                    if (value instanceof XMLDOM){
+                        files[key] = value.toString();
+                    } else {
+                        files[key] = value.xml || new window.XMLSerializer().serializeToString(value);
+                    }
                     var content = files[key].replace(/xmlns=""/g, '');
                     content = content.replace(/NS[\d]+:/g, '');
                     content = content.replace(/xmlns:NS[\d]+=""/g, '');
@@ -4144,31 +4166,33 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                         });
                     }
                 }
-            }
+            };
             
+            
+            var worksheetWorker = function (worksheetIndex) {
+                return {
+                    error: function () {
+                        for(var i = 0; i < workers.length; i++) {
+                            workers[i].terminate();
+                        }
+                        //message, filename, lineno
+                        options.error.apply(this, arguments);
+                    },
+                    stringsCollected: function () {
+                        stringsCollected();
+                    },
+                    finished: function (data) {
+                        files['/xl/worksheets/sheet' + (worksheetIndex + 1) + '.xml'] = {xml: data};
+                        Paths[self.worksheets[worksheetIndex].id] = 'worksheets/sheet' + (worksheetIndex + 1) + '.xml';
+                        files['/xl/worksheets/_rels/sheet' + (worksheetIndex + 1) + '.xml.rels'] = self.worksheets[worksheetIndex].relations.toXML();
+                        done();
+                    }
+                };
+            };
             
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
                 workers.push(
-                    this._createWorker(requireJsPath, i, function (worksheetIndex) {
-                        return {
-                            error: function () {
-                                for(var i = 0; i < workers.length; i++) {
-                                    workers[i].terminate();
-                                }
-                                //message, filename, lineno
-                                options.error.apply(this, arguments);
-                            },
-                            stringsCollected: function () {
-                                stringsCollected();
-                            },
-                            finished: function (data) {
-                                files['/xl/worksheets/sheet' + (worksheetIndex + 1) + '.xml'] = {xml: data};
-                                Paths[self.worksheets[worksheetIndex].id] = 'worksheets/sheet' + (worksheetIndex + 1) + '.xml';
-                                files['/xl/worksheets/_rels/sheet' + (worksheetIndex + 1) + '.xml.rels'] = self.worksheets[worksheetIndex].relations.toXML();
-                                done();
-                            }
-                        };
-                    }(i))
+                    this._createWorker(requireJsPath, i, worksheetWorker(i))
                 );
             }
             
@@ -4176,10 +4200,10 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
         },
                 
         _createWorker: function (requireJsPath, worksheetIndex, callbacks) {
-            var worker = new Worker(require.toUrl('./WorksheetExportWorker.js'));
+            var worker = new window.Worker(require.toUrl('./WorksheetExportWorker.js'));
             var self = this;
             worker.addEventListener('error', callbacks.error);
-            worker.addEventListener('message', function(event, data) {
+            worker.addEventListener('message', function(event) {
 //                console.log("Called back by the worker!\n", event.data);
                 switch(event.data.status) {
                     case "ready":
