@@ -42,7 +42,7 @@ define(['underscore'], function (_) {
              };
          },
         toString: function () {
-            return this.nodeValue;
+            return _.escape(this.nodeValue);
         }
      });
     
@@ -67,18 +67,26 @@ define(['underscore'], function (_) {
     _.extend(XMLDOM.XMLNode.prototype, {
         
         toString: function () {
-            var string = "<" + this.nodeName + " ";
-            var attrs = [];
+            var string = "<" + this.nodeName;
+			var attrs = [];
             for(var attr in this.attributes) {
-                attrs.push(attr + "=\""+this.attributes[attr]+"\"");
+                attrs.push(attr + "=\""+_.escape(this.attributes[attr])+"\"");
             }
-            string+= attrs.join(" ") + ">";
-            
+            if (attrs.length > 0){
+				string+= " " + attrs.join(" ");
+            }
+
+            var childContent = "";
             for(var i = 0, l = this.children.length; i < l; i++) {
-                string += this.children[i].toString();
+				childContent += this.children[i].toString();
             }
-            
-            string += "</" + this.nodeName + ">";
+
+            if (childContent){
+				string +=  ">" + childContent + "</" + this.nodeName + ">";
+            } else {
+				string += "/>";
+            }
+
             return string;
         },
         

@@ -1,1 +1,4 @@
 /nbproject/private/
+.DS_Store
+build
+node_modules

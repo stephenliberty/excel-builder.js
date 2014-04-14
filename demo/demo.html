@@ -1,8 +1,7 @@
 <html>
     <head>
         <script type="text/javascript" src="jquery.js"></script>
-        <script type="text/javascript" src="underscore.js"></script>
-        <script type="text/javascript" src="require.js"></script>
+        <script type="text/javascript" src="../node_modules/requirejs/require.js"></script>
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/json2/20110223/json2.js"></script>
         <script type="text/javascript" src="downloadify/js/swfobject.js"></script>
         <script type="text/javascript" src="downloadify/js/downloadify.min.js"></script>
@@ -15,8 +14,8 @@
             require.config({
                 text: 'text.js',
                 paths: {
-                    underscore: 'underscore',
-                    JSZip: '../jszip/jszip'
+                    underscore: '../node_modules/underscore/underscore',
+                    JSZip: '../node_modules/jszip/dist/jszip'
                 },
                 shim: {
                     'underscore': {

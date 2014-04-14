@@ -10,9 +10,10 @@ define([
     './Worksheet',
     './SharedStrings',
     './RelationshipManager',
-    './Paths'
+    './Paths',
+    './XMLDOM'
 ], 
-function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths, Drawings) {
+function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths, XMLDOM) {
     var Workbook = function (config) {
         this.worksheets = [];
         this.tables = [];
@@ -212,10 +213,14 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 '/xl/sharedStrings.xml': this.sharedStrings.toXML(),
                 '/xl/_rels/workbook.xml.rels': this.relations.toXML()
             });
-            
+
             _.each(files, function (value, key) {
-                if(key.indexOf('.xml') != -1 || key.indexOf('.rels') != -1) {
-                    files[key] = value.xml || new XMLSerializer().serializeToString(value);  
+				if(key.indexOf('.xml') != -1 || key.indexOf('.rels') != -1) {
+					if (value instanceof XMLDOM){
+						files[key] = value.toString();
+					} else {
+						files[key] = value.xml || new XMLSerializer().serializeToString(value);
+					}
                     var content = files[key].replace(/xmlns=""/g, '');
                     content = content.replace(/NS[\d]+:/g, '');
                     content = content.replace(/xmlns:NS[\d]+=""/g, '');
