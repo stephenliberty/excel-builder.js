@@ -27,6 +27,7 @@
   "dependencies": {
     "underscore": "~1.6.0",
     "jszip": "~2.1.0",
-    "requirejs": "~2.1.10"
+    "requirejs": "~2.1.10",
+    "almond": "*"
   }
 }
