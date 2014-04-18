@@ -2535,7 +2535,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
 
             if(fd.fontName) {
                 var fontName = doc.createElement('name');
-                fontName.setAttribute('val', fd.name);
+                fontName.setAttribute('val', fd.fontName);
                 font.appendChild(fontName);
             }
 
