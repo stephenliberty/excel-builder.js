@@ -8,14 +8,11 @@ module.exports = function(grunt) {
         optimize: "none",
         paths: {
             "underscore": "node_modules/underscore/underscore",
-            "JSZip": "node_modules/jszip/dist/jszip"
+            "JSZip": "jszip"
         },
         shim: {
             "underscore": {
                 "exports": '_'
-            },
-            "JSZip": {
-                "exports": "JSZip"
             }
         }
     };
@@ -29,6 +26,11 @@ module.exports = function(grunt) {
             return true;
         }
     }, '../Excel/**/*.js');
+    files = files.map(function (filename) {
+        return filename.replace('.js', '');
+    })
+    
+    files.push('../excel-builder');
     
     grunt.file.write('./buildtools/index.js', "define(" + JSON.stringify(files) + ", function () {})");
     
@@ -56,6 +58,12 @@ module.exports = function(grunt) {
                 }, compileOptions)
             }
         },
+        copy: {
+            jzip: {
+                src: 'node_modules/jszip/dist/jszip.js',
+                dest: 'jszip.js'
+            }
+        },
         uglify: {
             options: {
                 compress: {
@@ -81,11 +89,11 @@ module.exports = function(grunt) {
     });
     
     
-
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
     // Default task(s).
-    grunt.registerTask('default', ['jshint:all', 'requirejs', 'uglify']);
+    grunt.registerTask('default', ['copy', 'jshint:all', 'requirejs', 'uglify']);
 };

@@ -3,3 +3,4 @@ buildtools/index.js
 .DS_Store
 build
 node_modules
+jszip.js

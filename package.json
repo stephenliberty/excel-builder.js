@@ -25,7 +25,8 @@
     "grunt-contrib-requirejs": "~0.4.1",
     "grunt-contrib-uglify": "*",
     "almond": "*",
-    "grunt-contrib-jshint": "*"
+    "grunt-contrib-jshint": "*",
+    "grunt-contrib-copy": "*"
   },
   "dependencies": {
     "underscore": "~1.6.0",
