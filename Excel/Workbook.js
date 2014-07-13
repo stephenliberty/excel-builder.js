@@ -160,9 +160,17 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
             var wb = doc.documentElement;
             wb.setAttribute('xmlns:r', util.schemas.relationships);
 
+			var maxWorksheetNameLength = 31;
             var sheets = util.createElement(doc, 'sheets');
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
                 var sheet = doc.createElement('sheet');
+				// Microsoft Excel (2007, 2013) do not allow worksheet names longer than 31 characters
+				// if the worksheet name is longer, Excel displays an "Excel found unreadable content..." popup when opening the file
+				if(console != null && this.worksheets[i].name.length > maxWorksheetNameLength) {
+					console.log('Microsoft Excel requires work sheet names to be less than ' + (maxWorksheetNameLength+1) +
+							' characters long, work sheet name "' + this.worksheets[i].name +
+							'" is ' + this.worksheets[i].name.length + ' characters long');
+				}
                 sheet.setAttribute('name', this.worksheets[i].name);
                 sheet.setAttribute('sheetId', i + 1);
                 sheet.setAttribute('r:id', this.relations.getRelationshipId(this.worksheets[i]));

@@ -343,6 +343,18 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 worksheet.appendChild(this.exportColumns(doc));
             }
             worksheet.appendChild(sheetData);
+
+            // 'mergeCells' should be written before 'headerFoot' and 'drawing' due to issue
+			// with Microsoft Excel (2007, 2013)
+            if (this.mergedCells.length > 0) {
+                var mergeCells = doc.createElement('mergeCells');
+                for (i = 0, l = this.mergedCells.length; i < l; i++) {
+                    var mergeCell = doc.createElement('mergeCell');
+                    mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
+                    mergeCells.appendChild(mergeCell);
+                }
+                worksheet.appendChild(mergeCells);
+            }
             
             this.exportPageSettings(doc, worksheet);
             
@@ -367,21 +379,13 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 }
                 worksheet.appendChild(tables);
             }
-        
+
+            // the 'drawing' element should be written last, after 'headerFooter', 'mergeCells', etc. due
+			// to issue with Microsoft Excel (2007, 2013)
             for(i = 0, l = this._drawings.length; i < l; i++) {
                 var drawing = doc.createElement('drawing');
                 drawing.setAttribute('r:id', this.relations.getRelationshipId(this._drawings[i]));
                 worksheet.appendChild(drawing);
-            }
-            
-            if (this.mergedCells.length > 0) {
-                var mergeCells = doc.createElement('mergeCells');
-                for (i = 0, l = this.mergedCells.length; i < l; i++) {
-                    var mergeCell = doc.createElement('mergeCell');
-                    mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
-                    mergeCells.appendChild(mergeCell);
-                }
-                worksheet.appendChild(mergeCells);
             }
             return doc;
         },
