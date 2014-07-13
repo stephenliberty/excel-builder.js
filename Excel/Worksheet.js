@@ -345,7 +345,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             worksheet.appendChild(sheetData);
 
             // 'mergeCells' should be written before 'headerFoot' and 'drawing' due to issue
-			// with Microsoft Excel (2007, 2013)
+            // with Microsoft Excel (2007, 2013)
             if (this.mergedCells.length > 0) {
                 var mergeCells = doc.createElement('mergeCells');
                 for (i = 0, l = this.mergedCells.length; i < l; i++) {
@@ -381,7 +381,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             }
 
             // the 'drawing' element should be written last, after 'headerFooter', 'mergeCells', etc. due
-			// to issue with Microsoft Excel (2007, 2013)
+            // to issue with Microsoft Excel (2007, 2013)
             for(i = 0, l = this._drawings.length; i < l; i++) {
                 var drawing = doc.createElement('drawing');
                 drawing.setAttribute('r:id', this.relations.getRelationshipId(this._drawings[i]));
