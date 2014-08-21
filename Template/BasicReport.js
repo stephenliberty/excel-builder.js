@@ -1,5 +1,5 @@
 define(['../Excel/Workbook', '../Excel/Table'], function (Workbook, Table) {
-	var Template = function () {
+	var Template = function (worksheetConstructorSettings) {
 		this.workbook = new Workbook();
 		this.stylesheet = this.workbook.getStyleSheet();
 		
@@ -17,8 +17,13 @@ define(['../Excel/Workbook', '../Excel/Table'], function (Workbook, Table) {
 				alignment: {horizontal: 'center'}
 			})
 		};
-		
-		this.worksheet = this.workbook.createWorksheet();
+
+		if(worksheetConstructorSettings != null) {
+			this.worksheet = this.workbook.createWorksheet(worksheetConstructorSettings);
+		}
+		else {
+			this.worksheet = this.workbook.createWorksheet();
+		}
 		this.workbook.addWorksheet(this.worksheet);
 		this.worksheet.setPageOrientation('landscape');
 		this.table = new Table();
@@ -48,6 +53,10 @@ define(['../Excel/Workbook', '../Excel/Table'], function (Workbook, Table) {
 			this.worksheet.setColumns(columns);
 			this.table.setTableColumns(columns);
 			this.table.setReferenceRange([1, 1], [this.columns.length, this.data.length]);
+		},
+
+		getWorksheet: function () {
+			return this.worksheet;
 		}
 	});
 	return Template;
