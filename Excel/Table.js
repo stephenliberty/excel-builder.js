@@ -121,7 +121,7 @@ define(['underscore', './util'], function (_, util) {
 			
             table.appendChild(this.exportTableColumns(doc));
             table.appendChild(this.exportTableStyleInfo(doc));
-            return table;
+            return doc;
         },
 		
         exportTableColumns: function (doc) {
