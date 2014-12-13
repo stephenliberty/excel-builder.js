@@ -19,6 +19,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
         this._footers = [];
         this._tables = [];
         this._drawings = [];
+        this._rowInstructions = {};
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
@@ -49,6 +50,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 _headers: this._headers,
                 _footers: this._footers,
                 _tables: this._tables,
+                _rowInstructions: this._rowInstructions,
                 name: this.name,
                 id: this.id
             };
@@ -64,7 +66,7 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             _.extend(this, data);
         },
         
-    setSharedStringCollection: function (stringCollection) {
+        setSharedStringCollection: function (stringCollection) {
             this.sharedStrings = stringCollection;
         },
         
@@ -76,6 +78,10 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
         addDrawings: function (table) {
             this._drawings.push(table);
             this.relations.addRelation(table, 'drawingRelationship');
+        },
+
+        setRowInstructions: function (rowIndex, instructions) {
+            this._rowInstructions[rowIndex] = instructions;
         },
         
         /**
@@ -326,6 +332,21 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                     rowNode.appendChild(cell);
                 }
                 rowNode.setAttribute('r', row + 1);
+
+                if (this._rowInstructions[row]) {
+                    var rowInst = this._rowInstructions[row];
+
+                    if (rowInst.height !== undefined) {
+                        rowNode.setAttribute('customHeight', '1');
+                        rowNode.setAttribute('ht', rowInst.height);
+                    }
+
+                    if (rowInst.style !== undefined) {
+                      rowNode.setAttribute('customFormat', '1');
+                      rowNode.setAttribute('s', rowInst.style);
+                    }
+                }
+
                 sheetData.appendChild(rowNode);
             } 
             
