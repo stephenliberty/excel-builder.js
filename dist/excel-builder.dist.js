@@ -1,7 +1,7 @@
 (function (root) {
     
 /**
- * @license almond 0.2.9 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
+ * @license almond 0.3.0 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
  * see: http://github.com/jrburke/almond for details
  */
@@ -152,7 +152,15 @@ var requirejs, require, define;
             //A version of a require function that passes a moduleName
             //value for items that may need to
             //look up paths relative to the moduleName
-            return req.apply(undef, aps.call(arguments, 0).concat([relName, forceSync]));
+            var args = aps.call(arguments, 0);
+
+            //If first arg is not require('string'), and there is only
+            //one arg, it is the array form without a callback. Insert
+            //a null so that the following concat is correct.
+            if (typeof args[0] !== 'string' && args.length === 1) {
+                args.push(null);
+            }
+            return req.apply(undef, args.concat([relName, forceSync]));
         };
     }
 
@@ -2098,7 +2106,7 @@ define('Excel/Drawings',['underscore', './RelationshipManager', './util'], funct
         toXML: function () {
             var doc = util.createXmlDoc(util.schemas.spreadsheetDrawing, 'xdr:wsDr');
             var drawings = doc.documentElement;
-//            drawings.setAttribute('xmlns:xdr', util.schemas.spreadsheetDrawing);
+            drawings.setAttribute('xmlns:xdr', util.schemas.spreadsheetDrawing);
             drawings.setAttribute('xmlns:a', util.schemas.drawing);
             
             for(var i = 0, l = this.drawings.length; i < l; i++) {
@@ -3335,7 +3343,7 @@ define('Excel/Table',['underscore', './util'], function (_, util) {
 			
             table.appendChild(this.exportTableColumns(doc));
             table.appendChild(this.exportTableStyleInfo(doc));
-            return table;
+            return doc;
         },
 		
         exportTableColumns: function (doc) {
@@ -3406,6 +3414,7 @@ define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], func
         this._footers = [];
         this._tables = [];
         this._drawings = [];
+        this._rowInstructions = {};
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
@@ -3436,6 +3445,7 @@ define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], func
                 _headers: this._headers,
                 _footers: this._footers,
                 _tables: this._tables,
+                _rowInstructions: this._rowInstructions,
                 name: this.name,
                 id: this.id
             };
@@ -3451,7 +3461,7 @@ define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], func
             _.extend(this, data);
         },
         
-    setSharedStringCollection: function (stringCollection) {
+        setSharedStringCollection: function (stringCollection) {
             this.sharedStrings = stringCollection;
         },
         
@@ -3463,6 +3473,10 @@ define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], func
         addDrawings: function (table) {
             this._drawings.push(table);
             this.relations.addRelation(table, 'drawingRelationship');
+        },
+
+        setRowInstructions: function (rowIndex, instructions) {
+            this._rowInstructions[rowIndex] = instructions;
         },
         
         /**
@@ -3713,6 +3727,21 @@ define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], func
                     rowNode.appendChild(cell);
                 }
                 rowNode.setAttribute('r', row + 1);
+
+                if (this._rowInstructions[row]) {
+                    var rowInst = this._rowInstructions[row];
+
+                    if (rowInst.height !== undefined) {
+                        rowNode.setAttribute('customHeight', '1');
+                        rowNode.setAttribute('ht', rowInst.height);
+                    }
+
+                    if (rowInst.style !== undefined) {
+                      rowNode.setAttribute('customFormat', '1');
+                      rowNode.setAttribute('s', rowInst.style);
+                    }
+                }
+
                 sheetData.appendChild(rowNode);
             } 
             
@@ -3730,6 +3759,18 @@ define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], func
                 worksheet.appendChild(this.exportColumns(doc));
             }
             worksheet.appendChild(sheetData);
+
+            // 'mergeCells' should be written before 'headerFoot' and 'drawing' due to issue
+            // with Microsoft Excel (2007, 2013)
+            if (this.mergedCells.length > 0) {
+                var mergeCells = doc.createElement('mergeCells');
+                for (i = 0, l = this.mergedCells.length; i < l; i++) {
+                    var mergeCell = doc.createElement('mergeCell');
+                    mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
+                    mergeCells.appendChild(mergeCell);
+                }
+                worksheet.appendChild(mergeCells);
+            }
             
             this.exportPageSettings(doc, worksheet);
             
@@ -3754,21 +3795,13 @@ define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], func
                 }
                 worksheet.appendChild(tables);
             }
-        
+
+            // the 'drawing' element should be written last, after 'headerFooter', 'mergeCells', etc. due
+            // to issue with Microsoft Excel (2007, 2013)
             for(i = 0, l = this._drawings.length; i < l; i++) {
                 var drawing = doc.createElement('drawing');
                 drawing.setAttribute('r:id', this.relations.getRelationshipId(this._drawings[i]));
                 worksheet.appendChild(drawing);
-            }
-            
-            if (this.mergedCells.length > 0) {
-                var mergeCells = doc.createElement('mergeCells');
-                for (i = 0, l = this.mergedCells.length; i < l; i++) {
-                    var mergeCell = doc.createElement('mergeCell');
-                    mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
-                    mergeCells.appendChild(mergeCell);
-                }
-                worksheet.appendChild(mergeCells);
             }
             return doc;
         },
@@ -4047,9 +4080,17 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
             var wb = doc.documentElement;
             wb.setAttribute('xmlns:r', util.schemas.relationships);
 
+            var maxWorksheetNameLength = 31;
             var sheets = util.createElement(doc, 'sheets');
             for(var i = 0, l = this.worksheets.length; i < l; i++) {
                 var sheet = doc.createElement('sheet');
+                // Microsoft Excel (2007, 2013) do not allow worksheet names longer than 31 characters
+                // if the worksheet name is longer, Excel displays an "Excel found unreadable content..." popup when opening the file
+                if(console != null && this.worksheets[i].name.length > maxWorksheetNameLength) {
+                    console.log('Microsoft Excel requires work sheet names to be less than ' + (maxWorksheetNameLength+1) +
+                            ' characters long, work sheet name "' + this.worksheets[i].name +
+                            '" is ' + this.worksheets[i].name.length + ' characters long');
+                }
                 sheet.setAttribute('name', this.worksheets[i].name);
                 sheet.setAttribute('sheetId', i + 1);
                 sheet.setAttribute('r:id', this.relations.getRelationshipId(this.worksheets[i]));
