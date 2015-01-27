@@ -1,3 +1,5 @@
+![bounties received](https://www.bountysource.com/badge/team?team_id=59027&style=bounties_received)
+
 excel-builder.js
 ================
 
