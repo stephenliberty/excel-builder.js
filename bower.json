@@ -1,0 +1,21 @@
+{
+  "name": "excel-builder",
+  "main": "dist/excel-builder.dist.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/stephenliberty/excel-builder.js",
+  "authors": [
+    "Stephen Liberty"
+  ],
+  "license": "GPLv3",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "spec",
+    "tests"
+  ],
+  "dependencies": {
+    "underscore": "~1.6.0",
+    "jszip": "~2.0.0"
+  }
+}

@@ -16,7 +16,7 @@ module.exports = function(grunt) {
             }
         }
     };
-    
+
     var files = grunt.file.expand({
         cwd: './dist',
         filter: function (src) {
@@ -56,6 +56,22 @@ module.exports = function(grunt) {
                     },
                     out: "dist/<%= pkg.name %>.dist.js"
                 }, compileOptions)
+            },
+            nodep: {
+                options: _.defaults({
+                    wrap: {
+                        startFile: [
+                            './buildtools/start.js',
+                            './node_modules/almond/almond.js',
+                            './buildtools/defined.js'
+                        ],
+                        endFile: [
+                            './buildtools/end.js'
+                        ]
+                    },
+                    exclude: ["underscore", "JSZip"],
+                    out: "dist/<%= pkg.name %>.nodep.js"
+                }, compileOptions)
             }
         },
         copy: {
@@ -73,7 +89,8 @@ module.exports = function(grunt) {
             optimize: {
                 files: {
                     'dist/<%= pkg.name %>.compiled.min.js': ['dist/<%= pkg.name %>.compiled.js'],
-                    'dist/<%= pkg.name %>.dist.min.js': ['dist/<%= pkg.name %>.dist.js']
+                    'dist/<%= pkg.name %>.dist.min.js': ['dist/<%= pkg.name %>.dist.js'],
+                    'dist/<%= pkg.name %>.nodep.min.js': ['dist/<%= pkg.name %>.nodep.js']
                 }
             }
         },
