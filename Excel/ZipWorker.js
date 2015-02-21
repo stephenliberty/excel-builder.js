@@ -1,6 +1,8 @@
 
 
 onmessage = function(event) {
+    if (!event.data || !event.data.ziplib) { return; }
+    
     importScripts(event.data.ziplib);
     
     var zip = new JSZip();
