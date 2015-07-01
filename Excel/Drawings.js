@@ -25,8 +25,8 @@ define(['underscore', './RelationshipManager', './util'], function (_, Relations
         toXML: function () {
             var doc = util.createXmlDoc(util.schemas.spreadsheetDrawing, 'xdr:wsDr');
             var drawings = doc.documentElement;
-            drawings.setAttribute('xmlns:xdr', util.schemas.spreadsheetDrawing);
             drawings.setAttribute('xmlns:a', util.schemas.drawing);
+            drawings.setAttribute('xmlns:r', util.schemas.relationships);            
             
             for(var i = 0, l = this.drawings.length; i < l; i++) {
                 
