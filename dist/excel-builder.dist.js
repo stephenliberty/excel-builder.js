@@ -1,7 +1,7 @@
 (function (root) {
     
 /**
- * @license almond 0.3.0 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
+ * @license almond 0.3.1 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
  * see: http://github.com/jrburke/almond for details
  */
@@ -46,12 +46,6 @@ var requirejs, require, define;
             //otherwise, assume it is a top-level require that will
             //be relative to baseUrl in the end.
             if (baseName) {
-                //Convert baseName to array, and lop off the last part,
-                //so that . matches that "directory" and not name of the baseName's
-                //module. For instance, baseName of "one/two/three", maps to
-                //"one/two/three.js", but we want the directory, "one/two" for
-                //this normalization.
-                baseParts = baseParts.slice(0, baseParts.length - 1);
                 name = name.split('/');
                 lastIndex = name.length - 1;
 
@@ -60,7 +54,11 @@ var requirejs, require, define;
                     name[lastIndex] = name[lastIndex].replace(jsSuffixRegExp, '');
                 }
 
-                name = baseParts.concat(name);
+                //Lop off the last part of baseParts, so that . matches the
+                //"directory" and not name of the baseName's module. For instance,
+                //baseName of "one/two/three", maps to "one/two/three.js", but we
+                //want the directory, "one/two" for this normalization.
+                name = baseParts.slice(0, baseParts.length - 1).concat(name);
 
                 //start trimDots
                 for (i = 0; i < name.length; i += 1) {
@@ -410,6 +408,9 @@ var requirejs, require, define;
     requirejs._defined = defined;
 
     define = function (name, deps, callback) {
+        if (typeof name !== 'string') {
+            throw new Error('See almond README: incorrect module build, no module name');
+        }
 
         //This module may not have dependencies
         if (!deps.splice) {
@@ -1774,7 +1775,7 @@ var requirejs, require, define;
 }).call(this);
 
 define('Excel/XMLDOM',['underscore'], function (_) {
-    
+    'use strict';
     var XMLDOM = function (ns, rootNodeName) {
         this.documentElement = this.createElement(rootNodeName);
         this.documentElement.setAttribute('xmlns', ns);
@@ -1908,7 +1909,7 @@ define('Excel/XMLDOM',['underscore'], function (_) {
  * @module Excel/util
  */
 define('Excel/util',['./XMLDOM'], function (XMLDOM) {
-    
+    "use strict";
     var util = {
         
         _idSpaces: {},
@@ -2028,7 +2029,7 @@ define('Excel/Paths',{});
  * @module Excel/RelationshipManager
  */
 define('Excel/RelationshipManager',['underscore', './util', './Paths'], function (_, util, Paths) {
-    
+    "use strict";
     var RelationshipManager = function () {
         this.relations = {};
         this.lastId = 1;
@@ -2083,7 +2084,7 @@ define('Excel/RelationshipManager',['underscore', './util', './Paths'], function
  * @module Excel/Drawings
  */
 define('Excel/Drawings',['underscore', './RelationshipManager', './util'], function (_, RelationshipManager, util) {
-    
+    "use strict";
     var Drawings = function () {
         this.drawings = [];
         this.relations = new RelationshipManager();
@@ -2125,7 +2126,7 @@ define('Excel/Drawings',['underscore', './RelationshipManager', './util'], funct
     return Drawings;
 });
 define('Excel/Drawings/AbsoluteAnchor',['underscore', '../util'], function (_, util) {
-    
+    "use strict";
     /**
      * 
      * @param {Object} config
@@ -2189,7 +2190,7 @@ define('Excel/Drawings/AbsoluteAnchor',['underscore', '../util'], function (_, u
     return AbsoluteAnchor;
 });
 define('Excel/Drawings/Chart',['underscore', '../util'], function (_) {
-    
+    "use strict";
     var Chart = function () {
         
     };
@@ -2199,7 +2200,7 @@ define('Excel/Drawings/Chart',['underscore', '../util'], function (_) {
     return Chart;
 });
 define('Excel/Drawings/OneCellAnchor',['underscore', '../util'], function (_, util) {
-    
+    "use strict";
     /**
      * 
      * @param {Object} config
@@ -2268,7 +2269,7 @@ define('Excel/Drawings/OneCellAnchor',['underscore', '../util'], function (_, ut
     return OneCellAnchor;
 });
 define('Excel/Drawings/TwoCellAnchor',['underscore', '../util'], function (_, util) {
-    
+    'use strict';
     var TwoCellAnchor = function (config) {
         this.from = {xOff: 0, yOff: 0};
         this.to = {xOff: 0, yOff: 0};
@@ -2351,7 +2352,7 @@ define('Excel/Drawings/TwoCellAnchor',['underscore', '../util'], function (_, ut
 define('Excel/Drawings/Drawing',[
     'underscore', './AbsoluteAnchor', './OneCellAnchor', './TwoCellAnchor'
 ], function (_, AbsoluteAnchor, OneCellAnchor, TwoCellAnchor) {
-    
+    "use strict";
     /**
      * @constructor
      */
@@ -2387,7 +2388,7 @@ define('Excel/Drawings/Drawing',[
     return Drawing;
 });
 define('Excel/Drawings/Picture',['./Drawing', 'underscore', '../util'], function (Drawing, _, util) {
-    
+    "use strict";
     var Picture = function () {
         this.media = null;
         this.id = _.uniqueId('Picture');
@@ -2490,7 +2491,7 @@ define('Excel/Drawings/Picture',['./Drawing', 'underscore', '../util'], function
     return Picture;
 });
 define('Excel/Positioning',[], function () {
-    
+    "use strict";
     return {
         /**
          * Converts pixel sizes to 'EMU's, which is what Open XML uses. 
@@ -2510,7 +2511,7 @@ define('Excel/Positioning',[], function () {
  * @module Excel/SharedStrings
  */
 define('Excel/SharedStrings',['underscore', './util'], function (_, util) {
-    
+    "use strict";
     var sharedStrings = function () {
         this.strings = {};
         this.stringArray = [];
@@ -2563,7 +2564,7 @@ define('Excel/SharedStrings',['underscore', './util'], function (_, util) {
  * @module Excel/StyleSheet
  */
 define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
-    
+    "use strict";
     var StyleSheet = function () {
         this.id = _.uniqueId('StyleSheet');
         this.cellStyles = [{
@@ -2931,8 +2932,20 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
             while(a--) {
                 xf.setAttribute(attributes[a], styleInstructions[attributes[a]]);
             }
-            if(styleInstructions.fillId) {
+            if (styleInstructions.fillId) {
                 xf.setAttribute('applyFill', '1');
+            }
+            if (styleInstructions.fontId) {
+                xf.setAttribute('applyFont', '1');
+            }
+            if (styleInstructions.borderId) {
+                xf.setAttribute('applyBorder', '1');
+            }
+            if (styleInstructions.alignment) {
+                xf.setAttribute('applyAlignment', '1');
+            }
+            if (styleInstructions.numFmtId) {
+                xf.setAttribute('applyNumberFormat', '1');
             }
             return xf;
         },
@@ -3224,7 +3237,7 @@ define('Excel/StyleSheet',['underscore', './util'], function (_, util) {
  * @module Excel/Table
  */
 define('Excel/Table',['underscore', './util'], function (_, util) {
-    
+    "use strict";
     var Table = function (config) {
         _.defaults(this, {
             name: "",
@@ -3400,7 +3413,7 @@ define('Excel/Table',['underscore', './util'], function (_, util) {
  * @module Excel/Worksheet
  */
 define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], function (_, util, RelationshipManager) {
-    
+    "use strict";
     /**
      * @constructor
      */
@@ -3722,6 +3735,8 @@ define('Excel/Worksheet',['underscore', './util', './RelationshipManager'], func
                     }
                     if(metadata.style) {
                         cell.setAttribute('s', metadata.style);
+                    } else if (this._rowInstructions[row] && this._rowInstructions[row].style !== undefined) {
+                        cell.setAttribute('s', this._rowInstructions[row].style);
                     }
                     cell.setAttribute('r', util.positionToLetterRef(c + 1, row + 1));
                     rowNode.appendChild(cell);
@@ -3933,7 +3948,7 @@ define('Excel/Workbook',[
     './XMLDOM'
 ], 
 function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipManager, Paths, XMLDOM) {
-    
+    "use strict";
     var Workbook = function (config) {
         this.worksheets = [];
         this.tables = [];
@@ -4341,7 +4356,7 @@ JSZip uses the library zlib.js released under the following license :
 zlib.js 2012 - imaya [ https://github.com/imaya/zlib.js ] The MIT License
 */
 !function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define('JSZip',e):"undefined"!=typeof window?window.JSZip=e():"undefined"!=typeof global?global.JSZip=e():"undefined"!=typeof self&&(self.JSZip=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-
+'use strict';
 // private property
 var _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
@@ -4413,7 +4428,7 @@ exports.decode = function(input, utf8) {
 };
 
 },{}],2:[function(require,module,exports){
-
+'use strict';
 function CompressedObject() {
     this.compressedSize = 0;
     this.uncompressedSize = 0;
@@ -4443,7 +4458,7 @@ CompressedObject.prototype = {
 module.exports = CompressedObject;
 
 },{}],3:[function(require,module,exports){
-
+'use strict';
 exports.STORE = {
     magic: "\x00\x00",
     compress: function(content) {
@@ -4458,7 +4473,7 @@ exports.STORE = {
 exports.DEFLATE = require('./flate');
 
 },{"./flate":6}],4:[function(require,module,exports){
-
+'use strict';
 var utils = require('./utils');
 
 function DataReader(data) {
@@ -4567,7 +4582,7 @@ DataReader.prototype = {
 module.exports = DataReader;
 
 },{"./utils":14}],5:[function(require,module,exports){
-
+'use strict';
 exports.base64 = false;
 exports.binary = false;
 exports.dir = false;
@@ -4575,7 +4590,7 @@ exports.date = null;
 exports.compression = null;
 
 },{}],6:[function(require,module,exports){
-
+'use strict';
 var USE_TYPEDARRAY = (typeof Uint8Array !== 'undefined') && (typeof Uint16Array !== 'undefined') && (typeof Uint32Array !== 'undefined');
 
 var  ZlibDeflate = require('zlibjs/bin/rawdeflate.min').Zlib;
@@ -4594,7 +4609,7 @@ exports.uncompress =  function(input) {
 };
 
 },{"zlibjs/bin/rawdeflate.min":19,"zlibjs/bin/rawinflate.min":20}],7:[function(require,module,exports){
-
+'use strict';
 /**
 Usage:
    zip = new JSZip();
@@ -4647,7 +4662,7 @@ JSZip.compressions = require('./compressions');
 module.exports = JSZip;
 
 },{"./base64":1,"./compressions":3,"./defaults":5,"./load":8,"./object":9,"./support":12,"./utils":14}],8:[function(require,module,exports){
-
+'use strict';
 var base64 = require('./base64');
 var ZipEntries = require('./zipEntries');
 module.exports = function(data, options) {
@@ -4673,7 +4688,7 @@ module.exports = function(data, options) {
 };
 
 },{"./base64":1,"./zipEntries":15}],9:[function(require,module,exports){
-
+'use strict';
 var support = require('./support');
 var utils = require('./utils');
 var signature = require('./signature');
@@ -5614,7 +5629,7 @@ var out = {
 module.exports = out;
 
 },{"./base64":1,"./compressedObject":2,"./compressions":3,"./defaults":5,"./nodeBuffer":17,"./signature":10,"./support":12,"./utils":14}],10:[function(require,module,exports){
-
+'use strict';
 exports.LOCAL_FILE_HEADER = "PK\x03\x04";
 exports.CENTRAL_FILE_HEADER = "PK\x01\x02";
 exports.CENTRAL_DIRECTORY_END = "PK\x05\x06";
@@ -5623,7 +5638,7 @@ exports.ZIP64_CENTRAL_DIRECTORY_END = "PK\x06\x06";
 exports.DATA_DESCRIPTOR = "PK\x07\x08";
 
 },{}],11:[function(require,module,exports){
-
+'use strict';
 var DataReader = require('./dataReader');
 var utils = require('./utils');
 
@@ -5661,7 +5676,7 @@ StringReader.prototype.readData = function(size) {
 module.exports = StringReader;
 
 },{"./dataReader":4,"./utils":14}],12:[function(require,module,exports){
-var process=require("__browserify_process");
+var process=require("__browserify_process");'use strict';
 exports.base64 = true;
 exports.array = true;
 exports.string = true;
@@ -5695,7 +5710,7 @@ else {
 }
 
 },{"__browserify_process":18}],13:[function(require,module,exports){
-
+'use strict';
 var DataReader = require('./dataReader');
 
 function Uint8ArrayReader(data) {
@@ -5740,7 +5755,7 @@ Uint8ArrayReader.prototype.readData = function(size) {
 module.exports = Uint8ArrayReader;
 
 },{"./dataReader":4}],14:[function(require,module,exports){
-
+'use strict';
 var support = require('./support');
 var compressions = require('./compressions');
 var nodeBuffer = require('./nodeBuffer');
@@ -6093,7 +6108,7 @@ exports.isRegExp = function (object) {
 
 
 },{"./compressions":3,"./nodeBuffer":17,"./support":12}],15:[function(require,module,exports){
-
+'use strict';
 var StringReader = require('./stringReader');
 var NodeBufferReader = require('./nodeBufferReader');
 var Uint8ArrayReader = require('./uint8ArrayReader');
@@ -6291,7 +6306,7 @@ ZipEntries.prototype = {
 module.exports = ZipEntries;
 
 },{"./nodeBufferReader":17,"./signature":10,"./stringReader":11,"./support":12,"./uint8ArrayReader":13,"./utils":14,"./zipEntry":16}],16:[function(require,module,exports){
-
+'use strict';
 var StringReader = require('./stringReader');
 var utils = require('./utils');
 var CompressedObject = require('./compressedObject');
@@ -6601,7 +6616,7 @@ process.chdir = function (dir) {
 };
 
 },{}],19:[function(require,module,exports){
-/** @license zlib.js 2012 - imaya [ https://github.com/imaya/zlib.js ] The MIT License */(function() {var n=void 0,u=!0,aa=this;function ba(e,d){var c=e.split("."),f=aa;!(c[0]in f)&&f.execScript&&f.execScript("var "+c[0]);for(var a;c.length&&(a=c.shift());)!c.length&&d!==n?f[a]=d:f=f[a]?f[a]:f[a]={}};var C="undefined"!==typeof Uint8Array&&"undefined"!==typeof Uint16Array&&"undefined"!==typeof Uint32Array&&"undefined"!==typeof DataView;function K(e,d){this.index="number"===typeof d?d:0;this.d=0;this.buffer=e instanceof(C?Uint8Array:Array)?e:new (C?Uint8Array:Array)(32768);if(2*this.buffer.length<=this.index)throw Error("invalid index");this.buffer.length<=this.index&&ca(this)}function ca(e){var d=e.buffer,c,f=d.length,a=new (C?Uint8Array:Array)(f<<1);if(C)a.set(d);else for(c=0;c<f;++c)a[c]=d[c];return e.buffer=a}
+/** @license zlib.js 2012 - imaya [ https://github.com/imaya/zlib.js ] The MIT License */(function() {'use strict';var n=void 0,u=!0,aa=this;function ba(e,d){var c=e.split("."),f=aa;!(c[0]in f)&&f.execScript&&f.execScript("var "+c[0]);for(var a;c.length&&(a=c.shift());)!c.length&&d!==n?f[a]=d:f=f[a]?f[a]:f[a]={}};var C="undefined"!==typeof Uint8Array&&"undefined"!==typeof Uint16Array&&"undefined"!==typeof Uint32Array&&"undefined"!==typeof DataView;function K(e,d){this.index="number"===typeof d?d:0;this.d=0;this.buffer=e instanceof(C?Uint8Array:Array)?e:new (C?Uint8Array:Array)(32768);if(2*this.buffer.length<=this.index)throw Error("invalid index");this.buffer.length<=this.index&&ca(this)}function ca(e){var d=e.buffer,c,f=d.length,a=new (C?Uint8Array:Array)(f<<1);if(C)a.set(d);else for(c=0;c<f;++c)a[c]=d[c];return e.buffer=a}
 K.prototype.a=function(e,d,c){var f=this.buffer,a=this.index,b=this.d,k=f[a],m;c&&1<d&&(e=8<d?(L[e&255]<<24|L[e>>>8&255]<<16|L[e>>>16&255]<<8|L[e>>>24&255])>>32-d:L[e]>>8-d);if(8>d+b)k=k<<d|e,b+=d;else for(m=0;m<d;++m)k=k<<1|e>>d-m-1&1,8===++b&&(b=0,f[a++]=L[k],k=0,a===f.length&&(f=ca(this)));f[a]=k;this.buffer=f;this.d=b;this.index=a};K.prototype.finish=function(){var e=this.buffer,d=this.index,c;0<this.d&&(e[d]<<=8-this.d,e[d]=L[e[d]],d++);C?c=e.subarray(0,d):(e.length=d,c=e);return c};
 var ga=new (C?Uint8Array:Array)(256),M;for(M=0;256>M;++M){for(var R=M,S=R,ha=7,R=R>>>1;R;R>>>=1)S<<=1,S|=R&1,--ha;ga[M]=(S<<ha&255)>>>0}var L=ga;function ja(e){this.buffer=new (C?Uint16Array:Array)(2*e);this.length=0}ja.prototype.getParent=function(e){return 2*((e-2)/4|0)};ja.prototype.push=function(e,d){var c,f,a=this.buffer,b;c=this.length;a[this.length++]=d;for(a[this.length++]=e;0<c;)if(f=this.getParent(c),a[c]>a[f])b=a[c],a[c]=a[f],a[f]=b,b=a[c+1],a[c+1]=a[f+1],a[f+1]=b,c=f;else break;return this.length};
 ja.prototype.pop=function(){var e,d,c=this.buffer,f,a,b;d=c[0];e=c[1];this.length-=2;c[0]=c[this.length];c[1]=c[this.length+1];for(b=0;;){a=2*b+2;if(a>=this.length)break;a+2<this.length&&c[a+2]>c[a]&&(a+=2);if(c[a]>c[b])f=c[b],c[b]=c[a],c[a]=f,f=c[b+1],c[b+1]=c[a+1],c[a+1]=f;else break;b=a}return{index:e,value:d,length:this.length}};function ka(e,d){this.e=ma;this.f=0;this.input=C&&e instanceof Array?new Uint8Array(e):e;this.c=0;d&&(d.lazy&&(this.f=d.lazy),"number"===typeof d.compressionType&&(this.e=d.compressionType),d.outputBuffer&&(this.b=C&&d.outputBuffer instanceof Array?new Uint8Array(d.outputBuffer):d.outputBuffer),"number"===typeof d.outputIndex&&(this.c=d.outputIndex));this.b||(this.b=new (C?Uint8Array:Array)(32768))}var ma=2,T=[],U;
@@ -6626,7 +6641,7 @@ function Ja(e,d,c){function f(a){var b=g[a][p[a]];b===d?(f(a+1),f(a+1)):--k[b];+
 function pa(e){var d=new (C?Uint16Array:Array)(e.length),c=[],f=[],a=0,b,k,m,g;b=0;for(k=e.length;b<k;b++)c[e[b]]=(c[e[b]]|0)+1;b=1;for(k=16;b<=k;b++)f[b]=a,a+=c[b]|0,a<<=1;b=0;for(k=e.length;b<k;b++){a=f[e[b]];f[e[b]]+=1;m=d[b]=0;for(g=e[b];m<g;m++)d[b]=d[b]<<1|a&1,a>>>=1}return d};ba("Zlib.RawDeflate",ka);ba("Zlib.RawDeflate.prototype.compress",ka.prototype.h);var Ka={NONE:0,FIXED:1,DYNAMIC:ma},V,La,$,Ma;if(Object.keys)V=Object.keys(Ka);else for(La in V=[],$=0,Ka)V[$++]=La;$=0;for(Ma=V.length;$<Ma;++$)La=V[$],ba("Zlib.RawDeflate.CompressionType."+La,Ka[La]);}).call(this); 
 
 },{}],20:[function(require,module,exports){
-/** @license zlib.js 2012 - imaya [ https://github.com/imaya/zlib.js ] The MIT License */(function() {var l=this;function p(c,e){var a=c.split("."),b=l;!(a[0]in b)&&b.execScript&&b.execScript("var "+a[0]);for(var d;a.length&&(d=a.shift());)!a.length&&void 0!==e?b[d]=e:b=b[d]?b[d]:b[d]={}};var q="undefined"!==typeof Uint8Array&&"undefined"!==typeof Uint16Array&&"undefined"!==typeof Uint32Array&&"undefined"!==typeof DataView;function t(c){var e=c.length,a=0,b=Number.POSITIVE_INFINITY,d,f,g,h,k,m,r,n,s;for(n=0;n<e;++n)c[n]>a&&(a=c[n]),c[n]<b&&(b=c[n]);d=1<<a;f=new (q?Uint32Array:Array)(d);g=1;h=0;for(k=2;g<=a;){for(n=0;n<e;++n)if(c[n]===g){m=0;r=h;for(s=0;s<g;++s)m=m<<1|r&1,r>>=1;for(s=m;s<d;s+=k)f[s]=g<<16|n;++h}++g;h<<=1;k<<=1}return[f,a,b]};function u(c,e){this.g=[];this.h=32768;this.c=this.f=this.d=this.k=0;this.input=q?new Uint8Array(c):c;this.l=!1;this.i=v;this.p=!1;if(e||!(e={}))e.index&&(this.d=e.index),e.bufferSize&&(this.h=e.bufferSize),e.bufferType&&(this.i=e.bufferType),e.resize&&(this.p=e.resize);switch(this.i){case w:this.a=32768;this.b=new (q?Uint8Array:Array)(32768+this.h+258);break;case v:this.a=0;this.b=new (q?Uint8Array:Array)(this.h);this.e=this.u;this.m=this.r;this.j=this.s;break;default:throw Error("invalid inflate mode");
+/** @license zlib.js 2012 - imaya [ https://github.com/imaya/zlib.js ] The MIT License */(function() {'use strict';var l=this;function p(c,e){var a=c.split("."),b=l;!(a[0]in b)&&b.execScript&&b.execScript("var "+a[0]);for(var d;a.length&&(d=a.shift());)!a.length&&void 0!==e?b[d]=e:b=b[d]?b[d]:b[d]={}};var q="undefined"!==typeof Uint8Array&&"undefined"!==typeof Uint16Array&&"undefined"!==typeof Uint32Array&&"undefined"!==typeof DataView;function t(c){var e=c.length,a=0,b=Number.POSITIVE_INFINITY,d,f,g,h,k,m,r,n,s;for(n=0;n<e;++n)c[n]>a&&(a=c[n]),c[n]<b&&(b=c[n]);d=1<<a;f=new (q?Uint32Array:Array)(d);g=1;h=0;for(k=2;g<=a;){for(n=0;n<e;++n)if(c[n]===g){m=0;r=h;for(s=0;s<g;++s)m=m<<1|r&1,r>>=1;for(s=m;s<d;s+=k)f[s]=g<<16|n;++h}++g;h<<=1;k<<=1}return[f,a,b]};function u(c,e){this.g=[];this.h=32768;this.c=this.f=this.d=this.k=0;this.input=q?new Uint8Array(c):c;this.l=!1;this.i=v;this.p=!1;if(e||!(e={}))e.index&&(this.d=e.index),e.bufferSize&&(this.h=e.bufferSize),e.bufferType&&(this.i=e.bufferType),e.resize&&(this.p=e.resize);switch(this.i){case w:this.a=32768;this.b=new (q?Uint8Array:Array)(32768+this.h+258);break;case v:this.a=0;this.b=new (q?Uint8Array:Array)(this.h);this.e=this.u;this.m=this.r;this.j=this.s;break;default:throw Error("invalid inflate mode");
 }}var w=0,v=1;
 u.prototype.t=function(){for(;!this.l;){var c=x(this,3);c&1&&(this.l=!0);c>>>=1;switch(c){case 0:var e=this.input,a=this.d,b=this.b,d=this.a,f=e.length,g=void 0,h=void 0,k=b.length,m=void 0;this.c=this.f=0;if(a+1>=f)throw Error("invalid uncompressed block header: LEN");g=e[a++]|e[a++]<<8;if(a+1>=f)throw Error("invalid uncompressed block header: NLEN");h=e[a++]|e[a++]<<8;if(g===~h)throw Error("invalid uncompressed block header: length verify");if(a+g>e.length)throw Error("input buffer is broken");switch(this.i){case w:for(;d+
 g>b.length;){m=k-d;g-=m;if(q)b.set(e.subarray(a,a+m),d),d+=m,a+=m;else for(;m--;)b[d++]=e[a++];this.a=d;b=this.e();d=this.a}break;case v:for(;d+g>b.length;)b=this.e({o:2});break;default:throw Error("invalid inflate mode");}if(q)b.set(e.subarray(a,a+g),d),d+=g,a+=g;else for(;g--;)b[d++]=e[a++];this.d=a;this.a=d;this.b=b;break;case 1:this.j(y,z);break;case 2:A(this);break;default:throw Error("unknown BTYPE: "+c);}}return this.m()};
