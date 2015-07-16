@@ -327,6 +327,8 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                     }
                     if(metadata.style) {
                         cell.setAttribute('s', metadata.style);
+                    } else if (this._rowInstructions[row] && this._rowInstructions[row].style !== undefined) {
+                        cell.setAttribute('s', this._rowInstructions[row].style);
                     }
                     cell.setAttribute('r', util.positionToLetterRef(c + 1, row + 1));
                     rowNode.appendChild(cell);
