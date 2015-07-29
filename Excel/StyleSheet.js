@@ -366,6 +366,10 @@ define(['underscore', './util'], function (_, util) {
                 var alignmentData = styleInstructions.alignment;
                 xf.appendChild(this.exportAlignment(doc, alignmentData));
             }
+            if (styleInstructions.protection) {
+                xf.appendChild(this.exportProtection(doc, styleInstructions.protection));
+                xf.setAttribute('applyProtection', '1');
+            }
             var a = attributes.length;
             while(a--) {
                 xf.setAttribute(attributes[a], styleInstructions[attributes[a]]);
@@ -637,6 +641,14 @@ define(['underscore', './util'], function (_, util) {
             });
             tableStyle.setAttribute('count', i);
             return tableStyle;
+        },
+
+        exportProtection: function (doc, protectionData) {
+            var node = doc.createElement('protection');
+            for (var k in protectionData) {
+                node.setAttribute(k, protectionData[k]);
+            }
+            return node;
         },
         
         toXML: function () {
