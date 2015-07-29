@@ -279,15 +279,6 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
             
             var cellCache = this._buildCache(doc);
             
-            if (this.sheetProtection) {
-                var shPr = (this.sheetProtection === true) ? {'sheet': '1'} : this.sheetProtection;
-                var shPrNode = doc.createElement('sheetProtection');
-                for (var k in shPr) {
-                    shPrNode.setAttribute(k, shPr[k]);
-                }
-                worksheet.appendChild(shPrNode);
-            }
-
             for(row = 0, l = data.length; row < l; row++) {
                 var dataRow = data[row];
                 var cellCount = dataRow.length;
@@ -374,6 +365,16 @@ define(['underscore', './util', './RelationshipManager'], function (_, util, Rel
                 worksheet.appendChild(this.exportColumns(doc));
             }
             worksheet.appendChild(sheetData);
+
+            // The spec doesn't say anything about this, but Excel 2013 requires sheetProtection immediately after sheetData 
+            if (this.sheetProtection) {
+                var shPr = (this.sheetProtection === true) ? {'sheet': '1'} : this.sheetProtection;
+                var shPrNode = doc.createElement('sheetProtection');
+                for (var k in shPr) {
+                    shPrNode.setAttribute(k, shPr[k]);
+                }
+                worksheet.appendChild(shPrNode);
+            }
 
             // 'mergeCells' should be written before 'headerFoot' and 'drawing' due to issue
             // with Microsoft Excel (2007, 2013)
