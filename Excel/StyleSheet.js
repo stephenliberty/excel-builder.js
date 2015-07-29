@@ -86,6 +86,9 @@ define(['underscore', './util'], function (_, util) {
             var style = {
                 id: sid
             };
+            if (styleInstructions.protection) {
+                style.protection = styleInstructions.protection;
+            }
             if(styleInstructions.font && _.isObject(styleInstructions.font)) {
                 style.fontId = this.createFontStyle(styleInstructions.font).id;
             } else if(styleInstructions.font) {
