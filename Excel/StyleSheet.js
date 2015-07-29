@@ -373,6 +373,9 @@ define(['underscore', './util'], function (_, util) {
             if(styleInstructions.fillId) {
                 xf.setAttribute('applyFill', '1');
             }
+            if((styleInstructions.numFmtId !== undefined) && (styleInstructions.xfId === undefined)) {
+                xf.setAttribute('xfId', '0');
+            }
             return xf;
         },
         
