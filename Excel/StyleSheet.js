@@ -370,8 +370,20 @@ define(['underscore', './util'], function (_, util) {
             while(a--) {
                 xf.setAttribute(attributes[a], styleInstructions[attributes[a]]);
             }
-            if(styleInstructions.fillId) {
+            if (styleInstructions.fillId) {
                 xf.setAttribute('applyFill', '1');
+            }
+            if (styleInstructions.fontId) {
+                xf.setAttribute('applyFont', '1');
+            }
+            if (styleInstructions.borderId) {
+                xf.setAttribute('applyBorder', '1');
+            }
+            if (styleInstructions.alignment) {
+                xf.setAttribute('applyAlignment', '1');
+            }
+            if (styleInstructions.numFmtId) {
+                xf.setAttribute('applyNumberFormat', '1');
             }
             return xf;
         },
