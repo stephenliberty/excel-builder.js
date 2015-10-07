@@ -25,9 +25,11 @@ Combine & uglify:
 
 Distributables
 ---------------
-excel-builder.compiled.js -> All files in the EB package + Underscore
+excel-builder.compiled.js -> All files in the EB package + Underscore + jszip
 
-excel-builder.dist.js -> All files in the EB package + Underscore, with no need for external AMD provider (Web worker will not function in this build).
+excel-builder.dist.js -> All files in the EB package + Underscore + jszip, with no need for external AMD provider (Web worker will not function in this build).
+
+excel-builder.nodep.js -> All files in the EB package, with no need for external AMD provider (Web worker will not function in this build).
 
 Contributing
 -------------
