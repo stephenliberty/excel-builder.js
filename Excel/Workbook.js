@@ -166,7 +166,7 @@ function (require, _, util, StyleSheet, Worksheet, SharedStrings, RelationshipMa
                 var sheet = doc.createElement('sheet');
                 // Microsoft Excel (2007, 2013) do not allow worksheet names longer than 31 characters
                 // if the worksheet name is longer, Excel displays an "Excel found unreadable content..." popup when opening the file
-                if(typeof console != "undefined" && this.worksheets[i].name.length > maxWorksheetNameLength) {
+                if(typeof console !== "undefined" && this.worksheets[i].name.length > maxWorksheetNameLength) {
                     console.log('Microsoft Excel requires work sheet names to be less than ' + (maxWorksheetNameLength+1) +
                             ' characters long, work sheet name "' + this.worksheets[i].name +
                             '" is ' + this.worksheets[i].name.length + ' characters long');
