@@ -4,7 +4,7 @@
     "eqeqeq": true,
     "undef": true,
     "unused": true,
-    "strict": true,
+    "strict": "global",
     "camelcase": true,
     "es3": true,
     "forin": true,
@@ -14,6 +14,8 @@
     "newcap": true,
     "noempty": true,
     "nonbsp": true,
+    "browser": true,
+    "node": true,
     "globals": {
         "jQuery": true,
         "define": true,

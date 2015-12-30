@@ -1,10 +1,10 @@
 <html>
     <head>
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
-        
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"></script>
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/json2/20110223/json2.js"></script>
+
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+        <script type="text/javascript" src="../dist/excel-builder.dist.js"></script>
         <script type="text/javascript" src="downloadify/js/swfobject.js"></script>
         <script type="text/javascript" src="downloadify/js/downloadify.min.js"></script>
     </head>
@@ -13,20 +13,7 @@
         <pre id="preview"><a href="#" id="downloader" download="sample.xlsx">Click me!</a></pre>
         
         <script type="text/javascript">
-            require.config({
-                text: 'text.js',
-                paths: {
-                    JSZip: 'http://cdnjs.cloudflare.com/ajax/libs/jszip/2.0.0/jszip'
-                },
-                shim: {
-                    'JSZip': {
-                        exports: 'JSZip'
-                    }
-                }
-            });
-            require(['../excel-builder', 'text!testdata.json', '../Template/BasicReport'], function (builder, testdata, BasicReport) {
-                var data = JSON.parse(testdata);
-                /* for converting data sets from key-> value to array of values
+            $.get('./testdata.json').then(function (data) {
                 var stuff = [];
                 for(var i = 0, l = data.length; i < l; i++) {
                     var d = data[i];
@@ -39,8 +26,8 @@
                         d.endDate
                     ];
                 }
-                */
-                var basicReport = new BasicReport();
+
+                var basicReport = new ExcelBuilder.Template.BasicReport();
                 var columns = [
                     {id: 'id', name: "ID", type: 'number', width: 20},
                     {id: 'name', name:"Name", type: 'string', width: 50},
@@ -49,18 +36,18 @@
                     {id: 'startDate', name: "Start Date", type: 'date', style: basicReport.predefinedFormatters.date.id, width: 15},
                     {id: 'endDate', name: "End Date", type: 'date', style: basicReport.predefinedFormatters.date.id, width: 15}
                 ];
-                
+
                 var worksheetData = [
                     [
-                        {value: "ID", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}, 
-                        {value: "Name", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}, 
-                        {value: "Price", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}, 
-                        {value: "Location", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}, 
+                        {value: "ID", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+                        {value: "Name", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+                        {value: "Price", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+                        {value: "Location", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
                         {value: "Start Date", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
                         {value: "End Date", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}
                     ]
                 ].concat(data);
-                
+
                 basicReport.setHeader([
                     {bold: true, text: "Generic Report"}, "", ""
                 ]);
@@ -71,29 +58,51 @@
                 ]);
                 if('download' in document.createElement('a')){
                     $("#downloader").attr({
-                        href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+builder.createFile(basicReport.prepare())
+                        href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+ ExcelBuilder.Builder.createFile(basicReport.prepare())
                     });
                 } else {
                     Downloadify.create('downloader',{
-                            filename: function(){
-                                    return "sample.xlsx";
-                            },
-                            data: function(){ 
-                                    return builder.createFile(basicReport.prepare());
-                            },
+                        filename: function(){
+                            return "sample.xlsx";
+                        },
+                        data: function(){
+                            return builder.createFile(basicReport.prepare());
+                        },
 //                            onComplete: function(){ alert('Your File Has Been Saved!'); },
 //                            onCancel: function(){ alert('You have cancelled the saving of this file.'); },
 //                            onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
-                            swf: 'downloadify/media/downloadify.swf',
-                            downloadImage: 'downloadify/images/download.png',
-                            width: 100,
-                            dataType: 'base64',
-                            height: 30,
-                            transparent: true,
-                            append: false
+                        swf: 'downloadify/media/downloadify.swf',
+                        downloadImage: 'downloadify/images/download.png',
+                        width: 100,
+                        dataType: 'base64',
+                        height: 30,
+                        transparent: true,
+                        append: false
                     });
                 }
+
+
+
             });
+//            require(['../excel-builder', 'text!testdata.json', '../Template/BasicReport'], function (builder, , BasicReport) {
+//                var data = JSON.parse(testdata);
+//                /* for converting data sets from key-> value to array of values
+//                var stuff = [];
+//                for(var i = 0, l = data.length; i < l; i++) {
+//                    var d = data[i];
+//                    stuff[i] = [
+//                        d.id,
+//                        d.name,
+//                        d.price,
+//                        d.location,
+//                        d.startDate,
+//                        d.endDate
+//                    ];
+//                }
+//                */
+//                var basicReport = new BasicReport();
+
+//            });
             
         </script>
         
