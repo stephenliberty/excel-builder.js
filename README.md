@@ -3,7 +3,7 @@
 excel-builder.js
 ================
 
-*V2 coming soon*. Mostly backwards compatable, except for the removal of async sheet building, and the builder returns a promise which will resolve with the excel data, rather than just returning the data. This will open the door for putting async building back in at a later date when some better options have been explored.
+*V2 coming soon*. Mostly backwards compatible, except for the removal of async sheet building, and the builder returns a promise which will resolve with the excel data, rather than just returning the data. This will open the door for putting async building back in at a later date when some better options have been explored.
 
 A way to build excel files with javascript
 
