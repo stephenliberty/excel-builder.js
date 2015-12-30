@@ -4,3 +4,4 @@ buildtools/index.js
 build
 node_modules
 jszip.js
+.idea
