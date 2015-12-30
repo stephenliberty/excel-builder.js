@@ -29,8 +29,10 @@
     "grunt-contrib-copy": "*"
   },
   "dependencies": {
-    "underscore": "~1.6.0",
+    "grunt": "^0.4.5",
+    "grunt-contrib-watch": "^0.6.1",
     "jszip": "~2.1.0",
-    "requirejs": "~2.1.10"
+    "requirejs": "~2.1.10",
+    "underscore": "~1.6.0"
   }
 }

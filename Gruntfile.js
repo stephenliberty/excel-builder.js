@@ -85,7 +85,14 @@ module.exports = function(grunt) {
                 //http://stackoverflow.com/questions/20695823/grunt-contrib-jshint-ignores-has-no-effect (hence the ! in front of **/*Worker.js
                 src: ['Excel/**/*.js', '!**/*Worker.js']
             }
-        }
+        },
+        watch: {
+            files: ['./Excel/**/*.js', './excel-builder.js'],
+            tasks: ['default'],
+            options: {
+                spawn: false
+            }
+        },
     });
     
     
@@ -93,6 +100,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Default task(s).
     grunt.registerTask('default', ['copy', 'jshint:all', 'requirejs', 'uglify']);
