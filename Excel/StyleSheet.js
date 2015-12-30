@@ -392,6 +392,9 @@ define(['underscore', './util'], function (_, util) {
             if (styleInstructions.numFmtId) {
                 xf.setAttribute('applyNumberFormat', '1');
             }
+            if((styleInstructions.numFmtId !== undefined) && (styleInstructions.xfId === undefined)) {
+                xf.setAttribute('xfId', '0');
+            }
             return xf;
         },
         
