@@ -86,6 +86,9 @@ define(['underscore', './util'], function (_, util) {
             var style = {
                 id: sid
             };
+            if (styleInstructions.protection) {
+                style.protection = styleInstructions.protection;
+            }
             if(styleInstructions.font && _.isObject(styleInstructions.font)) {
                 style.fontId = this.createFontStyle(styleInstructions.font).id;
             } else if(styleInstructions.font) {
@@ -365,6 +368,10 @@ define(['underscore', './util'], function (_, util) {
             if(styleInstructions.alignment) {
                 var alignmentData = styleInstructions.alignment;
                 xf.appendChild(this.exportAlignment(doc, alignmentData));
+            }
+            if (styleInstructions.protection) {
+                xf.appendChild(this.exportProtection(doc, styleInstructions.protection));
+                xf.setAttribute('applyProtection', '1');
             }
             var a = attributes.length;
             while(a--) {
@@ -649,6 +656,14 @@ define(['underscore', './util'], function (_, util) {
             });
             tableStyle.setAttribute('count', i);
             return tableStyle;
+        },
+
+        exportProtection: function (doc, protectionData) {
+            var node = doc.createElement('protection');
+            for (var k in protectionData) {
+                node.setAttribute(k, protectionData[k]);
+            }
+            return node;
         },
         
         toXML: function () {
