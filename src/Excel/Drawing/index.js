@@ -38,10 +38,12 @@ _.extend(Drawing.prototype, {
     }
 });
 
-module.exports = _.extend(Drawing, {
-    AbsoluteAnchor: require('./AbsoluteAnchor'),
-    Chart: require('./Chart'),
-    OneCellAnchor: require('./OneCellAnchor'),
-    Picture: require('./Picture'),
-    TwoCellAnchor: require('./TwoCellAnchor')
-});
+Object.defineProperties(Drawing, {
+    AbsoluteAnchor: {get: function () { return require('./AbsoluteAnchor') }},
+    Chart: {get: function () { return require('./Chart') }},
+    OneCellAnchor: {get: function () { return require('./OneCellAnchor') }},
+    Picture: {get: function () { return require('./Picture') }},
+    TwoCellAnchor: {get: function () { return require('./TwoCellAnchor') }}
+})
+
+module.exports = Drawing;

@@ -98,8 +98,9 @@ _.extend(Picture.prototype, {
 //                    </a:ext>
 //                </a:extLst>
 //            </xdr:spPr>
-//            
+//
         return this.anchor.toXML(xmlDoc, pictureNode);
     }
 });
+
 module.exports = Picture;

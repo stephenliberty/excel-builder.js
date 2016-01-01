@@ -47,7 +47,7 @@ module.exports = function(grunt) {
         },
         watch: {
             files: ['src/**/*'],
-            tasks: ['default'],
+            tasks: ['browserify'],
             options: {
                 spawn: false
             }

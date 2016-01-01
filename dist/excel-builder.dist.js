@@ -159,7 +159,7 @@ _.extend(AbsoluteAnchor.prototype, {
 });
 module.exports = AbsoluteAnchor;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util":20}],3:[function(require,module,exports){
+},{"../util":22}],3:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
@@ -245,7 +245,7 @@ _.extend(OneCellAnchor.prototype, {
 });
 module.exports = OneCellAnchor;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util":20}],5:[function(require,module,exports){
+},{"../util":22}],5:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
@@ -347,14 +347,15 @@ _.extend(Picture.prototype, {
 //                    </a:ext>
 //                </a:extLst>
 //            </xdr:spPr>
-//            
+//
         return this.anchor.toXML(xmlDoc, pictureNode);
     }
 });
+
 module.exports = Picture;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util":20,"./index":7}],6:[function(require,module,exports){
+},{"../util":22,"./index":7}],6:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
@@ -435,7 +436,7 @@ _.extend(TwoCellAnchor.prototype, {
 module.exports = TwoCellAnchor;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util":20}],7:[function(require,module,exports){
+},{"../util":22}],7:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
@@ -477,13 +478,15 @@ _.extend(Drawing.prototype, {
     }
 });
 
-module.exports = _.extend(Drawing, {
-    AbsoluteAnchor: require('./AbsoluteAnchor'),
-    Chart: require('./Chart'),
-    OneCellAnchor: require('./OneCellAnchor'),
-    Picture: require('./Picture'),
-    TwoCellAnchor: require('./TwoCellAnchor')
-});
+Object.defineProperties(Drawing, {
+    AbsoluteAnchor: {get: function () { return require('./AbsoluteAnchor') }},
+    Chart: {get: function () { return require('./Chart') }},
+    OneCellAnchor: {get: function () { return require('./OneCellAnchor') }},
+    Picture: {get: function () { return require('./Picture') }},
+    TwoCellAnchor: {get: function () { return require('./TwoCellAnchor') }}
+})
+
+module.exports = Drawing;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./AbsoluteAnchor":2,"./Chart":3,"./OneCellAnchor":4,"./Picture":5,"./TwoCellAnchor":6}],8:[function(require,module,exports){
@@ -520,6 +523,7 @@ _.extend(Drawings.prototype, {
         var drawings = doc.documentElement;
         drawings.setAttribute('xmlns:a', util.schemas.drawing);
         drawings.setAttribute('xmlns:r', util.schemas.relationships);
+        drawings.setAttribute('xmlns:xdr', util.schemas.spreadsheetDrawing);
 
         for(var i = 0, l = this.drawings.length; i < l; i++) {
 
@@ -536,14 +540,69 @@ _.extend(Drawings.prototype, {
 
 module.exports = Drawings;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./RelationshipManager":11,"./util":20}],9:[function(require,module,exports){
+},{"./RelationshipManager":12,"./util":22}],9:[function(require,module,exports){
+(function (global){
+"use strict";
+
+/**
+ * @module Excel/Pane
+ *
+ * https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.pane%28v=office.14%29.aspx
+ */
+"use strict";
+var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
+var util = require('./util');
+
+
+
+var Pane = function () {
+
+    /*
+    Possible Values:
+     null
+     split	Split
+     frozen	Frozen
+     frozenSplit	Frozen Split
+     http://www.datypic.com/sc/ooxml/t-ssml_ST_PaneState.html
+     */
+    this.state = null;
+    this.xSplit = null;
+    this.ySplit = null;
+    this.activePane = 'bottomRight'
+    this.topLeftCell = null;
+
+};
+
+_.extend(Pane.prototype, {
+
+    freezePane: function(column, row, cell) {
+        this._freezePane = {xSplit: column, ySplit: row, cell: cell};
+    },
+
+    export: function (doc) {
+        var pane = doc.createElement('pane');
+
+        if(this.state !== null) {
+            pane.setAttribute('xSplit', this._freezePane.xSplit);
+            pane.setAttribute('ySplit', this._freezePane.ySplit);
+            pane.setAttribute('topLeftCell', this._freezePane.cell);
+            pane.setAttribute('activePane', 'bottomRight');
+            pane.setAttribute('state', 'frozen');
+        }
+        return pane;
+    }
+});
+
+module.exports = Pane;
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./util":22}],10:[function(require,module,exports){
 /**
  * This is mostly a global spot where all of the relationship managers can get and set
  * path information from/to. 
  * @module Excel/Paths
  */
 module.exports = {};
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 
 module.exports = {
@@ -561,7 +620,7 @@ module.exports = {
     }
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
@@ -622,7 +681,7 @@ _.extend(RelationshipManager.prototype, {
     
 module.exports = RelationshipManager;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Paths":9,"./util":20}],12:[function(require,module,exports){
+},{"./Paths":10,"./util":22}],13:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
@@ -680,7 +739,136 @@ _.extend(sharedStrings.prototype, {
 });
 module.exports = sharedStrings;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./util":20}],13:[function(require,module,exports){
+},{"./util":22}],14:[function(require,module,exports){
+(function (global){
+"use strict";
+
+/**
+ * @module Excel/SheetView
+ *
+ * https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.sheetview%28v=office.14%29.aspx
+ *
+ */
+"use strict";
+var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
+var util = require('./util');
+var Pane = require('./Pane');
+
+var SheetView = function (config) {
+    config = config || {};
+
+    this.pane = config.pane || new Pane();
+    this.showZeros = null; //Default
+    this.defaultGridColor = null;
+    this.colorId = null;
+    this.rightToLeft = null;
+    this.showFormulas = null;
+    this.showGridLines = null;
+    this.showOutlineSymbols = null;
+    this.showRowColHeaders = null;
+    this.showRuler = null;
+    this.showWhiteSpace = null;
+    this.tabSelected = null;
+    this.topLeftCell = null;
+    this.viewType = null; //http://www.datypic.com/sc/ooxml/t-ssml_ST_SheetViewType.html
+    this.windowProtection = null;
+    this.zoomScale = null;
+    this.zoomScaleNormal = null;
+    this.zoomScalePageLayoutView = null;
+    this.zoomScaleSheetLayoutView = null;
+};
+
+_.extend(SheetView.prototype, {
+
+    /**
+     * Added froze pane
+     * @param column - column number: 0, 1, 2 ...
+     * @param row - row number: 0, 1, 2 ...
+     * @param cell - 'A1'
+     * @deprecated
+     */
+    freezePane: function(column, row, cell) {
+        this.pane.state = 'frozen';
+        this.pane.xSplit = column;
+        this.pane.ySplit = row;
+        this.pane.topLeftCell = cell;
+    },
+
+    export: function (doc) {
+        var sheetViews = doc.createElement('sheetViews'),
+            sheetView = doc.createElement('sheetView'),
+            pane = doc.createElement('pane');
+
+        //TODO apparent you can add 'book views'.. investigate what these are
+        sheetView.setAttribute('workbookViewId', 0);
+
+        if(this.showZeros !== null) {
+            sheetView.setAttribute('showZeros', this.showZeros ? '1' : '0');
+        }
+        if(this.defaultGridColor !== null) {
+            sheetView.setAttribute('defaultGridColor', this.defaultGridColor ? '1' : '0');
+        }
+
+        //TODO: I have no idea what this even is :\
+        if(this.colorId !== null) {
+            sheetView.setAttribute('colorId', this.colorId);
+        }
+        if(this.rightToLeft !== null) {
+            sheetView.setAttribute('rightToLeft', this.rightToLeft ? '1' : '0');
+        }
+        if(this.showFormulas !== null) {
+            sheetView.setAttribute('showFormulas', this.showFormulas ? '1' : '0');
+        }
+        if(this.showGridLines !== null) {
+            sheetView.setAttribute('showGridLines', this.showGridLines ? '1' : '0');
+        }
+        if(this.showOutlineSymbols !== null) {
+            sheetView.setAttribute('showOutlineSymbols', this.showOutlineSymbols ? '1' : '0');
+        }
+        if(this.showRowColHeaders !== null) {
+            sheetView.setAttribute('showRowColHeaders', this.showRowColHeaders ? '1' : '0');
+        }
+        if(this.showRuler !== null) {
+            sheetView.setAttribute('showRuler', this.showRuler ? '1' : '0');
+        }
+        if(this.showWhiteSpace !== null) {
+            sheetView.setAttribute('showWhiteSpace', this.showWhiteSpace ? '1' : '0');
+        }
+        if(this.tabSelected !== null) {
+            sheetView.setAttribute('tabSelected', this.tabSelected ? '1' : '0');
+        }
+        if(this.viewType !== null) {
+            sheetView.setAttribute('viewType', this.viewType);
+        }
+        if(this.windowProtection !== null) {
+            sheetView.setAttribute('windowProtection', this.windowProtection ? '1' : '0');
+        }
+        if(this.zoomScale !== null) {
+            sheetView.setAttribute('zoomScale', this.zoomScale ? '1' : '0');
+        }
+        if(this.zoomScale !== null) {
+            sheetView.setAttribute('zoomScale', this.zoomScale);
+        }
+        if(this.zoomScaleNormal !== null) {
+            sheetView.setAttribute('zoomScaleNormal', this.zoomScaleNormal);
+        }
+        if(this.zoomScalePageLayoutView !== null) {
+            sheetView.setAttribute('zoomScalePageLayoutView', this.zoomScalePageLayoutView);
+        }
+        if(this.zoomScaleSheetLayoutView !== null) {
+            sheetView.setAttribute('zoomScaleSheetLayoutView', this.zoomScaleSheetLayoutView);
+        }
+
+        sheetView.appendChild(this.pane.export(doc));
+
+        sheetViews.appendChild(sheetView);
+        return sheetViews;
+    }
+});
+
+module.exports = SheetView;
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./Pane":9,"./util":22}],15:[function(require,module,exports){
 (function (global){
 /**
  * @module Excel/StyleSheet
@@ -1377,7 +1565,7 @@ _.extend(StyleSheet.prototype, {
 module.exports = StyleSheet;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./util":20}],14:[function(require,module,exports){
+},{"./util":22}],16:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
@@ -1554,9 +1742,10 @@ _.extend(Table.prototype, {
 });
 module.exports = Table;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./util":20}],15:[function(require,module,exports){
+},{"./util":22}],17:[function(require,module,exports){
 (function (global){
 "use strict";
+var Q = require('q');
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
 var util = require('./util');
 var StyleSheet = require('./StyleSheet');
@@ -1802,126 +1991,9 @@ _.extend(Workbook.prototype, {
         });
     },
 
-    generateFilesAsync: function (options) {
-        var requireJsPath = options.requireJsPath;
-        var self = this;
-        if(!options.requireJsPath) {
-            requireJsPath = document.getElementById('requirejs') ? document.getElementById('requirejs').src : '';
-        }
-        if(!requireJsPath) {
-            throw "Please add 'requirejs' to the script that includes requirejs, or specify the path as an argument";
-        }
-        var files = {},
-            doneCount = this.worksheets.length,
-            stringsCollectedCount = this.worksheets.length,
-            workers = [];
-
-        var result = {
-            status: "Not Started",
-            terminate: function () {
-                for(var i = 0; i < workers.length; i++) {
-                    workers[i].terminate();
-                }
-            }
-        };
-        this._generateCorePaths(files);
-
-        var done = function () {
-            if(--doneCount === 0) {
-                self._prepareFilesForPackaging(files);
-                for(var i = 0; i < workers.length; i++) {
-                    workers[i].terminate();
-                }
-                options.success(files);
-            }
-        };
-        var stringsCollected = function () {
-            if(--stringsCollectedCount === 0) {
-                for(var i = 0; i < workers.length; i++) {
-                    workers[i].postMessage({
-                        instruction: 'export',
-                        sharedStrings: self.sharedStrings.exportData()
-                    });
-                }
-            }
-        };
-
-
-        var worksheetWorker = function (worksheetIndex) {
-            return {
-                error: function () {
-                    for(var i = 0; i < workers.length; i++) {
-                        workers[i].terminate();
-                    }
-                    //message, filename, lineno
-                    options.error.apply(this, arguments);
-                },
-                stringsCollected: function () {
-                    stringsCollected();
-                },
-                finished: function (data) {
-                    files['/xl/worksheets/sheet' + (worksheetIndex + 1) + '.xml'] = {xml: data};
-                    Paths[self.worksheets[worksheetIndex].id] = 'worksheets/sheet' + (worksheetIndex + 1) + '.xml';
-                    files['/xl/worksheets/_rels/sheet' + (worksheetIndex + 1) + '.xml.rels'] = self.worksheets[worksheetIndex].relations.toXML();
-                    done();
-                }
-            };
-        };
-
-        for(var i = 0, l = this.worksheets.length; i < l; i++) {
-            workers.push(
-                this._createWorker(requireJsPath, i, worksheetWorker(i))
-            );
-        }
-
-        return result;
-    },
-
-    _createWorker: function (requireJsPath, worksheetIndex, callbacks) {
-        var worker = new window.Worker(require.toUrl('./WorksheetExportWorker.js'));
-        var self = this;
-        worker.addEventListener('error', callbacks.error);
-        worker.addEventListener('message', function(event) {
-//                console.log("Called back by the worker!\n", event.data);
-            switch(event.data.status) {
-                case "ready":
-                    worker.postMessage({
-                        instruction: 'start',
-                        data: self.worksheets[worksheetIndex].exportData()
-                    });
-                    break;
-                case "sharedStrings":
-                    for(var i = 0; i < event.data.data.length; i++) {
-                        self.sharedStrings.addString(event.data.data[i]);
-                    }
-                    callbacks.stringsCollected();
-                    break;
-                case "finished":
-                    callbacks.finished(event.data.data);
-                    break;
-            }
-        }, false);
-        worker.postMessage({
-            instruction: 'setup',
-            config: {
-                paths: {
-                    underscore: require.toUrl('underscore').slice(0, -3)
-                },
-                shim: {
-                    'underscore': {
-                        exports: '_'
-                    }
-                }
-            },
-            requireJsPath: requireJsPath
-        });
-        return worker;
-    },
-
     generateFiles: function () {
         var files = {};
         this._generateCorePaths(files);
-
 
         for(var i = 0, l = this.worksheets.length; i < l; i++) {
             files['/xl/worksheets/sheet' + (i + 1) + '.xml'] = this.worksheets[i].toXML();
@@ -1931,17 +2003,18 @@ _.extend(Workbook.prototype, {
 
         this._prepareFilesForPackaging(files);
 
-        return files;
+        return Q.resolve(files);
     }
 });
 module.exports = Workbook;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Paths":9,"./RelationshipManager":11,"./SharedStrings":12,"./StyleSheet":13,"./Worksheet":16,"./XMLDOM":18,"./util":20}],16:[function(require,module,exports){
+},{"./Paths":10,"./RelationshipManager":12,"./SharedStrings":13,"./StyleSheet":15,"./Worksheet":18,"./XMLDOM":20,"./util":22,"q":"q"}],18:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
 var util = require('./util');
 var RelationshipManager = require('./RelationshipManager');
+var SheetView = require('./SheetView');
 
 /**
  * This module represents an excel worksheet in its basic form - no tables, charts, etc. Its purpose is 
@@ -1962,6 +2035,11 @@ var RelationshipManager = require('./RelationshipManager');
         this._drawings = [];
         this._rowInstructions = {};
         this._freezePane = {};
+
+        this.sheetView = config.sheetView || new SheetView();
+
+        this.showZeros = null;
+        this.showGridLines
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
@@ -2305,10 +2383,7 @@ var RelationshipManager = require('./RelationshipManager');
                 ]));
             }
 
-            //added freeze pane
-            if (this._freezePane.cell) {
-                worksheet.appendChild(this.exportPane(doc));
-            }
+            worksheet.appendChild(this.sheetView.export(doc));
 
             if(this.columns.length) {
                 worksheet.appendChild(this.exportColumns(doc));
@@ -2405,28 +2480,6 @@ var RelationshipManager = require('./RelationshipManager');
             }
             return cols;
         },
-        
-        /**
-         * Added frozen pane
-         * @param {XML Node} doc
-         * @returns {XML Node}
-         */
-        exportPane: function (doc) {
-            var sheetViews = doc.createElement('sheetViews'),
-                sheetView = doc.createElement('sheetView'),
-                pane = doc.createElement('pane');
-
-            sheetView.setAttribute('workbookViewId', 0);
-            pane.setAttribute('xSplit', this._freezePane.xSplit);
-            pane.setAttribute('ySplit', this._freezePane.ySplit);
-            pane.setAttribute('topLeftCell', this._freezePane.cell);
-            pane.setAttribute('activePane', 'bottomRight');
-            pane.setAttribute('state', 'frozen');
-
-            sheetView.appendChild(pane);
-            sheetViews.appendChild(sheetView);
-            return sheetViews;
-        },
 
         /**
          * Sets the page settings on a worksheet node.
@@ -2484,15 +2537,16 @@ var RelationshipManager = require('./RelationshipManager');
         mergeCells: function(cell1, cell2) {
             this.mergedCells.push([cell1, cell2]);
         },
-        
+
         /**
          * Added froze pane
          * @param column - column number: 0, 1, 2 ...
          * @param row - row number: 0, 1, 2 ...
          * @param cell - 'A1'
+         * @deprecated
          */
         freezePane: function(column, row, cell) {
-            this._freezePane = {xSplit: column, ySplit: row, cell: cell};
+            this.sheetView.freezePane(column, row, cell);
         },
 
         /**
@@ -2517,7 +2571,7 @@ var RelationshipManager = require('./RelationshipManager');
     module.exports = Worksheet;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./RelationshipManager":11,"./util":20}],17:[function(require,module,exports){
+},{"./RelationshipManager":12,"./SheetView":14,"./util":22}],19:[function(require,module,exports){
 /* jshint strict: false, node: true */
 /* globals  onmessage: true, importScripts, postMessage */
 "use strict";
@@ -2558,7 +2612,7 @@ onmessage = function(event) {
 
 
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function (global){
 'use strict';
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
@@ -2614,7 +2668,7 @@ XMLDOM.XMLNode = function (config) {
     this.attributes = {};
 
     if(config.children) {
-        for(var i = 0; i < config.children.length; i++) {
+        for(var i = 0, l = config.children.length; i < l; i++) {
             this.appendChild(XMLDOM.Node.Create(config.children[i]));
         }
     }
@@ -2631,14 +2685,10 @@ _.extend(XMLDOM.XMLNode.prototype, {
 
     toString: function () {
         var string = "<" + this.nodeName;
-        var attrs = [];
         for(var attr in this.attributes) {
             if(this.attributes.hasOwnProperty(attr)) {
-                attrs.push(attr + "=\""+_.escape(this.attributes[attr])+"\"");
+                string = string + " " + attr + "=\""+_.escape(this.attributes[attr])+"\"";
             }
-        }
-        if (attrs.length > 0){
-            string+= " " + attrs.join(" ");
         }
 
         var childContent = "";
@@ -2678,9 +2728,6 @@ _.extend(XMLDOM.XMLNode.prototype, {
         this.attributes[name] = val;
         this[name] = val;
     },
-    setAttributeNS: function (ns, name, val) {
-        this.setAttribute(name, val);
-    },
     appendChild: function (child) {
         this.children.push(child);
         this.firstChild = this.children[0];
@@ -2692,7 +2739,7 @@ _.extend(XMLDOM.XMLNode.prototype, {
 
 module.exports = XMLDOM;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /* jshint unused: false */
 /* globals  importScripts, JSZip, postMessage */
 
@@ -2725,7 +2772,7 @@ var onmessage = function(event) {
 
 
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 var XMLDOM = require('./XMLDOM');
 /**
@@ -2749,30 +2796,19 @@ var util = {
     },
 
     /**
-     * Attempts to create an XML document. Due to limitations in web workers,
-     * it may return a 'fake' xml document created from the XMLDOM.js file.
+     * Attempts to create an XML document. After some investigation, using the 'fake' document
+     * is significantly faster than creating an actual XML document, so we're going to go with
+     * that. Besides, it just makes it easier to port to node.
      *
      * Takes a namespace to start the xml file in, as well as the root element
      * of the xml file.
      *
      * @param {type} ns
      * @param {type} base
-     * @returns {ActiveXObject|@exp;document@pro;implementation@call;createDocument|@new;XMLDOM}
+     * @returns {@new;XMLDOM}
      */
     createXmlDoc: function (ns, base) {
-        if(typeof document === 'undefined') {
-            return new XMLDOM(ns || null, base, null);
-        }
-        if(document.implementation && document.implementation.createDocument) {
-            return document.implementation.createDocument(ns || null, base, null);
-        } else if (window.ActiveXObject) {
-            var doc = new window.ActiveXObject( "Microsoft.XMLDOM" );
-            var rootNode = doc.createElement(base);
-            rootNode.setAttribute('xmlns', ns);
-            doc.appendChild(rootNode);
-            return doc;
-        }
-        throw "No xml document generator";
+        return new XMLDOM(ns || null, base, null);
     },
 
     /**
@@ -2786,15 +2822,10 @@ var util = {
      */
     createElement: function (doc, name, attributes) {
         var el = doc.createElement(name);
-        var ie = !el.setAttributeNS;
         attributes = attributes || [];
         var i = attributes.length;
         while (i--) {
-            if(!ie && attributes[i][0].indexOf('xmlns') !== -1) {
-                el.setAttributeNS("http://www.w3.org/2000/xmlns/", attributes[i][0], attributes[i][1]);
-            } else {
-                el.setAttribute(attributes[i][0], attributes[i][1]);
-            }
+            el.setAttribute(attributes[i][0], attributes[i][1]);
         }
         return el;
     },
@@ -2840,7 +2871,7 @@ var util = {
 };
 
 module.exports = util;
-},{"./XMLDOM":18}],21:[function(require,module,exports){
+},{"./XMLDOM":20}],23:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -2913,16 +2944,17 @@ _.extend(Template.prototype, {
 module.exports = Template;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../Excel/Table":14,"../Excel/Workbook":15}],22:[function(require,module,exports){
+},{"../Excel/Table":16,"../Excel/Workbook":17}],24:[function(require,module,exports){
 module.exports = {
     BasicReport: require('./BasicReport')
 };
-},{"./BasicReport":21}],23:[function(require,module,exports){
+},{"./BasicReport":23}],25:[function(require,module,exports){
 (function (global){
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
 var Workbook = require('./Excel/Workbook');
 var JSZip = (typeof window !== "undefined" ? window['JSZip'] : typeof global !== "undefined" ? global['JSZip'] : null);
+//var WorkbookWorker = require('./Worker');
 
 /**
  * @name Excel
@@ -2939,6 +2971,10 @@ var Factory = {
      */
     createWorkbook: function () {
         return new Workbook();
+    },
+
+    config: {
+        forceUIThread: false
     },
 
     /**
@@ -2978,37 +3014,41 @@ var Factory = {
      * Turns a workbook into a downloadable file.
      * @param {Excel/Workbook} workbook The workbook that is being converted
      * @param {Object} options - options to modify how the zip is created. See http://stuk.github.io/jszip/#doc_generate_options
+     * @returns {Promise}
      */
     createFile: function (workbook, options) {
         var zip = new JSZip();
-        var files = workbook.generateFiles();
-        _.each(files, function (content, path) {
-            path = path.substr(1);
-            if(path.indexOf('.xml') !== -1 || path.indexOf('.rel') !== -1) {
-                zip.file(path, content, {base64: false});
-            } else {
-                zip.file(path, content, {base64: true, binary: true});
-            }
+        return workbook.generateFiles().then(function (files) {
+            _.each(files, function (content, path) {
+                path = path.substr(1);
+                if(path.indexOf('.xml') !== -1 || path.indexOf('.rel') !== -1) {
+                    zip.file(path, content, {base64: false});
+                } else {
+                    zip.file(path, content, {base64: true, binary: true});
+                }
+            });
+            return zip.generate(_.defaults(options || {}, {
+                type: "base64"
+            }));
         });
-        return zip.generate(_.defaults(options || {}, {
-            type: "base64"
-        }));
     }
 };
 
 
 module.exports = Factory;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Excel/Workbook":15}],24:[function(require,module,exports){
+},{"./Excel/Workbook":17}],26:[function(require,module,exports){
 (function (global){
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
 var EBExport = module.exports = {
     Drawings: require('./Excel/Drawings'),
     Drawing: require('./Excel/Drawing/index'),
+    Pane: require('./Excel/Pane'),
     Paths: require('./Excel/Paths'),
     Positioning: require('./Excel/Positioning'),
     RelationshipManager: require('./Excel/RelationshipManager'),
     SharedStrings: require('./Excel/SharedStrings'),
+    SheetView: require('./Excel/SheetView'),
     StyleSheet: require('./Excel/StyleSheet'),
     Table: require('./Excel/Table'),
     util: require('./Excel/util'),
@@ -3025,7 +3065,7 @@ if(!_.isUndefined(window)) {
     window.ExcelBuilder = EBExport;
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Excel/Drawing/index":7,"./Excel/Drawings":8,"./Excel/Paths":9,"./Excel/Positioning":10,"./Excel/RelationshipManager":11,"./Excel/SharedStrings":12,"./Excel/StyleSheet":13,"./Excel/Table":14,"./Excel/Workbook":15,"./Excel/Worksheet":16,"./Excel/WorksheetExportWorker":17,"./Excel/XMLDOM":18,"./Excel/ZipWorker":19,"./Excel/util":20,"./Template":22,"./excel-builder":23}],"q":[function(require,module,exports){
+},{"./Excel/Drawing/index":7,"./Excel/Drawings":8,"./Excel/Pane":9,"./Excel/Paths":10,"./Excel/Positioning":11,"./Excel/RelationshipManager":12,"./Excel/SharedStrings":13,"./Excel/SheetView":14,"./Excel/StyleSheet":15,"./Excel/Table":16,"./Excel/Workbook":17,"./Excel/Worksheet":18,"./Excel/WorksheetExportWorker":19,"./Excel/XMLDOM":20,"./Excel/ZipWorker":21,"./Excel/util":22,"./Template":24,"./excel-builder":25}],"q":[function(require,module,exports){
 (function (process){
 // vim:ts=4:sts=4:sw=4:
 /*!
@@ -5077,4 +5117,4 @@ return Q;
 });
 
 }).call(this,require('_process'))
-},{"_process":1}]},{},[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]);
+},{"_process":1}]},{},[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]);

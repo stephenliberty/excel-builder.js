@@ -2,10 +2,12 @@ var _ = require('lodash');
 var EBExport = module.exports = {
     Drawings: require('./Excel/Drawings'),
     Drawing: require('./Excel/Drawing/index'),
+    Pane: require('./Excel/Pane'),
     Paths: require('./Excel/Paths'),
     Positioning: require('./Excel/Positioning'),
     RelationshipManager: require('./Excel/RelationshipManager'),
     SharedStrings: require('./Excel/SharedStrings'),
+    SheetView: require('./Excel/SheetView'),
     StyleSheet: require('./Excel/StyleSheet'),
     Table: require('./Excel/Table'),
     util: require('./Excel/util'),

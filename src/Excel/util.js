@@ -21,30 +21,19 @@ var util = {
     },
 
     /**
-     * Attempts to create an XML document. Due to limitations in web workers,
-     * it may return a 'fake' xml document created from the XMLDOM.js file.
+     * Attempts to create an XML document. After some investigation, using the 'fake' document
+     * is significantly faster than creating an actual XML document, so we're going to go with
+     * that. Besides, it just makes it easier to port to node.
      *
      * Takes a namespace to start the xml file in, as well as the root element
      * of the xml file.
      *
      * @param {type} ns
      * @param {type} base
-     * @returns {ActiveXObject|@exp;document@pro;implementation@call;createDocument|@new;XMLDOM}
+     * @returns {@new;XMLDOM}
      */
     createXmlDoc: function (ns, base) {
-        if(typeof document === 'undefined') {
-            return new XMLDOM(ns || null, base, null);
-        }
-        if(document.implementation && document.implementation.createDocument) {
-            return document.implementation.createDocument(ns || null, base, null);
-        } else if (window.ActiveXObject) {
-            var doc = new window.ActiveXObject( "Microsoft.XMLDOM" );
-            var rootNode = doc.createElement(base);
-            rootNode.setAttribute('xmlns', ns);
-            doc.appendChild(rootNode);
-            return doc;
-        }
-        throw "No xml document generator";
+        return new XMLDOM(ns || null, base, null);
     },
 
     /**
@@ -58,15 +47,10 @@ var util = {
      */
     createElement: function (doc, name, attributes) {
         var el = doc.createElement(name);
-        var ie = !el.setAttributeNS;
         attributes = attributes || [];
         var i = attributes.length;
         while (i--) {
-            if(!ie && attributes[i][0].indexOf('xmlns') !== -1) {
-                el.setAttributeNS("http://www.w3.org/2000/xmlns/", attributes[i][0], attributes[i][1]);
-            } else {
-                el.setAttribute(attributes[i][0], attributes[i][1]);
-            }
+            el.setAttribute(attributes[i][0], attributes[i][1]);
         }
         return el;
     },

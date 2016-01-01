@@ -52,7 +52,7 @@ XMLDOM.XMLNode = function (config) {
     this.attributes = {};
 
     if(config.children) {
-        for(var i = 0; i < config.children.length; i++) {
+        for(var i = 0, l = config.children.length; i < l; i++) {
             this.appendChild(XMLDOM.Node.Create(config.children[i]));
         }
     }
@@ -69,14 +69,10 @@ _.extend(XMLDOM.XMLNode.prototype, {
 
     toString: function () {
         var string = "<" + this.nodeName;
-        var attrs = [];
         for(var attr in this.attributes) {
             if(this.attributes.hasOwnProperty(attr)) {
-                attrs.push(attr + "=\""+_.escape(this.attributes[attr])+"\"");
+                string = string + " " + attr + "=\""+_.escape(this.attributes[attr])+"\"";
             }
-        }
-        if (attrs.length > 0){
-            string+= " " + attrs.join(" ");
         }
 
         var childContent = "";
@@ -115,9 +111,6 @@ _.extend(XMLDOM.XMLNode.prototype, {
         }
         this.attributes[name] = val;
         this[name] = val;
-    },
-    setAttributeNS: function (ns, name, val) {
-        this.setAttribute(name, val);
     },
     appendChild: function (child) {
         this.children.push(child);

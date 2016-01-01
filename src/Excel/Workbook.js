@@ -1,4 +1,5 @@
 "use strict";
+var Q = require('q');
 var _ = require('lodash');
 var util = require('./util');
 var StyleSheet = require('./StyleSheet');
@@ -244,126 +245,9 @@ _.extend(Workbook.prototype, {
         });
     },
 
-    generateFilesAsync: function (options) {
-        var requireJsPath = options.requireJsPath;
-        var self = this;
-        if(!options.requireJsPath) {
-            requireJsPath = document.getElementById('requirejs') ? document.getElementById('requirejs').src : '';
-        }
-        if(!requireJsPath) {
-            throw "Please add 'requirejs' to the script that includes requirejs, or specify the path as an argument";
-        }
-        var files = {},
-            doneCount = this.worksheets.length,
-            stringsCollectedCount = this.worksheets.length,
-            workers = [];
-
-        var result = {
-            status: "Not Started",
-            terminate: function () {
-                for(var i = 0; i < workers.length; i++) {
-                    workers[i].terminate();
-                }
-            }
-        };
-        this._generateCorePaths(files);
-
-        var done = function () {
-            if(--doneCount === 0) {
-                self._prepareFilesForPackaging(files);
-                for(var i = 0; i < workers.length; i++) {
-                    workers[i].terminate();
-                }
-                options.success(files);
-            }
-        };
-        var stringsCollected = function () {
-            if(--stringsCollectedCount === 0) {
-                for(var i = 0; i < workers.length; i++) {
-                    workers[i].postMessage({
-                        instruction: 'export',
-                        sharedStrings: self.sharedStrings.exportData()
-                    });
-                }
-            }
-        };
-
-
-        var worksheetWorker = function (worksheetIndex) {
-            return {
-                error: function () {
-                    for(var i = 0; i < workers.length; i++) {
-                        workers[i].terminate();
-                    }
-                    //message, filename, lineno
-                    options.error.apply(this, arguments);
-                },
-                stringsCollected: function () {
-                    stringsCollected();
-                },
-                finished: function (data) {
-                    files['/xl/worksheets/sheet' + (worksheetIndex + 1) + '.xml'] = {xml: data};
-                    Paths[self.worksheets[worksheetIndex].id] = 'worksheets/sheet' + (worksheetIndex + 1) + '.xml';
-                    files['/xl/worksheets/_rels/sheet' + (worksheetIndex + 1) + '.xml.rels'] = self.worksheets[worksheetIndex].relations.toXML();
-                    done();
-                }
-            };
-        };
-
-        for(var i = 0, l = this.worksheets.length; i < l; i++) {
-            workers.push(
-                this._createWorker(requireJsPath, i, worksheetWorker(i))
-            );
-        }
-
-        return result;
-    },
-
-    _createWorker: function (requireJsPath, worksheetIndex, callbacks) {
-        var worker = new window.Worker(require.toUrl('./WorksheetExportWorker.js'));
-        var self = this;
-        worker.addEventListener('error', callbacks.error);
-        worker.addEventListener('message', function(event) {
-//                console.log("Called back by the worker!\n", event.data);
-            switch(event.data.status) {
-                case "ready":
-                    worker.postMessage({
-                        instruction: 'start',
-                        data: self.worksheets[worksheetIndex].exportData()
-                    });
-                    break;
-                case "sharedStrings":
-                    for(var i = 0; i < event.data.data.length; i++) {
-                        self.sharedStrings.addString(event.data.data[i]);
-                    }
-                    callbacks.stringsCollected();
-                    break;
-                case "finished":
-                    callbacks.finished(event.data.data);
-                    break;
-            }
-        }, false);
-        worker.postMessage({
-            instruction: 'setup',
-            config: {
-                paths: {
-                    underscore: require.toUrl('underscore').slice(0, -3)
-                },
-                shim: {
-                    'underscore': {
-                        exports: '_'
-                    }
-                }
-            },
-            requireJsPath: requireJsPath
-        });
-        return worker;
-    },
-
     generateFiles: function () {
         var files = {};
         this._generateCorePaths(files);
-
 
         for(var i = 0, l = this.worksheets.length; i < l; i++) {
             files['/xl/worksheets/sheet' + (i + 1) + '.xml'] = this.worksheets[i].toXML();
@@ -373,7 +257,7 @@ _.extend(Workbook.prototype, {
 
         this._prepareFilesForPackaging(files);
 
-        return files;
+        return Q.resolve(files);
     }
 });
 module.exports = Workbook;

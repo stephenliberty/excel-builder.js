@@ -2,6 +2,7 @@
 var _ = require('lodash');
 var util = require('./util');
 var RelationshipManager = require('./RelationshipManager');
+var SheetView = require('./SheetView');
 
 /**
  * This module represents an excel worksheet in its basic form - no tables, charts, etc. Its purpose is 
@@ -22,6 +23,11 @@ var RelationshipManager = require('./RelationshipManager');
         this._drawings = [];
         this._rowInstructions = {};
         this._freezePane = {};
+
+        this.sheetView = config.sheetView || new SheetView();
+
+        this.showZeros = null;
+        this.showGridLines
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
@@ -365,10 +371,7 @@ var RelationshipManager = require('./RelationshipManager');
                 ]));
             }
 
-            //added freeze pane
-            if (this._freezePane.cell) {
-                worksheet.appendChild(this.exportPane(doc));
-            }
+            worksheet.appendChild(this.sheetView.export(doc));
 
             if(this.columns.length) {
                 worksheet.appendChild(this.exportColumns(doc));
@@ -465,28 +468,6 @@ var RelationshipManager = require('./RelationshipManager');
             }
             return cols;
         },
-        
-        /**
-         * Added frozen pane
-         * @param {XML Node} doc
-         * @returns {XML Node}
-         */
-        exportPane: function (doc) {
-            var sheetViews = doc.createElement('sheetViews'),
-                sheetView = doc.createElement('sheetView'),
-                pane = doc.createElement('pane');
-
-            sheetView.setAttribute('workbookViewId', 0);
-            pane.setAttribute('xSplit', this._freezePane.xSplit);
-            pane.setAttribute('ySplit', this._freezePane.ySplit);
-            pane.setAttribute('topLeftCell', this._freezePane.cell);
-            pane.setAttribute('activePane', 'bottomRight');
-            pane.setAttribute('state', 'frozen');
-
-            sheetView.appendChild(pane);
-            sheetViews.appendChild(sheetView);
-            return sheetViews;
-        },
 
         /**
          * Sets the page settings on a worksheet node.
@@ -544,15 +525,16 @@ var RelationshipManager = require('./RelationshipManager');
         mergeCells: function(cell1, cell2) {
             this.mergedCells.push([cell1, cell2]);
         },
-        
+
         /**
          * Added froze pane
          * @param column - column number: 0, 1, 2 ...
          * @param row - row number: 0, 1, 2 ...
          * @param cell - 'A1'
+         * @deprecated
          */
         freezePane: function(column, row, cell) {
-            this._freezePane = {xSplit: column, ySplit: row, cell: cell};
+            this.sheetView.freezePane(column, row, cell);
         },
 
         /**

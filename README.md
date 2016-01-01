@@ -19,15 +19,15 @@ Install dependencies:
 
 	npm install
 
-Combine & uglify:
+Build & uglify:
 
-	grunt requirejs
+	grunt
 
 Distributables
 ---------------
-excel-builder.compiled.js -> All files in the EB package + Underscore
+excel-builder.compiled.js -> All files in the EB package and all dependencies.
 
-excel-builder.dist.js -> All files in the EB package + Underscore, with no need for external AMD provider (Web worker will not function in this build).
+excel-builder.dist.js -> All files in the EB package. Requires lodash and jszip scripts to be loaded on the page.
 
 Contributing
 -------------
