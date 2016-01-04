@@ -9,71 +9,52 @@ app.get('/', function (req, res) {
 
 app.get('/demo', function (req, res) {
     var data = require('./testdata.json');
-    //var stuff = [];
-    //for(var i = 0, l = data.length; i < l; i++) {
-    //    var d = data[i];
-    //    stuff[i] = [
-    //        d.id,
-    //        d.name,
-    //        d.price,
-    //        d.location,
-    //        d.startDate,
-    //        d.endDate
-    //    ];
-    //}
-    //
-    //stuff = ([{value: '', metadata: {}}]).concat(stuff)
-    //
-    //var basicReport = new ExcelBuilder.Template.BasicReport();
-    //var columns = [
-    //    {id: 'id', name: "ID", type: 'number', width: 20},
-    //    {id: 'name', name:"Name", type: 'string', width: 50},
-    //    {id: 'price', name: "Price", type: 'number', style: basicReport.predefinedFormatters.currency.id},
-    //    {id: 'location', name: "Location", type: 'string'},
-    //    {id: 'startDate', name: "Start Date", type: 'date', style: basicReport.predefinedFormatters.date.id, width: 15},
-    //    {id: 'endDate', name: "End Date", type: 'date', style: basicReport.predefinedFormatters.date.id, width: 15}
-    //];
-    //
-    //var worksheetData = [
-    //    [
-    //        {value: "ID", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
-    //        {value: "Name", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
-    //        {value: "Price", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
-    //        {value: "Location", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
-    //        {value: "Start Date", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
-    //        {value: "End Date", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}
-    //    ]
-    //].concat(data);
-    //
-    //basicReport.setHeader([
-    //    {bold: true, text: "Generic Report"}, "", ""
-    //]);
-    //basicReport.setData(worksheetData);
-    //basicReport.setColumns(columns);
-    //basicReport.setFooter([
-    //    '', '', 'Page &P of &N'
-    //]);
+    var stuff = [];
+    for(var i = 0, l = data.length; i < l; i++) {
+        var d = data[i];
+        stuff[i] = [
+            d.id,
+            d.name,
+            d.price,
+            d.location,
+            d.startDate,
+            d.endDate
+        ];
+    }
 
-    var originalData = [
-        ['', {value: '', metadata: {}}],
-        ['Artist', 'Album', 'Price'],
-        ['Buckethead', 'Albino Slug', 8.99],
-        ['Buckethead', 'Electric Tears', 13.99],
-        ['Buckethead', 'Colma', 11.34],
-        ['Crystal Method', 'Vegas', 10.54],
-        ['Crystal Method', 'Tweekend', 10.64],
-        ['Crystal Method', 'Divided By Night', 8.99]
+    stuff = ([{value: '', metadata: {}}]).concat(stuff)
+
+    var basicReport = new ExcelBuilder.Template.BasicReport();
+    var columns = [
+        {id: 'id', name: "ID", type: 'number', width: 20},
+        {id: 'name', name:"Name", type: 'string', width: 50},
+        {id: 'price', name: "Price", type: 'number', style: basicReport.predefinedFormatters.currency.id},
+        {id: 'location', name: "Location", type: 'string'},
+        {id: 'startDate', name: "Start Date", type: 'date', style: basicReport.predefinedFormatters.date.id, width: 15},
+        {id: 'endDate', name: "End Date", type: 'date', style: basicReport.predefinedFormatters.date.id, width: 15}
     ];
 
-    var artistWorkbook = ExcelBuilder.Builder.createWorkbook();
-    var albumList = artistWorkbook.createWorksheet({name: 'Album List'});
+    var worksheetData = [
+        [
+            {value: "ID", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+            {value: "Name", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+            {value: "Price", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+            {value: "Location", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+            {value: "Start Date", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}},
+            {value: "End Date", metadata: {style: basicReport.predefinedFormatters.header.id, type: 'string'}}
+        ]
+    ].concat(data);
 
-    albumList.setData(originalData); //<-- Here's the important part
+    basicReport.setHeader([
+        {bold: true, text: "Generic Report"}, "", ""
+    ]);
+    basicReport.setData(worksheetData);
+    basicReport.setColumns(columns);
+    basicReport.setFooter([
+        '', '', 'Page &P of &N'
+    ]);
 
-    artistWorkbook.addWorksheet(albumList);
-
-    ExcelBuilder.Builder.createFile(artistWorkbook, {
-    //ExcelBuilder.Builder.createFile(basicReport.prepare(), {
+    ExcelBuilder.Builder.createFile(basicReport.prepare(), {
         type: 'uint8array'
     }).then(function (data) {
         res.set({

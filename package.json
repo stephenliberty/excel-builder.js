@@ -12,7 +12,9 @@
   },
   "keywords": [
     "excel",
-    "javascript"
+    "javascript",
+    "xlsx",
+    "spreadsheet"
   ],
   "author": "Stephen Liberty",
   "license": "GPLv3",
