@@ -479,12 +479,12 @@ _.extend(Drawing.prototype, {
 });
 
 Object.defineProperties(Drawing, {
-    AbsoluteAnchor: {get: function () { return require('./AbsoluteAnchor') }},
-    Chart: {get: function () { return require('./Chart') }},
-    OneCellAnchor: {get: function () { return require('./OneCellAnchor') }},
-    Picture: {get: function () { return require('./Picture') }},
-    TwoCellAnchor: {get: function () { return require('./TwoCellAnchor') }}
-})
+    AbsoluteAnchor: {get: function () { return require('./AbsoluteAnchor'); }},
+    Chart: {get: function () { return require('./Chart'); }},
+    OneCellAnchor: {get: function () { return require('./OneCellAnchor'); }},
+    Picture: {get: function () { return require('./Picture'); }},
+    TwoCellAnchor: {get: function () { return require('./TwoCellAnchor'); }}
+});
 
 module.exports = Drawing;
 
@@ -549,11 +549,7 @@ module.exports = Drawings;
  *
  * https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.pane%28v=office.14%29.aspx
  */
-"use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
-var util = require('./util');
-
-
 
 var Pane = function () {
 
@@ -568,7 +564,7 @@ var Pane = function () {
     this.state = null;
     this.xSplit = null;
     this.ySplit = null;
-    this.activePane = 'bottomRight'
+    this.activePane = 'bottomRight';
     this.topLeftCell = null;
 
 };
@@ -579,7 +575,7 @@ _.extend(Pane.prototype, {
         this._freezePane = {xSplit: column, ySplit: row, cell: cell};
     },
 
-    export: function (doc) {
+    exportXML: function (doc) {
         var pane = doc.createElement('pane');
 
         if(this.state !== null) {
@@ -595,7 +591,7 @@ _.extend(Pane.prototype, {
 
 module.exports = Pane;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./util":22}],10:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /**
  * This is mostly a global spot where all of the relationship managers can get and set
  * path information from/to. 
@@ -741,8 +737,6 @@ module.exports = sharedStrings;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./util":22}],14:[function(require,module,exports){
 (function (global){
-"use strict";
-
 /**
  * @module Excel/SheetView
  *
@@ -751,7 +745,6 @@ module.exports = sharedStrings;
  */
 "use strict";
 var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null);
-var util = require('./util');
 var Pane = require('./Pane');
 
 var SheetView = function (config) {
@@ -794,10 +787,9 @@ _.extend(SheetView.prototype, {
         this.pane.topLeftCell = cell;
     },
 
-    export: function (doc) {
+    exportXML: function (doc) {
         var sheetViews = doc.createElement('sheetViews'),
-            sheetView = doc.createElement('sheetView'),
-            pane = doc.createElement('pane');
+            sheetView = doc.createElement('sheetView');
 
         //TODO apparent you can add 'book views'.. investigate what these are
         sheetView.setAttribute('workbookViewId', 0);
@@ -859,7 +851,7 @@ _.extend(SheetView.prototype, {
             sheetView.setAttribute('zoomScaleSheetLayoutView', this.zoomScaleSheetLayoutView);
         }
 
-        sheetView.appendChild(this.pane.export(doc));
+        sheetView.appendChild(this.pane.exportXML(doc));
 
         sheetViews.appendChild(sheetView);
         return sheetViews;
@@ -868,7 +860,7 @@ _.extend(SheetView.prototype, {
 
 module.exports = SheetView;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Pane":9,"./util":22}],15:[function(require,module,exports){
+},{"./Pane":9}],15:[function(require,module,exports){
 (function (global){
 /**
  * @module Excel/StyleSheet
@@ -2039,7 +2031,6 @@ var SheetView = require('./SheetView');
         this.sheetView = config.sheetView || new SheetView();
 
         this.showZeros = null;
-        this.showGridLines
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
@@ -2383,7 +2374,7 @@ var SheetView = require('./SheetView');
                 ]));
             }
 
-            worksheet.appendChild(this.sheetView.export(doc));
+            worksheet.appendChild(this.sheetView.exportXML(doc));
 
             if(this.columns.length) {
                 worksheet.appendChild(this.exportColumns(doc));

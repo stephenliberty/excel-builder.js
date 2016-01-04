@@ -23,6 +23,14 @@ module.exports = function(grunt) {
                 }
             }
         },
+        jasmine: {
+            pivotal: {
+                src: 'dist/excel-builder.compiled.js',
+                options: {
+                    specs: 'spec/Excel/**/*.js'
+                }
+            }
+        },
         uglify: {
             options: {
                 compress: {
@@ -56,11 +64,11 @@ module.exports = function(grunt) {
     
     
     grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-browserify');
+    grunt.loadNpmTasks('grunt-contrib-jasmine');
 
     // Default task(s).
     grunt.registerTask('default', ['jshint:all', 'browserify', 'uglify']);

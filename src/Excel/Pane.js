@@ -5,11 +5,7 @@
  *
  * https://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.pane%28v=office.14%29.aspx
  */
-"use strict";
 var _ = require('lodash');
-var util = require('./util');
-
-
 
 var Pane = function () {
 
@@ -24,7 +20,7 @@ var Pane = function () {
     this.state = null;
     this.xSplit = null;
     this.ySplit = null;
-    this.activePane = 'bottomRight'
+    this.activePane = 'bottomRight';
     this.topLeftCell = null;
 
 };
@@ -35,7 +31,7 @@ _.extend(Pane.prototype, {
         this._freezePane = {xSplit: column, ySplit: row, cell: cell};
     },
 
-    export: function (doc) {
+    exportXML: function (doc) {
         var pane = doc.createElement('pane');
 
         if(this.state !== null) {

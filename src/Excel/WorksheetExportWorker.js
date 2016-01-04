@@ -12,7 +12,7 @@ var start = function(data) {
     });
 };
 
-onmessage = function(event) {
+var onmessage = function(event) {
     var data = event.data;
     if (typeof data === 'object') {
         switch (data.instruction) {

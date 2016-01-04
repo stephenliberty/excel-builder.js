@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * @module Excel/SheetView
  *
@@ -8,7 +6,6 @@
  */
 "use strict";
 var _ = require('lodash');
-var util = require('./util');
 var Pane = require('./Pane');
 
 var SheetView = function (config) {
@@ -51,10 +48,9 @@ _.extend(SheetView.prototype, {
         this.pane.topLeftCell = cell;
     },
 
-    export: function (doc) {
+    exportXML: function (doc) {
         var sheetViews = doc.createElement('sheetViews'),
-            sheetView = doc.createElement('sheetView'),
-            pane = doc.createElement('pane');
+            sheetView = doc.createElement('sheetView');
 
         //TODO apparent you can add 'book views'.. investigate what these are
         sheetView.setAttribute('workbookViewId', 0);
@@ -116,7 +112,7 @@ _.extend(SheetView.prototype, {
             sheetView.setAttribute('zoomScaleSheetLayoutView', this.zoomScaleSheetLayoutView);
         }
 
-        sheetView.appendChild(this.pane.export(doc));
+        sheetView.appendChild(this.pane.exportXML(doc));
 
         sheetViews.appendChild(sheetView);
         return sheetViews;

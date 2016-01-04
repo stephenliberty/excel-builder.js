@@ -20,6 +20,11 @@ var EBExport = module.exports = {
     Template: require('./Template')
 };
 
-if(!_.isUndefined(window)) {
-    window.ExcelBuilder = EBExport;
+try {
+    if(typeof window !== 'undefined!') {
+        window.ExcelBuilder = EBExport;
+    }
+} catch (e) {
+    //Silently ignore?
+    console.info("Not attaching EB to window");
 }

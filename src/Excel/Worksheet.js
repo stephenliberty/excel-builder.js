@@ -27,7 +27,6 @@ var SheetView = require('./SheetView');
         this.sheetView = config.sheetView || new SheetView();
 
         this.showZeros = null;
-        this.showGridLines
         this.initialize(config);
     };
     _.extend(Worksheet.prototype, {
@@ -371,7 +370,7 @@ var SheetView = require('./SheetView');
                 ]));
             }
 
-            worksheet.appendChild(this.sheetView.export(doc));
+            worksheet.appendChild(this.sheetView.exportXML(doc));
 
             if(this.columns.length) {
                 worksheet.appendChild(this.exportColumns(doc));
