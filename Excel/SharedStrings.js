@@ -42,6 +42,9 @@ define(['underscore', './util'], function (_, util) {
             
             while (l--) {
                 var clone = template.cloneNode(true);
+                if(strings[l] && (strings[l] !== strings[l].trim())){
+                    clone.firstChild.setAttribute('xml:space', 'preserve');
+                }
                 clone.firstChild.firstChild.nodeValue = strings[l];
                 sharedStringTable.appendChild(clone);
             }
