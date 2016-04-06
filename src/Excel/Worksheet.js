@@ -24,6 +24,7 @@ var SheetView = require('./SheetView');
         this._rowInstructions = {};
         this._freezePane = {};
 
+        this.hyperlinks = [];
         this.sheetView = config.sheetView || new SheetView();
 
         this.showZeros = null;
@@ -382,6 +383,28 @@ var SheetView = require('./SheetView');
                 worksheet.appendChild(this.sheetProtection.exportXML(doc));
             }
 
+            /**
+             * Doing this a bit differently, as hyperlinks could be as populous as rows. Looping twice would be bad.
+             */
+            if(this.hyperlinks.length > 0) {
+                var hyperlinksEl = doc.createElement('hyperlinks');
+                var hyperlinks = this.hyperlinks;
+                for(var i = 0, l = hyperlinks.length; i < l; i++) {
+                    var hyperlinkEl = doc.createElement('hyperlink'),
+                        hyperlink = hyperlinks[i];
+                    hyperlinkEl.setAttribute('ref', hyperlink.cell);
+                    hyperlink.id = util.uniqueId('hyperlink');
+                    this.relations.addRelation({
+                        id: hyperlink.id,
+                        target: hyperlink.location,
+                        targetMode: hyperlink.targetMode || 'External'
+                    }, 'hyperlink');
+                    hyperlinkEl.setAttribute('r:id', this.relations.getRelationshipId(hyperlink));
+                    hyperlinksEl.appendChild(hyperlinkEl);
+                }
+                worksheet.appendChild(hyperlinksEl);
+            }
+
             // 'mergeCells' should be written before 'headerFoot' and 'drawing' due to issue
             // with Microsoft Excel (2007, 2013)
             if (this.mergedCells.length > 0) {
@@ -395,7 +418,7 @@ var SheetView = require('./SheetView');
             }
             
             this.exportPageSettings(doc, worksheet);
-            
+
             if(this._headers.length > 0 || this._footers.length > 0) {
                 var headerFooter = doc.createElement('headerFooter');
                 if(this._headers.length > 0) {

@@ -2515,7 +2515,8 @@ _.extend(RelationshipManager.prototype, {
     addRelation: function (object, type) {
         this.relations[object.id] = {
             id: _.uniqueId('rId'),
-            schema: util.schemas[type]
+            schema: util.schemas[type],
+            object: object
         };
         return this.relations[object.id].id;
     },
@@ -2532,8 +2533,9 @@ _.extend(RelationshipManager.prototype, {
             var relationship = util.createElement(doc, 'Relationship', [
                 ['Id', data.id],
                 ['Type', data.schema],
-                ['Target', Paths[id]]
+                ['Target', data.object.target || Paths[id]]
             ]);
+            data.object.targetMode && relationship.setAttribute('TargetMode', data.object.targetMode);
             relationships.appendChild(relationship);
         });
         return doc;
@@ -3954,6 +3956,7 @@ var SheetView = require('./SheetView');
         this._rowInstructions = {};
         this._freezePane = {};
 
+        this.hyperlinks = [];
         this.sheetView = config.sheetView || new SheetView();
 
         this.showZeros = null;
@@ -4312,6 +4315,28 @@ var SheetView = require('./SheetView');
                 worksheet.appendChild(this.sheetProtection.exportXML(doc));
             }
 
+            /**
+             * Doing this a bit differently, as hyperlinks could be as populous as rows. Looping twice would be bad.
+             */
+            if(this.hyperlinks.length > 0) {
+                var hyperlinksEl = doc.createElement('hyperlinks');
+                var hyperlinks = this.hyperlinks;
+                for(var i = 0, l = hyperlinks.length; i < l; i++) {
+                    var hyperlinkEl = doc.createElement('hyperlink'),
+                        hyperlink = hyperlinks[i];
+                    hyperlinkEl.setAttribute('ref', hyperlink.cell);
+                    hyperlink.id = util.uniqueId('hyperlink');
+                    this.relations.addRelation({
+                        id: hyperlink.id,
+                        target: hyperlink.location,
+                        targetMode: hyperlink.targetMode || 'External'
+                    }, 'hyperlink');
+                    hyperlinkEl.setAttribute('r:id', this.relations.getRelationshipId(hyperlink));
+                    hyperlinksEl.appendChild(hyperlinkEl);
+                }
+                worksheet.appendChild(hyperlinksEl);
+            }
+
             // 'mergeCells' should be written before 'headerFoot' and 'drawing' due to issue
             // with Microsoft Excel (2007, 2013)
             if (this.mergedCells.length > 0) {
@@ -4325,7 +4350,7 @@ var SheetView = require('./SheetView');
             }
             
             this.exportPageSettings(doc, worksheet);
-            
+
             if(this._headers.length > 0 || this._footers.length > 0) {
                 var headerFooter = doc.createElement('headerFooter');
                 if(this._headers.length > 0) {
@@ -4804,7 +4829,8 @@ var util = {
         'drawing': 'http://schemas.openxmlformats.org/drawingml/2006/main',
         'drawingRelationship': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing',
         'image': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',
-        'chart': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart'
+        'chart': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart',
+        'hyperlink': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
     }
 };
 

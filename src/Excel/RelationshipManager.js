@@ -30,7 +30,8 @@ _.extend(RelationshipManager.prototype, {
     addRelation: function (object, type) {
         this.relations[object.id] = {
             id: _.uniqueId('rId'),
-            schema: util.schemas[type]
+            schema: util.schemas[type],
+            object: object
         };
         return this.relations[object.id].id;
     },
@@ -47,8 +48,9 @@ _.extend(RelationshipManager.prototype, {
             var relationship = util.createElement(doc, 'Relationship', [
                 ['Id', data.id],
                 ['Type', data.schema],
-                ['Target', Paths[id]]
+                ['Target', data.object.target || Paths[id]]
             ]);
+            data.object.targetMode && relationship.setAttribute('TargetMode', data.object.targetMode);
             relationships.appendChild(relationship);
         });
         return doc;

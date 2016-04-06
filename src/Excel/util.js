@@ -118,7 +118,8 @@ var util = {
         'drawing': 'http://schemas.openxmlformats.org/drawingml/2006/main',
         'drawingRelationship': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing',
         'image': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',
-        'chart': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart'
+        'chart': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart',
+        'hyperlink': "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
     }
 };
 

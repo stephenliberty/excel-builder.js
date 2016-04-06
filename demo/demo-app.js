@@ -55,16 +55,17 @@ app.get('/demo', function (req, res) {
     ]);
 
     var worksheet = basicReport.getWorksheet();
+
+    worksheet.hyperlinks.push({
+        cell: 'B2',
+        tooltip: 'Click me!',
+        location: 'http://www.google.com',
+        display: 'Go to google'
+    })
+
     var sheetView = new ExcelBuilder.SheetView;
     sheetView.rightToLeft = true;
     worksheet.sheetView = sheetView;
-
-    var protections = new ExcelBuilder.SheetProtection;
-    protections.unhashedValue = "foo";
-    protections.insertColumns = false;
-    protections.algorithmName = ExcelBuilder.SheetProtection.algorithms.SHA512;
-    worksheet.sheetProtection = protections;
-
 
     ExcelBuilder.Builder.createFile(basicReport.prepare(), {
         type: 'uint8array'
