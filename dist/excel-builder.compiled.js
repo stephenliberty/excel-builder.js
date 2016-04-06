@@ -6533,6 +6533,15 @@ var SheetView = require('./SheetView');
                 }
                 worksheet.appendChild(headerFooter);
             }
+
+            // the 'drawing' element should be written last, after 'headerFooter', 'mergeCells', etc. due
+            // to issue with Microsoft Excel (2007, 2013)
+            for(i = 0, l = this._drawings.length; i < l; i++) {
+                var drawing = doc.createElement('drawing');
+                drawing.setAttribute('r:id', this.relations.getRelationshipId(this._drawings[i]));
+                worksheet.appendChild(drawing);
+            }
+            return doc;
             
             if(this._tables.length > 0) {
                 var tables = doc.createElement('tableParts');
@@ -6544,15 +6553,6 @@ var SheetView = require('./SheetView');
                 }
                 worksheet.appendChild(tables);
             }
-
-            // the 'drawing' element should be written last, after 'headerFooter', 'mergeCells', etc. due
-            // to issue with Microsoft Excel (2007, 2013)
-            for(i = 0, l = this._drawings.length; i < l; i++) {
-                var drawing = doc.createElement('drawing');
-                drawing.setAttribute('r:id', this.relations.getRelationshipId(this._drawings[i]));
-                worksheet.appendChild(drawing);
-            }
-            return doc;
         },
         
         /**
