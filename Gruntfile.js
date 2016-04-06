@@ -1,67 +1,34 @@
 var _ = require('underscore');
 
 module.exports = function(grunt) {
-    
-    var compileOptions = {
-        baseUrl: ".",
-        name: "buildtools/index",
-        optimize: "none",
-        paths: {
-            "underscore": "node_modules/underscore/underscore",
-            "JSZip": "jszip"
-        },
-        shim: {
-            "underscore": {
-                "exports": '_'
-            }
-        }
-    };
-    
-    var files = grunt.file.expand({
-        cwd: './dist',
-        filter: function (src) {
-            if(src.indexOf('WorksheetExportWorker') != -1) {
-                return false;
-            }
-            return true;
-        }
-    }, '../Excel/**/*.js');
-    files = files.map(function (filename) {
-        return filename.replace('.js', '');
-    })
-    
-    files.push('../excel-builder');
-    
-    grunt.file.write('./buildtools/index.js', "define(" + JSON.stringify(files) + ", function () {})");
-    
+
     // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        requirejs: {
-            compile: {
-                options: _.defaults({
-                    out: "dist/<%= pkg.name %>.compiled.js"
-                }, compileOptions)
-            },
+        browserify: {
             dist: {
-                options: _.defaults({
-                    wrap: {
-                        startFile: [
-                            './buildtools/start.js',
-                            './node_modules/almond/almond.js'
-                        ],
-                        endFile: [
-                            './buildtools/end.js'
-                        ]
-                    },
-                    out: "dist/<%= pkg.name %>.dist.js"
-                }, compileOptions)
+                src: ['src/**/*.js'],
+                dest: 'dist/excel-builder.dist.js',
+                options: {
+                    transform: ['browserify-shim'],
+                    require: ['q'],
+                    external: ['lodash', 'jszip']
+                }
+            },
+            compiled: {
+                src: ['src/**/*.js'],
+                dest: 'dist/excel-builder.compiled.js',
+                options: {
+                    require: ['lodash', 'jszip', 'q']
+                }
             }
         },
-        copy: {
-            jzip: {
-                src: 'node_modules/jszip/dist/jszip.js',
-                dest: 'jszip.js'
+        jasmine: {
+            pivotal: {
+                src: 'dist/excel-builder.compiled.js',
+                options: {
+                    specs: 'spec/Excel/**/*.js'
+                }
             }
         },
         uglify: {
@@ -83,17 +50,26 @@ module.exports = function(grunt) {
             },
             all: {
                 //http://stackoverflow.com/questions/20695823/grunt-contrib-jshint-ignores-has-no-effect (hence the ! in front of **/*Worker.js
-                src: ['Excel/**/*.js', '!**/*Worker.js']
+                src: ['src/**/*.js']
             }
-        }
+        },
+        watch: {
+            files: ['src/**/*'],
+            tasks: ['browserify'],
+            options: {
+                spawn: false
+            }
+        },
     });
     
     
     grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-browserify');
+    grunt.loadNpmTasks('grunt-contrib-jasmine');
 
     // Default task(s).
-    grunt.registerTask('default', ['copy', 'jshint:all', 'requirejs', 'uglify']);
+    grunt.registerTask('default', ['jshint:all', 'browserify', 'uglify']);
 };

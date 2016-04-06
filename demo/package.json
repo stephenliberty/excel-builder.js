@@ -1,0 +1,27 @@
+{
+  "name": "excel-builder-demo",
+  "version": "2.0.0",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stephenliberty/excel-builder.js.git"
+  },
+  "keywords": [
+    "excel",
+    "javascript"
+  ],
+  "author": "Stephen Liberty",
+  "license": "GPLv3",
+  "bugs": {
+    "url": "https://github.com/stephenliberty/excel-builder.js/issues"
+  },
+  "homepage": "http://excelbuilderjs.com/",
+  "devDependencies": {},
+  "dependencies": {
+    "express": "^4.13.3"
+  }
+}

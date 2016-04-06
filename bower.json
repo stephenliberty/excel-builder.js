@@ -1,0 +1,28 @@
+{
+  "name": "excel-builder-js",
+  "version": "2.0.0",
+  "homepage": "http://excelbuilderjs.com/",
+  "authors": [
+    "Stephen Liberty <stephen@liberty-irm.com>"
+  ],
+  "description": "An easy way of building Excel files with javascript",
+  "main": "dist/excel-builder.dist.js",
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "excel",
+    "javascript",
+    "xlsx",
+    "spreadsheet"
+  ],
+  "license": "GPLv3",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
