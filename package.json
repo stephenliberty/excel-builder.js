@@ -32,6 +32,9 @@
     "grunt-contrib-jshint": "*",
     "grunt-contrib-uglify": "*"
   },
+  "optionalDependencies": {
+    "node-forge": "0.6.39"
+  },
   "dependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-watch": "^0.6.1",

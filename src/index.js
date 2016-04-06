@@ -7,6 +7,7 @@ var EBExport = module.exports = {
     Positioning: require('./Excel/Positioning'),
     RelationshipManager: require('./Excel/RelationshipManager'),
     SharedStrings: require('./Excel/SharedStrings'),
+    SheetProtection: require('./Excel/SheetProtection'),
     SheetView: require('./Excel/SheetView'),
     StyleSheet: require('./Excel/StyleSheet'),
     Table: require('./Excel/Table'),

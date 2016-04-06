@@ -1,5 +1,6 @@
 "use strict";
 var XMLDOM = require('./XMLDOM');
+var _ = require('lodash');
 /**
  * @module Excel/util
  */
@@ -53,6 +54,32 @@ var util = {
             el.setAttribute(attributes[i][0], attributes[i][1]);
         }
         return el;
+    },
+
+    /**
+     * This is sort of slow, but it's a huge convenience method for the code. It probably shouldn't be used
+     * in high repetition areas.
+     *
+     * @param {XMLDoc} doc
+     * @param {Object} attrs
+     */
+    setAttributesOnDoc: function (doc, attrs) {
+        _.forEach(attrs, function (v, k) {
+            if(_.isPlainObject(v)) {
+                if(v.v !== null && v.v !== undefined) {
+                    switch(v.type) {
+                        case Boolean:
+                            v = v.v ? '1' : '0';
+                            break;
+                    }
+                } else {
+                    v = null;
+                }
+            }
+            if(v !== null && v !== undefined) {
+                doc.setAttribute(k, v);
+            }
+        })
     },
 
     LETTER_REFS: {},

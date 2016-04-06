@@ -7,6 +7,7 @@
 "use strict";
 var _ = require('lodash');
 var Pane = require('./Pane');
+var util = require('./util')
 
 var SheetView = function (config) {
     config = config || {};
@@ -52,65 +53,28 @@ _.extend(SheetView.prototype, {
         var sheetViews = doc.createElement('sheetViews'),
             sheetView = doc.createElement('sheetView');
 
-        //TODO apparent you can add 'book views'.. investigate what these are
-        sheetView.setAttribute('workbookViewId', 0);
-
-        if(this.showZeros !== null) {
-            sheetView.setAttribute('showZeros', this.showZeros ? '1' : '0');
-        }
-        if(this.defaultGridColor !== null) {
-            sheetView.setAttribute('defaultGridColor', this.defaultGridColor ? '1' : '0');
-        }
-
-        //TODO: I have no idea what this even is :\
-        if(this.colorId !== null) {
-            sheetView.setAttribute('colorId', this.colorId);
-        }
-        if(this.rightToLeft !== null) {
-            sheetView.setAttribute('rightToLeft', this.rightToLeft ? '1' : '0');
-        }
-        if(this.showFormulas !== null) {
-            sheetView.setAttribute('showFormulas', this.showFormulas ? '1' : '0');
-        }
-        if(this.showGridLines !== null) {
-            sheetView.setAttribute('showGridLines', this.showGridLines ? '1' : '0');
-        }
-        if(this.showOutlineSymbols !== null) {
-            sheetView.setAttribute('showOutlineSymbols', this.showOutlineSymbols ? '1' : '0');
-        }
-        if(this.showRowColHeaders !== null) {
-            sheetView.setAttribute('showRowColHeaders', this.showRowColHeaders ? '1' : '0');
-        }
-        if(this.showRuler !== null) {
-            sheetView.setAttribute('showRuler', this.showRuler ? '1' : '0');
-        }
-        if(this.showWhiteSpace !== null) {
-            sheetView.setAttribute('showWhiteSpace', this.showWhiteSpace ? '1' : '0');
-        }
-        if(this.tabSelected !== null) {
-            sheetView.setAttribute('tabSelected', this.tabSelected ? '1' : '0');
-        }
-        if(this.viewType !== null) {
-            sheetView.setAttribute('viewType', this.viewType);
-        }
-        if(this.windowProtection !== null) {
-            sheetView.setAttribute('windowProtection', this.windowProtection ? '1' : '0');
-        }
-        if(this.zoomScale !== null) {
-            sheetView.setAttribute('zoomScale', this.zoomScale ? '1' : '0');
-        }
-        if(this.zoomScale !== null) {
-            sheetView.setAttribute('zoomScale', this.zoomScale);
-        }
-        if(this.zoomScaleNormal !== null) {
-            sheetView.setAttribute('zoomScaleNormal', this.zoomScaleNormal);
-        }
-        if(this.zoomScalePageLayoutView !== null) {
-            sheetView.setAttribute('zoomScalePageLayoutView', this.zoomScalePageLayoutView);
-        }
-        if(this.zoomScaleSheetLayoutView !== null) {
-            sheetView.setAttribute('zoomScaleSheetLayoutView', this.zoomScaleSheetLayoutView);
-        }
+        util.setAttributesOnDoc(sheetView, {
+            //TODO apparent you can add 'book views'.. investigate what these are
+            workbookViewId: 0,
+            showZeros: {v: this.showZeros, type: Boolean},
+            defaultGridColor:  {v: this.defaultGridColor, type: Boolean},
+            //TODO: I have no idea what this even is :\
+            colorId: this.colorId,
+            rightToLeft:  {v: this.rightToLeft, type: Boolean},
+            showFormulas:  {v: this.showFormulas, type: Boolean},
+            showGridLines:  {v: this.showGridLines, type: Boolean},
+            showOutlineSymbols:  {v: this.showOutlineSymbols, type: Boolean},
+            showRowColHeaders:  {v: this.showRowColHeaders, type: Boolean},
+            showRuler:  {v: this.showRuler, type: Boolean},
+            showWhiteSpace:  {v: this.showWhiteSpace, type: Boolean},
+            tabSelected:  {v: this.tabSelected, type: Boolean},
+            viewType: this.viewType,
+            windowProtection:  {v: this.windowProtection, type: Boolean},
+            zoomScale:  {v: this.zoomScale, type: Boolean},
+            zoomScaleNormal: this.zoomScaleNormal,
+            zoomScalePageLayoutView: this.zoomScalePageLayoutView,
+            zoomScaleSheetLayoutView: this.zoomScaleSheetLayoutView
+        });
 
         sheetView.appendChild(this.pane.exportXML(doc));
 

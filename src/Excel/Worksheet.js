@@ -379,14 +379,7 @@ var SheetView = require('./SheetView');
 
             // The spec doesn't say anything about this, but Excel 2013 requires sheetProtection immediately after sheetData 
             if (this.sheetProtection) {
-                var shPr = (this.sheetProtection === true) ? {'sheet': '1'} : this.sheetProtection;
-                var shPrNode = doc.createElement('sheetProtection');
-                for (var k in shPr) {
-                    if(shPr.hasOwnProperty(k)) {
-                        shPrNode.setAttribute(k, shPr[k]);
-                    }
-                }
-                worksheet.appendChild(shPrNode);
+                worksheet.appendChild(this.sheetProtection.exportXML(doc));
             }
 
             // 'mergeCells' should be written before 'headerFoot' and 'drawing' due to issue
