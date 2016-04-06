@@ -437,8 +437,7 @@ var SheetView = require('./SheetView');
                 drawing.setAttribute('r:id', this.relations.getRelationshipId(this._drawings[i]));
                 worksheet.appendChild(drawing);
             }
-            return doc;
-            
+
             if(this._tables.length > 0) {
                 var tables = doc.createElement('tableParts');
                 tables.setAttribute('count', this._tables.length);
@@ -449,6 +448,7 @@ var SheetView = require('./SheetView');
                 }
                 worksheet.appendChild(tables);
             }
+            return doc;
         },
         
         /**
