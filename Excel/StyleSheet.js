@@ -195,7 +195,7 @@ define(['underscore', './util'], function (_, util) {
         * }
         * Each border should follow:
         * {
-        * style: styleString, http://www.schemacentral.com/sc/ooxml/t-ssml_ST_BorderStyle.html
+        * style: styleString, http://www.datypic.com/sc/ooxml/t-ssml_ST_BorderStyle.html
         * color: ARBG color (requires the A, so for example FF006666)
         * }
         * @param {Object} border
