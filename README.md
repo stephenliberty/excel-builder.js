@@ -5,8 +5,8 @@ excel-builder.js
 
 A way to build excel files with javascript
 
-Documentation at http://excelbuilderjs.com/. This includes a 'cookbook' and some 
-API documentation.
+Documentation at http://excelbuilderjs.com/. This is slightly outdated, but includes a 'cookbook' and some 
+API documentation. New site coming soon with up-to-date documentation, and ability to contribute - see [https://github.com/stephenliberty/excel-builder-site](https://github.com/stephenliberty/excel-builder-site)
 
 Installing via NPM
 ------------------
