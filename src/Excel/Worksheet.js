@@ -502,14 +502,12 @@ var SheetView = require('./SheetView');
             	var footer = 0.3;
             	
             	worksheet.appendChild(util.createElement(doc, 'pageMargins', [
-                    [
-                        'top', top
-                        , 'bottom', bottom
-                        , 'left', left
-                        , 'right', right
-                        , 'header', header
-                        , 'footer', footer
-                    ]
+                    ['top', top]
+                    , ['bottom', bottom]
+                    , ['left', left]
+                    , ['right', right]
+                    , ['header', header]
+                    , ['footer', footer]
                 ]));
             }
             if(this._orientation) {
