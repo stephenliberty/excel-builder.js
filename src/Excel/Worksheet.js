@@ -494,12 +494,13 @@ var SheetView = require('./SheetView');
         exportPageSettings: function (doc, worksheet) {
             if(this._margin) {
             	var defaultVal = 0.7;
-            	var left = defaultVal;
-            	var right = defaultVal;
+            	var left = this._margin.left?this._margin.left:defaultVal;;
+            	var right = this._margin.right?this._margin.right:defaultVal;;
             	var top = this._margin.top?this._margin.top:defaultVal;
             	var bottom = this._margin.bottom?this._margin.bottom:defaultVal;
-            	var header = 0.3;
-            	var footer = 0.3;
+            	defaultVal = 0.3;
+            	var header = this._margin.header?this._margin.header:defaultVal;;
+            	var footer = this._margin.footer?this._margin.footer:defaultVal;;
             	
             	worksheet.appendChild(util.createElement(doc, 'pageMargins', [
                     ['top', top]
@@ -531,24 +532,23 @@ var SheetView = require('./SheetView');
         
         /**
          * Set page details in inches.
+         * use this structure:
+         * {
+         *   top: 0.7
+         *   , bottom: 0.7
+         *   , left: 0.7
+         *   , right: 0.7
+         *   , header: 0.3
+         *   , footer: 0.3
+         * }
          * 
          * @param {String} orientation
          * @returns {undefined}
          */
-        setPageMarginTop: function (value) {
-        	if (!this._margin) {
-        		this._margin = {};
-        	}
-        	this._margin.top = value;
+        setPageMargin: function (input) {
+        	this._margin = input;
         },
         
-        setPageMarginBottom: function (value) {
-        	if (!this._margin) {
-        		this._margin = {};
-        	}
-        	this._margin.bottom = value;
-        },
-    
         /**
          * http://www.schemacentral.com/sc/ooxml/t-ssml_ST_Orientation.html
          * 
