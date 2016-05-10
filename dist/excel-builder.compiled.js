@@ -13098,6 +13098,41 @@ _.extend(Workbook.prototype, {
     addDrawings: function (drawings) {
         this.drawings.push(drawings);
     },
+    
+    /**
+     * Set number of rows to repeat for this sheet.
+     * 
+     * @param {String} sheet name
+     * @param {int} number of rows to repeat from the top
+     * @returns {undefined}
+     */
+    setPrintTitleTop: function (inSheet, inRowCount) {
+    	if (this.printTitles == null) {
+    		this.printTitles = {};
+    	}
+    	if (this.printTitles[inSheet] == null) {
+    		this.printTitles[inSheet] = {};
+    	}
+    	this.printTitles[inSheet].top = inRowCount;
+    },
+    
+    /**
+     * Set number of rows to repeat for this sheet.
+     * 
+     * @param {String} sheet name
+     * @param {int} number of columns to repeat from the left
+     * @returns {undefined}
+     */
+    setPrintTitleLeft: function (inSheet, inColumn) {
+    	if (this.printTitles == null) {
+    		this.printTitles = {};
+    	}
+    	if (this.printTitles[inSheet] == null) {
+    		this.printTitles[inSheet] = {};
+    	}
+    	//WARN: this does not handle AA, AB, etc.
+    	this.printTitles[inSheet].left = String.fromCharCode(64 + inRowCount);
+    },
 
     addMedia: function (type, fileName, fileData, contentType) {
         var fileNamePieces = fileName.split('.');
@@ -13224,6 +13259,35 @@ _.extend(Workbook.prototype, {
             sheets.appendChild(sheet);
         }
         wb.appendChild(sheets);
+        
+        //now to add repeating rows
+        var definedNames = util.createElement(doc, "definedNames");
+        var ctr = 0;
+        for (var name in this.printTitles) {
+        	if (!this.printTitles.hasOwnProperty(name)) {
+    		    continue;
+    		}
+        	var entry = this.printTitles[name];
+        	var definedName = doc.createElement('definedName');
+        	definedName.setAttribute("name", "_xlnm.Print_Titles");
+        	definedName.setAttribute("localSheetId", ctr++);
+        	
+        	var value = "";
+        	if (entry.top) {
+        		value += name + "!$1:$" + entry.top;
+        		if (entry.left) {
+        			value += ","
+        		}
+        	}
+        	if (entry.left) {
+        		value += name + "!$A:$" + entry.left;
+        	}
+        	
+        	definedName.appendChild(doc.createTextNode(value));
+        	definedNames.appendChild(definedName);
+        }
+        wb.appendChild(definedNames);
+        
         return doc;
     },
 
@@ -13853,7 +13917,6 @@ var SheetView = require('./SheetView');
          *   , footer: 0.3
          * }
          * 
-         * @param {String} orientation
          * @returns {undefined}
          */
         setPageMargin: function (input) {

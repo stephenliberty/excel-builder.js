@@ -542,7 +542,6 @@ var SheetView = require('./SheetView');
          *   , footer: 0.3
          * }
          * 
-         * @param {String} orientation
          * @returns {undefined}
          */
         setPageMargin: function (input) {
