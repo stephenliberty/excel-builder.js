@@ -27,6 +27,6 @@
   ],
   "dependencies": {
     "lodash": "~4.11.1",
-    "jszip": "~3.0.0"
+    "jszip": "~2.6.0"
   }
 }
