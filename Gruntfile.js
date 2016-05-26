@@ -21,6 +21,16 @@ module.exports = function(grunt) {
                 options: {
                     require: ['lodash', 'jszip', 'q']
                 }
+            },
+            standalone: {
+                src: ['src/**/*.js'],
+                dest: 'dist/excel-builder.standalone.js',
+                options: {
+                    require: ['lodash', 'jszip', 'q'],
+                    browserifyOptions: {
+                        standalone: 'ExcelBuilderWrapper'
+                    }
+                }
             }
         },
         jasmine: {
@@ -40,7 +50,8 @@ module.exports = function(grunt) {
             optimize: {
                 files: {
                     'dist/<%= pkg.name %>.compiled.min.js': ['dist/<%= pkg.name %>.compiled.js'],
-                    'dist/<%= pkg.name %>.dist.min.js': ['dist/<%= pkg.name %>.dist.js']
+                    'dist/<%= pkg.name %>.dist.min.js': ['dist/<%= pkg.name %>.dist.js'],
+                    'dist/<%= pkg.name %>.standalone.min.js': ['dist/<%= pkg.name %>.standalone.js']
                 }
             }
         },
@@ -61,8 +72,8 @@ module.exports = function(grunt) {
             }
         },
     });
-    
-    
+
+
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
