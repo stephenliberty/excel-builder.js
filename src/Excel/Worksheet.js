@@ -492,7 +492,25 @@ var SheetView = require('./SheetView');
          * @returns {undefined}
          */
         exportPageSettings: function (doc, worksheet) {
-            
+            if(this._margin) {
+            	var defaultVal = 0.7;
+            	var left = this._margin.left?this._margin.left:defaultVal;;
+            	var right = this._margin.right?this._margin.right:defaultVal;;
+            	var top = this._margin.top?this._margin.top:defaultVal;
+            	var bottom = this._margin.bottom?this._margin.bottom:defaultVal;
+            	defaultVal = 0.3;
+            	var header = this._margin.header?this._margin.header:defaultVal;;
+            	var footer = this._margin.footer?this._margin.footer:defaultVal;;
+            	
+            	worksheet.appendChild(util.createElement(doc, 'pageMargins', [
+                    ['top', top]
+                    , ['bottom', bottom]
+                    , ['left', left]
+                    , ['right', right]
+                    , ['header', header]
+                    , ['footer', footer]
+                ]));
+            }
             if(this._orientation) {
                 worksheet.appendChild(util.createElement(doc, 'pageSetup', [
                     ['orientation', this._orientation]
@@ -500,6 +518,36 @@ var SheetView = require('./SheetView');
             }
         },
     
+        /**
+         * http://www.schemacentral.com/sc/ooxml/t-ssml_ST_Orientation.html
+         * 
+         * Can be one of 'portrait' or 'landscape'.
+         * 
+         * @param {String} orientation
+         * @returns {undefined}
+         */
+        setPageOrientation: function (orientation) {
+            this._orientation = orientation;
+        },
+        
+        /**
+         * Set page details in inches.
+         * use this structure:
+         * {
+         *   top: 0.7
+         *   , bottom: 0.7
+         *   , left: 0.7
+         *   , right: 0.7
+         *   , header: 0.3
+         *   , footer: 0.3
+         * }
+         * 
+         * @returns {undefined}
+         */
+        setPageMargin: function (input) {
+        	this._margin = input;
+        },
+        
         /**
          * http://www.schemacentral.com/sc/ooxml/t-ssml_ST_Orientation.html
          * 
