@@ -383,6 +383,18 @@ var SheetView = require('./SheetView');
                 worksheet.appendChild(this.sheetProtection.exportXML(doc));
             }
 
+			// 'mergeCells' should be written before 'hyperlinks', 'headerFoot', and 'drawing' due to issue
+            // with Microsoft Excel (2007, 2013)
+            if (this.mergedCells.length > 0) {
+                var mergeCells = doc.createElement('mergeCells');
+                for (i = 0, l = this.mergedCells.length; i < l; i++) {
+                    var mergeCell = doc.createElement('mergeCell');
+                    mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
+                    mergeCells.appendChild(mergeCell);
+                }
+                worksheet.appendChild(mergeCells);
+            }
+
             /**
              * Doing this a bit differently, as hyperlinks could be as populous as rows. Looping twice would be bad.
              */
@@ -405,18 +417,6 @@ var SheetView = require('./SheetView');
                 worksheet.appendChild(hyperlinksEl);
             }
 
-            // 'mergeCells' should be written before 'headerFoot' and 'drawing' due to issue
-            // with Microsoft Excel (2007, 2013)
-            if (this.mergedCells.length > 0) {
-                var mergeCells = doc.createElement('mergeCells');
-                for (i = 0, l = this.mergedCells.length; i < l; i++) {
-                    var mergeCell = doc.createElement('mergeCell');
-                    mergeCell.setAttribute('ref', this.mergedCells[i][0] + ':' + this.mergedCells[i][1]);
-                    mergeCells.appendChild(mergeCell);
-                }
-                worksheet.appendChild(mergeCells);
-            }
-            
             this.exportPageSettings(doc, worksheet);
 
             if(this._headers.length > 0 || this._footers.length > 0) {
