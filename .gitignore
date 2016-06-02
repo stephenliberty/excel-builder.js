@@ -5,3 +5,4 @@ build
 node_modules
 jszip.js
 .idea
+bower_components
