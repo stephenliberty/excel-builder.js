@@ -9,11 +9,15 @@ var Picture = function () {
     this.pictureId = util.uniqueId('Picture');
     this.fill = {};
     this.mediaData = null;
+    this.solidFill = null;
 };
 
 Picture.prototype = new Drawing();
 
 _.extend(Picture.prototype, {
+    setSolidFill: function (rrggbb) {
+        this.solidFill = rrggbb;
+    },
     setMedia: function (mediaRef) {
         this.mediaData = mediaRef;
     },
@@ -76,7 +80,11 @@ _.extend(Picture.prototype, {
         ]);
         shapeProperties.appendChild(presetGeometry);
 
-
+        if (this.solidFill) {
+            var solidFillElement = util.createElement(xmlDoc, 'a:solidFill');
+            solidFillElement.appendChild(util.createElement(xmlDoc, 'a:srgbClr', [['val', this.solidFill]]));
+            shapeProperties.appendChild(solidFillElement); 
+        }
 
         pictureNode.appendChild(shapeProperties);
 //            <xdr:spPr bwMode="auto">
