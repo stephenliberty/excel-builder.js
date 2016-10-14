@@ -131,6 +131,7 @@ _.extend(StyleSheet.prototype, {
             style.alignment = _.pick(
                 styleInstructions.alignment,
                 'horizontal',
+                'indent',
                 'justifyLastLine',
                 'readingOrder',
                 'relativeIndent',
