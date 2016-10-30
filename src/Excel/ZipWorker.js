@@ -19,12 +19,14 @@ var onmessage = function(event) {
     postMessage({
         base64: !!event.data.base64
     });
-    postMessage({
-        status: 'done',
-        data: zip.generate({
-            base64: !!event.data.base64
-        })
-    });
+    zip.generateAsync({
+        base64: !!event.data.base64
+    }).then(function (data) {
+        postMessage({
+            status: 'done',
+            data: data
+        });
+    })
 };
 
 

@@ -75,7 +75,7 @@ var Factory = {
                     zip.file(path, content, {base64: true, binary: true});
                 }
             });
-            return zip.generate(_.defaults(options || {}, {
+            return zip.generateAsync(_.defaults(options || {}, {
                 type: "base64"
             }));
         });
