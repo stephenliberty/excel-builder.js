@@ -1,5 +1,10 @@
 ![bounties received](https://www.bountysource.com/badge/team?team_id=59027&style=bounties_received)
 
+No longer maintained
+====================
+
+Sob story of the day. For the first time in months, I had time to sit down and work on this project. So, I did. Tweaked a couple things, added stuff to the 'new' website.. then realized that I'd prefer to be spending time with my family. So, this project is no longer maintained. Thank you to those who sent encouraging emails over the years. This was an interesting project. Goodbye.
+
 excel-builder.js
 ================
 
