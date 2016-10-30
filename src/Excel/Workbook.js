@@ -60,13 +60,13 @@ _.extend(Workbook.prototype, {
      * @returns {undefined}
      */
     setPrintTitleTop: function (inSheet, inRowCount) {
-    	if (this.printTitles == null) {
-    		this.printTitles = {};
-    	}
-    	if (this.printTitles[inSheet] == null) {
-    		this.printTitles[inSheet] = {};
-    	}
-    	this.printTitles[inSheet].top = inRowCount;
+        if (this.printTitles == null) {
+            this.printTitles = {};
+        }
+        if (this.printTitles[inSheet] == null) {
+            this.printTitles[inSheet] = {};
+        }
+        this.printTitles[inSheet].top = inRowCount;
     },
     
     /**
@@ -77,14 +77,14 @@ _.extend(Workbook.prototype, {
      * @returns {undefined}
      */
     setPrintTitleLeft: function (inSheet, inColumn) {
-    	if (this.printTitles == null) {
-    		this.printTitles = {};
-    	}
-    	if (this.printTitles[inSheet] == null) {
-    		this.printTitles[inSheet] = {};
-    	}
-    	//WARN: this does not handle AA, AB, etc.
-    	this.printTitles[inSheet].left = String.fromCharCode(64 + inRowCount);
+        if (this.printTitles == null) {
+            this.printTitles = {};
+        }
+        if (this.printTitles[inSheet] == null) {
+            this.printTitles[inSheet] = {};
+        }
+        //WARN: this does not handle AA, AB, etc.
+        this.printTitles[inSheet].left = String.fromCharCode(64 + inColumn);
     },
 
     addMedia: function (type, fileName, fileData, contentType) {
@@ -217,27 +217,27 @@ _.extend(Workbook.prototype, {
         var definedNames = util.createElement(doc, "definedNames");
         var ctr = 0;
         for (var name in this.printTitles) {
-        	if (!this.printTitles.hasOwnProperty(name)) {
-    		    continue;
-    		}
-        	var entry = this.printTitles[name];
-        	var definedName = doc.createElement('definedName');
-        	definedName.setAttribute("name", "_xlnm.Print_Titles");
-        	definedName.setAttribute("localSheetId", ctr++);
-        	
-        	var value = "";
-        	if (entry.top) {
-        		value += name + "!$1:$" + entry.top;
-        		if (entry.left) {
-        			value += ","
-        		}
-        	}
-        	if (entry.left) {
-        		value += name + "!$A:$" + entry.left;
-        	}
-        	
-        	definedName.appendChild(doc.createTextNode(value));
-        	definedNames.appendChild(definedName);
+            if (!this.printTitles.hasOwnProperty(name)) {
+                continue;
+            }
+            var entry = this.printTitles[name];
+            var definedName = doc.createElement('definedName');
+            definedName.setAttribute("name", "_xlnm.Print_Titles");
+            definedName.setAttribute("localSheetId", ctr++);
+
+            var value = "";
+            if (entry.top) {
+                value += name + "!$1:$" + entry.top;
+                if (entry.left) {
+                    value += ","
+                }
+            }
+            if (entry.left) {
+                value += name + "!$A:$" + entry.left;
+            }
+
+            definedName.appendChild(doc.createTextNode(value));
+            definedNames.appendChild(definedName);
         }
         wb.appendChild(definedNames);
         
