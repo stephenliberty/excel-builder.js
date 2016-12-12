@@ -38,7 +38,7 @@
   "dependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-watch": "^0.6.1",
-    "jszip": "^2.1.1",
+    "jszip": "*",
     "lodash": "^3.10.1",
     "q": "^1.4.1"
   },
