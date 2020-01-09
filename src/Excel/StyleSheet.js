@@ -29,12 +29,25 @@ var StyleSheet = function () {
     }];
     this.fonts = [{}];
     this.numberFormatters = [];
-    this.fills = [{}, {
-        type: 'pattern',
-        patternType: 'gray125',
-        fgColor: 'FF333333',
-        bgColor: 'FF333333'
-    }];
+    this.fills =
+        navigator.platform.indexOf('Mac') > -1
+        ? [
+            {
+                type: 'pattern',
+                patternType: 'gray125',
+                fgColor: 'FFFFFFFF',
+                bgColor: 'FFFFFFFF',
+            },
+            ]
+        : [
+            {},
+            {
+                type: 'pattern',
+                patternType: 'gray125',
+                fgColor: 'FF333333',
+                bgColor: 'FF333333',
+            },
+          ]
     this.borders = [{
         top: {},
         left: {},
