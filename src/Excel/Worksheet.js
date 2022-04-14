@@ -315,6 +315,9 @@ var SheetView = require('./SheetView');
                             break;
                         case "date":
                             cell = cellCache.date.cloneNode(true);
+                            if(cellValue instanceof Date) {
+                                cellValue = cellValue.getTime();
+                            }
                             cell.firstChild.firstChild.nodeValue = 25569.0 + ((cellValue - this._timezoneOffset)  / (60 * 60 * 24 * 1000));
                             break;
                         case "formula":
